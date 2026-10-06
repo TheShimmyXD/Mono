@@ -162,8 +162,9 @@ def forbidden_reads(events: list[dict], rx: re.Pattern | None) -> list[int]:
         entry = e.get("entrada") or {}
         if e.get("herramienta") == "Read" and rx.search(entry.get("file_path", "")):
             hits.append(e["n"])
-        # cat/head/tail que leen en la misma línea; "cat > x <<EOF" es una escritura
-        reader = re.search(r"\b(?:cat|head|tail|less)\s+(?![>]|<<)([^|;\n>]*)", command_of(e))
+        # cat/head/tail que leen en la misma línea; "cat > x <<EOF" es una escritura.
+        # El argumento acaba en |, ;, & o >: "head -3 a && wc -c b.jar" no lee b.jar (Mono M-003)
+        reader = re.search(r"\b(?:cat|head|tail|less)\s+(?![>]|<<)([^|;&\n>]*)", command_of(e))
         if reader and rx.search(reader.group(1)):
             hits.append(e["n"])
     return hits

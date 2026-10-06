@@ -13,6 +13,13 @@ Un pedido de diseño abierto (tablero, panel, editor) se resuelve con 2-3 opcion
 - Si algo falla en el teléfono: `telefono.py log -n 60` (solo la etiqueta `Mono` y los errores fatales), nunca el logcat completo.
 - Sin el Redmi conectado: `telefono.py emulador` (AVD `Medium_Phone`) y se espera a que `telefono.py dispositivos` lo liste.
 
+### Redmi listo (F0.4, 2026-10-06)
+
+Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arregla así (una vez por equipo y teléfono):
+- `no permissions`: regla udev con sudo, en su terminal: `/etc/udev/rules.d/51-android.rules` con `SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666"` y lo mismo con `2717` (Xiaomi); después `sudo udevadm control --reload-rules && sudo udevadm trigger`, `adb kill-server` y reconectar el cable.
+- `unauthorized`: aceptar «¿Permitir depuración USB?» en el teléfono.
+- `INSTALL_FAILED_USER_RESTRICTED`: HyperOS pide «Instalar vía USB» en Opciones de desarrollador y tocar Instalar en el teléfono a tiempo.
+
 ## 3. Reglas de la interfaz
 
 - La interfaz no decide reglas: llama al motor con una acción y dibuja el estado y los eventos que devuelve. Si la interfaz necesita algo que el motor no da, primero va al motor con su prueba (regla 4).

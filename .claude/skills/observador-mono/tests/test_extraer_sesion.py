@@ -48,6 +48,41 @@ class TestExtraerSesion(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 extraer_sesion.locate(args)
 
+    def test_sessions_found_by_recorded_cwd(self):
+        import json
+
+        with tempfile.TemporaryDirectory() as tmp:
+            root = "/datos/u/Project_Mono"
+            own = Path(tmp, extraer_sesion.transcripts_folder_name(root))
+            old = Path(tmp, extraer_sesion.transcripts_folder_name("/datos/u/Proyect_Mono"))
+            own.mkdir()
+            old.mkdir()
+            (own / "a.jsonl").write_text("{}\n")
+            (old / "b.jsonl").write_text(json.dumps({"cwd": root}) + "\n")
+            (old / "c.jsonl").write_text(json.dumps({"cwd": "/datos/u/Otro"}) + "\n")
+            names = [os.path.basename(p) for p in extraer_sesion.sessions(tmp, root)]
+            self.assertEqual(sorted(names), ["a.jsonl", "b.jsonl"])
+
+    def test_skill_read_by_hand_counts_as_used(self):
+        import json
+
+        def use(name, **entry):
+            content = [{"type": "tool_use", "name": name, "input": entry}]
+            return json.dumps({"message": {"content": content}}) + "\n"
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp, "s.jsonl")
+            path.write_text(
+                use("Skill", skill="python-programmer")
+                + use("Bash", command="cat .claude/skills/agente-mono/SKILL.md && cat x.toml")
+                + use("Read", file_path="/r/.claude/skills/observador-mono/SKILL.md")
+                + use("Bash", command="grep -n despliega .claude/skills/otra/SKILL.md")
+            )
+            self.assertEqual(
+                extraer_sesion.skills_of(str(path)),
+                {"python-programmer", "agente-mono", "observador-mono"},
+            )
+
     def test_transcripts_folder_replaces_every_non_alphanumeric(self):
         name = extraer_sesion.transcripts_folder_name("/datos/u/0_Python_Codes/Ogata_lib")
         self.assertEqual(name, "-datos-u-0-Python-Codes-Ogata-lib")

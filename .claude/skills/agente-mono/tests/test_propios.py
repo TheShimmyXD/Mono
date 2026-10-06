@@ -60,6 +60,28 @@ class TestTelefono(unittest.TestCase):
         self.assertEqual(telefono.parse_devices(out), ["abc123", "emulator-5554"])
         self.assertEqual(telefono.parse_devices("List of devices attached\n"), [])
 
+    def test_device_problems_explain_the_state(self):
+        out = (
+            "List of devices attached\n"
+            "5xsk  no permissions (user autor is not in the plugdev group); see [x]\n"
+            "ab12  unauthorized usb:1-2 transport_id:1\n"
+            "cd34  device usb:1-3 product:emerald_global\n"
+        )
+        problems = telefono.device_problems(out)
+        self.assertEqual(len(problems), 2)
+        self.assertTrue(problems[0].startswith("5xsk: no permissions -> falta la regla udev"))
+        self.assertIn("Permitir depuracion USB", problems[1])
+        self.assertEqual(telefono.parse_devices(out), ["cd34"])
+
+    def test_device_problems_ignore_daemon_lines(self):
+        out = "* daemon not running; starting now at tcp:5037\nList of devices attached\n"
+        self.assertEqual(telefono.device_problems(out), [])
+
+    def test_install_hint_for_hyperos(self):
+        out = "InstallException: INSTALL_FAILED_USER_RESTRICTED: Install canceled by user"
+        self.assertIn("Instalar via USB", telefono.install_hint(out))
+        self.assertIsNone(telefono.install_hint("BUILD FAILED"))
+
     def test_prefers_physical_phone(self):
         self.assertEqual(telefono.pick_device(["emulator-5554", "abc123"]), "abc123")
         self.assertEqual(telefono.pick_device(["emulator-5554"]), "emulator-5554")

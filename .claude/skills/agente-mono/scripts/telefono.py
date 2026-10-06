@@ -7,7 +7,7 @@ completo (regla 2): solo la etiqueta de la app y los errores de AndroidRuntime, 
 Desde la raiz del proyecto:
   python3 .claude/skills/agente-mono/scripts/telefono.py dispositivos
   python3 .claude/skills/agente-mono/scripts/telefono.py instalar        (installDebug + abrir)
-  python3 .claude/skills/agente-mono/scripts/telefono.py captura --salida <scratchpad>
+  python3 .claude/skills/agente-mono/scripts/telefono.py captura --salida <carpeta>  (crea captura_HHMMSS.png)
   python3 .claude/skills/agente-mono/scripts/telefono.py log [-n 60]
   python3 .claude/skills/agente-mono/scripts/telefono.py emulador       (arranca el AVD aparte)
 Con varios dispositivos se prefiere el fisico (el Redmi); --serie elige uno.
@@ -26,6 +26,19 @@ from pathlib import Path
 DEFAULT_LOG_LINES = 60
 # Lineas de salida de gradle que se muestran si la instalacion falla.
 TAIL_LINES = 15
+# Estados de `adb devices` que no son 'device', con la pista para arreglarlos (Mono M-004).
+DEVICE_HINTS = {
+    "no permissions": "falta la regla udev de Linux (interfaz.md, 'Redmi listo')",
+    "unauthorized": "acepta 'Permitir depuracion USB' en la pantalla del telefono",
+    "offline": "desconecta y vuelve a conectar el cable",
+}
+# Fallos de installDebug con causa conocida.
+INSTALL_HINTS = {
+    "INSTALL_FAILED_USER_RESTRICTED": (
+        "HyperOS: activa 'Instalar via USB' en Opciones de desarrollador "
+        "y toca Instalar en el telefono cuando lo pregunte"
+    ),
+}
 
 
 def find_config(start: Path) -> Path | None:
@@ -53,6 +66,25 @@ def parse_devices(output: str) -> list[str]:
         if len(parts) >= 2 and parts[1] == "device" and not line.startswith("List of"):
             serials.append(parts[0])
     return serials
+
+
+def device_problems(output: str) -> list[str]:
+    """Telefonos que adb ve pero no puede usar, cada uno con su pista."""
+    problems = []
+    for line in output.splitlines():
+        parts = line.split(None, 1)
+        if len(parts) < 2 or line.startswith(("List of", "*")) or parts[1].startswith("device"):
+            continue
+        state = parts[1].strip()
+        key = next((k for k in DEVICE_HINTS if state.startswith(k)), None)
+        label = key or state.split()[0]
+        problems.append(f"{parts[0]}: {label} -> {DEVICE_HINTS.get(key, 'estado desconocido de adb')}")
+    return problems
+
+
+def install_hint(output: str) -> str | None:
+    """La pista de un fallo de installDebug conocido, o None."""
+    return next((hint for code, hint in INSTALL_HINTS.items() if code in output), None)
 
 
 def pick_device(serials: list[str], wanted: str | None = None) -> str | None:
@@ -114,21 +146,28 @@ def main() -> int:
         print(f"Emulador {conf['android']['avd']} arrancando (log: build/emulador.log).")
         return 0
 
-    serials = parse_devices(run([adb, "devices"]).stdout)
+    listing = run([adb, "devices"]).stdout
+    serials, problems = parse_devices(listing), device_problems(listing)
     if args.orden == "dispositivos":
-        print("\n".join(serials) if serials else "Ninguno: conecta el Redmi con depuracion USB.")
+        lines = serials + problems
+        print("\n".join(lines) if lines else "Ninguno: conecta el Redmi con depuracion USB.")
         return 0
     serial = pick_device(serials, args.serie)
     if serial is None:
-        print("Sin dispositivo: conecta el Redmi (depuracion USB) o corre `telefono.py emulador`.")
+        print("\n".join(problems) if problems else
+              "Sin dispositivo: conecta el Redmi (depuracion USB) o corre `telefono.py emulador`.")
         return 1
 
     if args.orden == "instalar":
         env = gradle_env(conf) | {"ANDROID_SERIAL": serial}
         done = run(["./gradlew", "--console=plain", "-q", ":app:installDebug"], cwd=root, env=env)
         if done.returncode != 0:
-            lines = (done.stdout + done.stderr).strip().splitlines()
-            print("installDebug: FALLA\n" + "\n".join(lines[-TAIL_LINES:]))
+            output = (done.stdout + done.stderr).strip()
+            hint = install_hint(output)
+            if hint:
+                print(f"installDebug: FALLA -> {hint}")
+            else:
+                print("installDebug: FALLA\n" + "\n".join(output.splitlines()[-TAIL_LINES:]))
             return 1
         target = launch_target(conf)
         if target:

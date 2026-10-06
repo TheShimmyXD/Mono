@@ -72,6 +72,15 @@ class TestSenales(unittest.TestCase):
         self.assertEqual(senales.forbidden_reads(events, rx), [2, 3])
         self.assertEqual(senales.forbidden_reads(events, None), [])
 
+    def test_forbidden_reads_stop_at_chained_commands(self):
+        rx = senales.compile_any([r"\.jar$"])
+        events = [
+            tool(1, "Bash", command="head -3 gradlew && wc -c gradle/wrapper/gradle-wrapper.jar"),
+            tool(2, "Bash", command="cat a.txt || sha256sum b.jar"),
+            tool(3, "Bash", command="cat libs/motor.jar"),
+        ]
+        self.assertEqual(senales.forbidden_reads(events, rx), [3])
+
     def test_untouchables_outside_scratch(self):
         rx = senales.compile_any([r"Videos/"])
         events = [

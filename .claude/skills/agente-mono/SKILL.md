@@ -1,7 +1,7 @@
 ---
 name: agente-mono
 description: >-
-  Agente de continuidad del proyecto Mono (carpeta 0_SP_Codes/Project_Mono): un juego de propiedades para Android al estilo del Tío Rico y del Monopoly, hecho en Kotlin y Jetpack Compose, en el que se editan las casillas (nombres, precios), las reglas y el tamaño del tablero; un motor de reglas en Kotlin puro sacado de los dos reglamentos escaneados (cada regla con su R-## y su prueba), una interfaz para jugar de 2 a 6 en el Redmi del autor y, después, partidas entre dos teléfonos por Bluetooth. Retoma el trabajo en frío, dice en qué fase va, qué ya funciona y qué sigue, y ejecuta el siguiente paso de la hoja de ruta. Úsala cuando el usuario diga «despliega Mono», «Agente Mono», «¿en qué vamos?», «sigue con Mono», «continúa donde quedamos» o algo parecido dentro de esta carpeta, aunque no nombre la skill.
+  Agente de continuidad del proyecto Mono (carpeta 0_SP_Codes/Project_Mono): un juego de propiedades para Android al estilo del Tío Rico y del Monopoly, hecho en Kotlin y Jetpack Compose, en el que se editan las casillas (nombres, precios), las reglas y el tamaño del tablero; un motor de reglas en Kotlin puro sacado de los dos reglamentos escaneados (cada regla con su R-## y su prueba), una interfaz para jugar de 2 a 6 en el Redmi del autor y, después, partidas entre dos teléfonos por Bluetooth. Retoma el trabajo en frío, dice en qué fase va, qué ya funciona y qué sigue, y ejecuta el siguiente paso de la hoja de ruta. Úsala cuando el usuario diga «despliega Mono», «despliega el agente», «Agente Mono», «¿en qué vamos?», «sigue con Mono», «continúa donde quedamos» o algo parecido dentro de esta carpeta, aunque no nombre la skill.
 ---
 
 # Agente Mono
@@ -22,15 +22,16 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `references/mandato.md` | Visión, alcance y reglas. **Primera sesión** o duda de alcance. |
 | `references/reglas.md` | F1, y antes de usar una regla que no está en `REGLAS.md`: cómo leer los escaneos y el formato R-##. |
 | `references/motor.md` | F0 y F2: entorno (JAVA_HOME, Gradle), capas, motor determinista, pruebas por R-##, estilo Kotlin. |
-| `references/interfaz.md` | F3 y F4: opciones con captura, teléfono por adb, el hito. |
+| `references/interfaz.md` | F0.4, F3 y F4: opciones con captura, teléfono por adb (Redmi listo), el hito. |
 | `references/enlace.md` | F5 (solo después del hito): decisión del transporte, protocolo, permisos. |
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
 | `scripts/cierre_paso.py` | Pruebas del motor, compilación de la app (`[cierre] pasos`) y tope de ESTADO en una orden; sale 1 si algo falla. |
 | `scripts/pagina.py` | Una página o un recorte de un reglamento a PNG (`--info`, `--rejilla 2x3`, `--recorte x,y,an,al`). Nunca el PDF entero. |
-| `scripts/telefono.py` | `dispositivos`, `instalar` (installDebug + abrir), `captura --salida`, `log -n 60` (filtrado) y `emulador`. |
+| `scripts/telefono.py` | `dispositivos`, `instalar` (installDebug + abrir), `captura --salida <carpeta>`, `log -n 60` (filtrado) y `emulador`. |
 
 ## Arranque
 
+0. Si leíste este archivo con cat o Read (la skill no se cargó sola), díselo al autor en una línea: «Abre Claude Code desde la raíz de Mono para que se carguen las skills», y sigue.
 1. Lee `Agente_Mono/ESTADO.md` y las 2 últimas entradas de `SESIONES.md`. No re-audites la carpeta.
 2. Corre `python3 .claude/skills/agente-mono/scripts/tablero.py --tasks 1`. Si ESTADO y las casillas no coinciden, corrígelo antes de seguir.
 3. Muestra el tablero, **10 líneas como máximo**: *Dónde vamos* (fase y contador), *Qué ya funciona* (con su comando), *Qué sigue hoy* y, solo si hace falta, *Qué necesito de ti*.

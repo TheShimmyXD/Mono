@@ -115,12 +115,40 @@ if CONFIG is None:
     sys.exit("No se encontró el .toml del proyecto (ni desde la carpeta actual ni desde la skill).")
 CONF = tomllib.loads(CONFIG.read_text(encoding="utf-8"))
 PROJECT = str(CONFIG.parent)
-TRANSCRIPTS = os.path.expanduser("~/.claude/projects/" + transcripts_folder_name(PROJECT))
+PROJECTS = os.path.expanduser("~/.claude/projects")
 OUTPUT_BASE = os.path.join(PROJECT, CONF["proyecto"]["carpeta_agente"], "Observador/trazas")
 
 
-def sessions() -> list[str]:
-    return sorted(glob.glob(os.path.join(TRANSCRIPTS, "*.jsonl")), key=os.path.getmtime)
+def first_cwd(path: str, max_lines: int = 50) -> str | None:
+    """El cwd registrado en las primeras líneas de una transcripción."""
+    with open(path, errors="replace") as f:
+        for i, line in enumerate(f):
+            if i >= max_lines:
+                break
+            m = re.search(r'"cwd":\s*"([^"]+)"', line)
+            if m:
+                return m.group(1)
+    return None
+
+
+def sessions(projects: str = PROJECTS, root: str = PROJECT) -> list[str]:
+    """Transcripciones del proyecto: las de su carpeta y las de otra carpeta que registran su
+    cwd (carpeta renombrada a mitad de un trabajo en segundo plano: Mono H3, M-002)."""
+    own = os.path.join(projects, transcripts_folder_name(root))
+    found = set(glob.glob(os.path.join(own, "*.jsonl")))
+    for path in glob.glob(os.path.join(projects, "*", "*.jsonl")):
+        if path in found:
+            continue
+        cwd = first_cwd(path)
+        if cwd and (cwd == root or cwd.startswith(root + os.sep)):
+            found.add(path)
+    return sorted(found, key=os.path.getmtime)
+
+
+# Una skill que no se cargó sola y se leyó a mano también cuenta como usada (Mono M-002).
+SKILL_READ = re.compile(
+    r'(?:"file_path":\s*"|\bcat\s+[^"|;&]*?)[^"]*?\.claude/skills/([\w-]+)/SKILL\.md'
+)
 
 
 def skills_of(path: str) -> set[str]:
@@ -129,6 +157,8 @@ def skills_of(path: str) -> set[str]:
         for line in f:
             if '"Skill"' in line:
                 found.update(m.group(1) for m in re.finditer(r'"skill":\s*"([^"]+)"', line))
+            if '"tool_use"' in line and "SKILL.md" in line:
+                found.update(m.group(1) for m in SKILL_READ.finditer(line))
     return found
 
 
