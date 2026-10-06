@@ -83,7 +83,7 @@ class MonoJsonTest {
 
     @Test
     fun `F2-1 ida y vuelta de cada fase y cada accion`() {
-        val phases = listOf(TurnPhase.Roll, TurnPhase.Buy(3), TurnPhase.EndOfTurn, TurnPhase.Over(0))
+        val phases = listOf(TurnPhase.Roll, TurnPhase.Buy(3), TurnPhase.TaxChoice(2), TurnPhase.EndOfTurn, TurnPhase.Over(0))
         for (phase in phases) {
             val withPhase = state.copy(phase = phase)
             assertEquals(withPhase, MonoJson.decodeState(MonoJson.encodeState(withPhase)))
@@ -91,7 +91,7 @@ class MonoJsonTest {
         val actions = listOf(
             Action.Roll, Action.Buy, Action.Decline, Action.Bid(1, 2100), Action.PassBid(0),
             Action.Build(1), Action.SellBuilding(1), Action.Mortgage(3), Action.Unmortgage(3),
-            Action.PayJailFine, Action.UseJailCard, Action.Trade(0, 1, giveSquares = listOf(1), takeMoney = 900),
+            Action.PayJailFine, Action.UseJailCard, Action.PayTax(percent = true), Action.Trade(0, 1, giveSquares = listOf(1), takeMoney = 900),
             Action.EndTurn,
         )
         for (action in actions) {

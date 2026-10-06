@@ -65,7 +65,7 @@ object Engine {
         }
     }
 
-    /** Aplica una acción de quien juega. Las de F2.3 en adelante aún no están. */
+    /** Aplica una acción de quien juega. Subasta, hipotecas y negocios llegan en F2.6. */
     fun apply(config: GameConfig, state: GameState, action: Action): Result = when (action) {
         Action.Roll -> {
             val (dice, next) = state.random.rollDice()
@@ -74,6 +74,9 @@ object Engine {
         Action.Buy -> buy(config, state)
         Action.Decline -> decline(config, state)
         is Action.Build -> build(config, state, action.square)
+        is Action.PayTax -> payTax(config, state, action.percent)
+        Action.PayJailFine -> payJailFine(config, state)
+        Action.UseJailCard -> useJailCard(state)
         Action.EndTurn -> endTurn(state)
         else -> throw UnsupportedOperationException("acción aún no implementada: $action")
     }
@@ -81,16 +84,22 @@ object Engine {
     /**
      * Tirada con dados conocidos: avanza la suma (R-07), cobra el sueldo por cada paso por
      * la salida (R-10, R-45), resuelve la casilla (R-08) y, con dobles, vuelve a tirar (R-09, R-43).
-     * La Cárcel por dobles seguidos (R-09) llega en F2.4.
+     * Con `doublesToJail` dobles seguidos no avanza: va a la Cárcel (R-09, R-20). Desde la
+     * Cárcel tira para salir (R-22).
      */
     fun roll(config: GameConfig, state: GameState, dice: Dice): Result {
         if (state.phase != TurnPhase.Roll) throw IllegalActionException("no toca tirar: ${state.phase}")
         val player = state.current
+        if (state.players[player].jailTurns != null) return rollInJail(config, state, dice)
         val events = mutableListOf<Event>(Event.DiceRolled(player, dice))
-        val moved = advance(config, state, player, dice.total, events)
-            .copy(doublesInRow = if (dice.isDouble) state.doublesInRow + 1 else 0)
+        val doubles = if (dice.isDouble) state.doublesInRow + 1 else 0
+        val limit = config.rules.doublesToJail
+        if (limit > 0 && doubles >= limit) {
+            return Result(sendToJail(config, state, player, JailCause.DOUBLES, events), events)
+        }
+        val moved = advance(config, state, player, dice.total, events).copy(doublesInRow = doubles)
         val landed = land(config, moved, player, dice, events)
-        return Result(if (landed.phase is TurnPhase.Buy) landed else finishMove(config, landed, events), events)
+        return Result(if (landed.phase == TurnPhase.Roll) finishMove(config, landed, events) else landed, events)
     }
 
     /** Pasa el turno al siguiente de la lista que no esté en quiebra (R-06). */

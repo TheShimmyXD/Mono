@@ -61,6 +61,11 @@ sealed interface Action {
     @SerialName("payJailFine")
     data object PayJailFine : Action
 
+    /** Pagar el impuesto: el `percent` % del patrimonio o la cifra fija (R-19). */
+    @Serializable
+    @SerialName("payTax")
+    data class PayTax(val percent: Boolean) : Action
+
     /** Usar la carta «Salir libre de la Cárcel» (R-18, R-22). */
     @Serializable
     @SerialName("useJailCard")

@@ -73,6 +73,11 @@ sealed interface TurnPhase {
         val highestBidder: Int?,
     ) : TurnPhase
 
+    /** Cayó en un impuesto con porcentaje: elige cómo pagarlo (R-19). */
+    @Serializable
+    @SerialName("taxChoice")
+    data class TaxChoice(val square: Int) : TurnPhase
+
     /** Ya movió y resolvió la casilla: puede construir, negociar o terminar. */
     @Serializable
     @SerialName("endOfTurn")

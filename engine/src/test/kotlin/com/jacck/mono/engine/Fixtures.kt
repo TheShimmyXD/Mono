@@ -5,7 +5,9 @@ import com.jacck.mono.engine.model.EndCondition
 import com.jacck.mono.engine.model.Fee
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
+import com.jacck.mono.engine.model.GoToJail
 import com.jacck.mono.engine.model.Holding
+import com.jacck.mono.engine.model.Jail
 import com.jacck.mono.engine.model.MortgageValue
 import com.jacck.mono.engine.model.Property
 import com.jacck.mono.engine.model.Rest
@@ -15,6 +17,7 @@ import com.jacck.mono.engine.model.Square
 import com.jacck.mono.engine.model.Start
 import com.jacck.mono.engine.model.StartTieRule
 import com.jacck.mono.engine.model.Station
+import com.jacck.mono.engine.model.Tax
 import com.jacck.mono.engine.model.TurnPhase
 import com.jacck.mono.engine.model.Utility
 
@@ -43,13 +46,25 @@ fun testRules(
     endCondition = EndCondition.LAST_STANDING, startingDeeds = 0,
 )
 
-/** Anillo de `size` casillas sin efecto, con la salida en `start` (para mover y cobrar). */
-fun ringBoard(size: Int = 16, start: Int = 0, rules: RuleOptions = testRules()) = GameConfig(
-    name = "Anillo",
-    groups = emptyList(),
-    squares = List(size) { if (it == start) Start("Salida") else Rest("Casilla $it") },
-    rules = rules,
-)
+/**
+ * Anillo de `size` casillas sin efecto, con la salida en `start` (para mover y cobrar) y, si
+ * las reglas tienen Cárcel, la Cárcel a un cuarto de vuelta (de visita no hace nada, R-21).
+ */
+fun ringBoard(size: Int = 16, start: Int = 0, rules: RuleOptions = testRules()): GameConfig {
+    val jail = if (rules.jail) (start + size / 4) % size else -1
+    return GameConfig(
+        name = "Anillo",
+        groups = emptyList(),
+        squares = List(size) {
+            when (it) {
+                start -> Start("Salida")
+                jail -> Jail("Cárcel")
+                else -> Rest("Casilla $it")
+            }
+        },
+        rules = rules,
+    )
+}
 
 /** Columna «Tío Rico» de `## Diferencias` para lo de F2.3 (sin el preset, F2.8). */
 fun tioRicoRules() = testRules(startingMoney = 26400, salary = 2000, doublesToJail = 0).copy(
@@ -83,6 +98,27 @@ fun propertyBoard(rules: RuleOptions = testRules()): GameConfig {
         rules = rules,
     )
 }
+
+/**
+ * `propertyBoard` con impuesto de $200 o 10 % en 2, Cárcel en 4, Parada Libre en 10 y
+ * «Váyase a la Cárcel» en 13 (F2.4).
+ */
+fun jailBoard(rules: RuleOptions = testRules()): GameConfig = propertyBoard(rules).withSquares(
+    2 to Tax("Impuesto", fixed = 200, percent = 10),
+    4 to Jail("Cárcel"),
+    10 to Rest("Parada Libre"),
+    13 to GoToJail("Váyase a la Cárcel"),
+)
+
+/** `propertyBoard` de Tío Rico con las tres Tierras en 2, 4 y 10 (R-52..R-54). */
+fun tierrasBoard(): GameConfig = propertyBoard(tioRicoRules()).withSquares(
+    2 to Tax("Tierra del Futuro", fixed = 1500, perHotel = 200),
+    4 to Tax("Tierra de la Aventura", fixed = 1800),
+    10 to Tax("Tierra de la Frontera", fixed = 2000),
+)
+
+private fun GameConfig.withSquares(vararg changes: Pair<Int, Square>) =
+    copy(squares = squares.toMutableList().apply { changes.forEach { (i, sq) -> this[i] = sq } })
 
 /** Partida de Ana (0) y Beto (1) en `config`: juega Ana, en `position`, con esas propiedades. */
 fun twoPlayers(

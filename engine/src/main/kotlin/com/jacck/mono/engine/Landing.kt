@@ -2,21 +2,29 @@ package com.jacck.mono.engine
 
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
+import com.jacck.mono.engine.model.GoToJail
 import com.jacck.mono.engine.model.Holding
 import com.jacck.mono.engine.model.OwnableSquare
 import com.jacck.mono.engine.model.Property
 import com.jacck.mono.engine.model.Station
+import com.jacck.mono.engine.model.Tax
 import com.jacck.mono.engine.model.TurnPhase
 import com.jacck.mono.engine.model.Utility
 
 /**
- * Efecto de caer en una casilla que se compra (R-08): del Banco → se ofrece (R-11); de otro →
- * paga el alquiler (R-13). Impuestos, cartas y Cárcel llegan en F2.4 y F2.5.
+ * Efecto de caer en una casilla (R-08). La que se compra: del Banco → se ofrece (R-11); de
+ * otro → paga el alquiler (R-13). Impuesto → R-19, R-52..R-54; «Váyase a la Cárcel» → R-20;
+ * la Cárcel de visita (R-21) y Parada Libre (R-24) no hacen nada. Las cartas llegan en F2.5.
  * Si no alcanza el dinero, el saldo queda negativo hasta la quiebra (F2.6).
  */
 internal fun land(config: GameConfig, state: GameState, player: Int, dice: Dice, events: MutableList<Event>): GameState {
     val square = state.players[player].position
-    if (config.squares[square] !is OwnableSquare) return state
+    when (val sq = config.squares[square]) {
+        is Tax -> return landOnTax(state, player, square, sq, events)
+        is GoToJail -> return sendToJail(config, state, player, JailCause.SQUARE, events)
+        !is OwnableSquare -> return state
+        else -> {}
+    }
     val holding = state.holdings[square] ?: return state.copy(phase = TurnPhase.Buy(square))
     if (holding.owner == player) return state
     val amount = rentDue(config, state, square, dice)

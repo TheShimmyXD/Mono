@@ -36,9 +36,27 @@ sealed interface Event {
     /** Hotel o castillo en `square` (R-27, R-47). */
     data class HotelBuilt(val player: Int, val square: Int, val price: Int) : Event
 
+    /** Pagó al Banco el impuesto de `square` (R-19, R-52..R-54). */
+    data class TaxPaid(val player: Int, val square: Int, val amount: Int) : Event
+
+    /** Fue a la Cárcel, sin cobrar el sueldo (R-20). */
+    data class SentToJail(val player: Int, val cause: JailCause) : Event
+
+    /** Sigue en la Cárcel; lleva `turns` turnos dentro (R-22). */
+    data class StayedInJail(val player: Int, val turns: Int) : Event
+
+    /** Salió de la Cárcel; `fine` es la multa pagada, 0 si no pagó (R-22). */
+    data class LeftJail(val player: Int, val way: JailExit, val fine: Int = 0) : Event
+
     /** Sacó dobles y vuelve a tirar (R-09, R-43). */
     data class RollAgain(val player: Int) : Event
 
     /** El turno pasó a `player` (R-06). */
     data class TurnPassed(val player: Int) : Event
 }
+
+/** Por qué fue a la Cárcel (R-20): la casilla, la carta (F2.5) o los dobles seguidos (R-09). */
+enum class JailCause { SQUARE, CARD, DOUBLES }
+
+/** Cómo salió (R-22): dobles, carta, multa antes de tirar o multa forzada en el último turno. */
+enum class JailExit { DOUBLES, CARD, FINE, LAST_TURN }
