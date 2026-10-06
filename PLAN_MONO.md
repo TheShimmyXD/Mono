@@ -123,7 +123,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 - [x] **F0.1** Copiar los dos reglamentos a `fuentes/` (solo lectura), `git init` y `.gitignore` (Android, más `Agente_Mono/ESTADO*.md`, `SESIONES.md`, `Observador/trazas/`, `fuentes/`, `*.jks`, `keystore.properties`, `local.properties`). *Terminado:* `sha256sum` de las copias igual al de Descargas; `git status` no muestra `fuentes/` ni ESTADO.
 - [x] **F0.2** Proyecto Gradle con `engine` (Kotlin/JVM) y `app` (Android, Compose), versiones en `gradle/libs.versions.toml` y una D-## con ellas (AGP, Kotlin, minSdk). *Terminado:* `./gradlew :engine:test :app:assembleDebug` termina en BUILD SUCCESSFUL con una prueba del motor.
-- [ ] **F0.3** `[cierre] pasos` y `[android] sdk` en `mono.toml`; hook `pre-commit` con el tope de ESTADO. *Terminado:* `cierre_paso.py` dice «listo para el commit» y un commit con ESTADO sobre el tope es rechazado.
+- [x] **F0.3** `[cierre] pasos` y `[android] sdk` en `mono.toml`; hook `pre-commit` con el tope de ESTADO. *Terminado:* `cierre_paso.py` dice «listo para el commit» y un commit con ESTADO sobre el tope es rechazado.
 - [ ] **F0.4** «Hola Mono» en el Redmi: depuración USB, `telefono.py instalar` y `telefono.py captura`. *Terminado:* captura del Redmi con la app abierta, y el autor la ve en su teléfono.
 
 ### F1 · Reglamentos
