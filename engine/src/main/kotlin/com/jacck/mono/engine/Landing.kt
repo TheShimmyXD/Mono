@@ -46,11 +46,11 @@ internal fun buy(config: GameConfig, state: GameState): Result {
     return Result(Engine.finishMove(config, bought, events), events)
 }
 
-/** No la compra: sigue del Banco (D-08); la subasta (R-12, R-44) llega en F2.6. */
+/** No la compra: el Banco la subasta en el acto (R-12, R-44). */
 internal fun decline(config: GameConfig, state: GameState): Result {
     val phase = state.phase as? TurnPhase.Buy ?: throw IllegalActionException("no hay nada que rechazar: ${state.phase}")
     val events = mutableListOf<Event>(Event.Declined(state.current, phase.square))
-    return Result(Engine.finishMove(config, state, events), events)
+    return Result(startAuction(config, state, phase.square, events), events)
 }
 
 /**

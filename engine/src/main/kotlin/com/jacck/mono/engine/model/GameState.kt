@@ -67,7 +67,10 @@ sealed interface TurnPhase {
     @SerialName("buy")
     data class Buy(val square: Int) : TurnPhase
 
-    /** Subasta en curso (R-12, R-44); `bidders` = quienes aún pujan, en orden. */
+    /**
+     * Subasta en curso (R-12, R-44); `bidders` = quienes aún pujan, en orden. `queue` = las
+     * que se subastan después (R-35); `then` = la fase al terminar, null = sigue el turno.
+     */
     @Serializable
     @SerialName("auction")
     data class Auction(
@@ -75,6 +78,8 @@ sealed interface TurnPhase {
         val bidders: List<Int>,
         val highestBid: Int,
         val highestBidder: Int?,
+        val queue: List<Int> = emptyList(),
+        val then: TurnPhase? = null,
     ) : TurnPhase
 
     /** Cayó en un impuesto con porcentaje: elige cómo pagarlo (R-19). */

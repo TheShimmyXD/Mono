@@ -24,8 +24,23 @@ sealed interface Event {
     /** Compró al Banco la casilla `square` (R-11). */
     data class Bought(val player: Int, val square: Int, val price: Int) : Event
 
-    /** No compró; sigue del Banco (D-08) hasta que haya subasta (F2.6). */
+    /** No la compró: va a subasta (R-12, R-44). */
     data class Declined(val player: Int, val square: Int) : Event
+
+    /** Empieza la subasta de `square`; se puja desde `minBid` (R-12, R-44). */
+    data class AuctionStarted(val square: Int, val minBid: Int) : Event
+
+    /** `player` puja `amount`. */
+    data class BidPlaced(val player: Int, val amount: Int) : Event
+
+    /** `player` se retira de la subasta. */
+    data class BidPassed(val player: Int) : Event
+
+    /** `player` gana la subasta de `square` y paga `amount` al Banco (R-12). */
+    data class AuctionWon(val player: Int, val square: Int, val amount: Int) : Event
+
+    /** Nadie pujó: `square` sigue del Banco (D-08). */
+    data class AuctionUnsold(val square: Int) : Event
 
     /** `payer` pagó a `owner` el alquiler de `square` (R-13..R-16, R-48). */
     data class RentPaid(val payer: Int, val owner: Int, val square: Int, val amount: Int) : Event

@@ -37,11 +37,13 @@ class BuyRentTest {
     }
 
     @Test
-    fun `D-08 si no la compra sigue del Banco (subasta en F2-6)`() {
+    fun `D-08 si no la compra y nadie puja sigue del Banco`() {
         val state = twoPlayers(classic, position = 3, phase = TurnPhase.Buy(3))
         val declined = Engine.apply(classic, state, Action.Decline).state
-        assertNull(declined.holdings[3])
-        assertEquals(TurnPhase.EndOfTurn, declined.phase)
+        val ana = Engine.apply(classic, declined, Action.PassBid(0)).state
+        val done = Engine.apply(classic, ana, Action.PassBid(1)).state
+        assertNull(done.holdings[3])
+        assertEquals(TurnPhase.EndOfTurn, done.phase)
     }
 
     @Test

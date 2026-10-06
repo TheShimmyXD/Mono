@@ -75,6 +75,8 @@ object Engine {
         }
         Action.Buy -> buy(config, state)
         Action.Decline -> decline(config, state)
+        is Action.Bid -> bid(config, state, action.player, action.amount)
+        is Action.PassBid -> passBid(config, state, action.player)
         is Action.Build -> build(config, state, action.square)
         is Action.SellBuilding -> sellBuilding(config, state, action.square)
         is Action.Mortgage -> mortgage(config, state, action.square)
