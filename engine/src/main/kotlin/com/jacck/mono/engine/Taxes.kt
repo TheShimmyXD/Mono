@@ -41,19 +41,12 @@ internal fun payTax(config: GameConfig, state: GameState, percent: Boolean): Res
  * Banco (`hotelReturnsHouses`), también esas `maxHouses` casas (D-13).
  */
 fun netWorth(config: GameConfig, state: GameState, player: Int): Int {
-    val rules = config.rules
     var total = state.players[player].money
     for ((square, holding) in state.holdings) {
         if (holding.owner != player) continue
         val sq = config.squares[square] as OwnableSquare
         total += sq.price
-        if (sq !is Property) continue
-        val house = rules.housePrice ?: sq.housePrice ?: 0
-        total += holding.houses * house
-        if (holding.hotel) {
-            total += rules.hotelPrice ?: sq.hotelPrice ?: 0
-            if (rules.hotelReturnsHouses) total += rules.maxHouses * house
-        }
+        if (sq is Property) total += buildingsCost(config, sq, holding)
     }
     return total
 }

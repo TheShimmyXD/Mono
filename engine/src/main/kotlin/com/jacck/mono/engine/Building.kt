@@ -20,6 +20,7 @@ internal fun build(config: GameConfig, state: GameState, square: Int): Result {
     if (holding.mortgaged) illegal("hipotecada: $square")
     val group = groupSquares(config, property.group)
     if (group.any { state.holdings[it]?.owner != player }) illegal("falta el grupo completo")
+    if (group.any { state.holdings[it]?.mortgaged == true }) illegal("hay una hipotecada en el grupo (R-32, D-15)")
     if (rules.buildOnlyWhenLanding) {
         val movedThisTurn = state.phase == TurnPhase.EndOfTurn || state.doublesInRow > 0
         if (!movedThisTurn || state.players[player].position != square) illegal("solo al caer en ella (R-46)")

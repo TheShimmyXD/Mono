@@ -66,31 +66,34 @@ fun ringBoard(size: Int = 16, start: Int = 0, rules: RuleOptions = testRules()):
     )
 }
 
-/** Columna «Tío Rico» de `## Diferencias` para lo de F2.3 (sin el preset, F2.8). */
+/** Columna «Tío Rico» de `## Diferencias` para lo de F2.3..F2.6 (sin el preset, F2.8). */
 fun tioRicoRules() = testRules(startingMoney = 26400, salary = 2000, doublesToJail = 0).copy(
-    jail = false, rentWhileMortgaged = true, buildOnlyWhenLanding = true, maxHouses = 3,
+    jail = false, auctionPriceDiscount = 200, rentWhileMortgaged = true,
+    mortgageValue = MortgageValue.HALF_TOTAL, mortgageWithBuildings = true, unmortgageFee = Fee(fixed = 200),
+    buildOnlyWhenLanding = true, maxHouses = 3,
     evenBuild = false, housePrice = 1000, hotelPrice = 2000, houseStock = 30, hotelStock = 10,
     hotelGroupDoubleRent = true,
 )
 
 /**
  * 16 casillas con dos grupos (rojo: 1, 3; azul: 6, 8, 9), ferrocarriles en 5 y 15 y servicios
- * en 7 y 12. Cifras de prueba, no de un preset.
+ * en 7 y 12; hipoteca impresa = mitad del precio (Azul 3: 55). Cifras de prueba, no de un preset.
  */
 fun propertyBoard(rules: RuleOptions = testRules()): GameConfig {
-    fun red(name: String, rents: List<Int>) = Property(name, "rojo", 60, rents, housePrice = 50, hotelPrice = 50)
-    fun blue(name: String, price: Int, rents: List<Int>) = Property(name, "azul", price, rents, housePrice = 50, hotelPrice = 50)
+    fun red(name: String, rents: List<Int>) = Property(name, "rojo", 60, rents, housePrice = 50, hotelPrice = 50, mortgage = 30)
+    fun blue(name: String, price: Int, rents: List<Int>, mortgage: Int = price / 2) =
+        Property(name, "azul", price, rents, housePrice = 50, hotelPrice = 50, mortgage = mortgage)
     val squares = List(16) { Rest("Casilla $it") }.toMutableList<Square>()
     squares[0] = Start("Salida")
     squares[1] = red("Rojo 1", listOf(2, 10, 30, 90, 160, 250))
     squares[3] = red("Rojo 2", listOf(4, 20, 60, 180, 320, 450))
-    squares[5] = Station("Tren 1", 200, listOf(25, 50, 100, 200))
+    squares[5] = Station("Tren 1", 200, listOf(25, 50, 100, 200), mortgage = 100)
     squares[6] = blue("Azul 1", 100, listOf(6, 30, 90, 270, 400, 550))
-    squares[7] = Utility("Luz", 150, listOf(4, 10))
+    squares[7] = Utility("Luz", 150, listOf(4, 10), mortgage = 75)
     squares[8] = blue("Azul 2", 100, listOf(6, 30, 90, 270, 400, 550))
-    squares[9] = blue("Azul 3", 120, listOf(8, 40, 100, 300, 450, 600))
-    squares[12] = Utility("Agua", 150, listOf(4, 10))
-    squares[15] = Station("Tren 2", 200, listOf(25, 50, 100, 200))
+    squares[9] = blue("Azul 3", 120, listOf(8, 40, 100, 300, 450, 600), mortgage = 55)
+    squares[12] = Utility("Agua", 150, listOf(4, 10), mortgage = 75)
+    squares[15] = Station("Tren 2", 200, listOf(25, 50, 100, 200), mortgage = 100)
     return GameConfig(
         name = "Propiedades",
         groups = listOf(ColorGroup("rojo", "Rojo", "#D32F2F"), ColorGroup("azul", "Azul", "#1976D2")),

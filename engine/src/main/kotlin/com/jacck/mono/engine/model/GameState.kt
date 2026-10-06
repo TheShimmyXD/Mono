@@ -49,6 +49,8 @@ data class Holding(
     val houses: Int = 0,
     val hotel: Boolean = false,
     val mortgaged: Boolean = false,
+    /** Ya pagó en este turno el interés de una hipotecada recibida: levantarla cuesta solo el valor (R-34). */
+    val feePaid: Boolean = false,
 )
 
 /** En qué punto del turno está la partida: dice qué acciones son válidas. */

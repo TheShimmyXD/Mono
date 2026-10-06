@@ -54,6 +54,15 @@ sealed interface Event {
     /** Salió de la Cárcel; `fine` es la multa pagada, 0 si no pagó (R-22). */
     data class LeftJail(val player: Int, val way: JailExit, val fine: Int = 0) : Event
 
+    /** Hipotecó `square` y cobró `amount` (R-31, R-49). */
+    data class Mortgaged(val player: Int, val square: Int, val amount: Int) : Event
+
+    /** Levantó la hipoteca de `square` pagando `amount` (R-32, R-50). */
+    data class Unmortgaged(val player: Int, val square: Int, val amount: Int) : Event
+
+    /** Vendió al Banco una casa o el hotel de `square` y cobró `amount` (R-30). */
+    data class BuildingSold(val player: Int, val square: Int, val amount: Int) : Event
+
     /** Sacó dobles y vuelve a tirar (R-09, R-43). */
     data class RollAgain(val player: Int) : Event
 
