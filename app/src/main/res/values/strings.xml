@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Nombre visible provisional (P6) -->
+    <string name="app_name">Mono</string>
+    <string name="hello">Hola Mono</string>
+</resources>

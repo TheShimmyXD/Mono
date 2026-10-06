@@ -51,8 +51,8 @@ entorno = { JAVA_HOME = "~/android-studio/jbr" }
 # SDK de Android Studio (adb en platform-tools); emulador de respaldo sin el Redmi (H5, H6)
 sdk = "~/Android/Sdk"
 avd = "Medium_Phone"
-# applicationId y actividad de arranque: los fija F0.2 (D-##)
-paquete = ""
+# applicationId y actividad de arranque (F0.2, D-06)
+paquete = "com.jacck.mono"
 actividad = ".MainActivity"
 # etiqueta de Log.* que usa la app: telefono.py log filtra por ella (regla 2)
 etiqueta_log = "Mono"
