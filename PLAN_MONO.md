@@ -130,7 +130,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 - [x] **F1.1** Leer el Monopoly página por página (8 pp.) y transcribir cada regla a `REGLAS.md` como R-## (texto breve, cifras, página). *Terminado:* las 8 páginas leídas y listadas; cada R-## con su página; cada cifra leída dos veces.
 - [x] **F1.2** Leer el Tío Rico por recortes de su única página y añadir sus R-## (o «igual a R-##» / «difiere de R-##»). *Terminado:* los recortes cubren toda la página y están listados en `REGLAS.md`; cada regla con su recorte.
-- [ ] **F1.3** Tabla de diferencias Tío Rico ↔ Monopoly: cada diferencia, una opción de configuración con su valor en cada preset. *Terminado:* el autor aprueba la tabla.
+- [x] **F1.3** Tabla de diferencias Tío Rico ↔ Monopoly: cada diferencia, una opción de configuración con su valor en cada preset. *Terminado:* el autor aprueba la tabla.
 - [ ] **F1.4** Qué es editable (casillas: nombre, precio, grupo, alquileres; reglas: opciones de F1.3; tamaño: N) y sus rangos. *Terminado:* ficha D-## aprobada por el autor.
 
 ### F2 · Motor

@@ -383,3 +383,57 @@ Tío Rico (1 página): la rejilla 2×3 parte las columnas de texto, así que el 
 - **Cifras:** $2000.
 - **Fuente:** tio_rico p. 1 r78-22-22-78 («TIERRA DE LA FRONTERA»).
 - **Monopoly:** difiere de R-19.
+
+## Diferencias
+
+*F1.3. Cada diferencia entre los reglamentos es una opción de la configuración, con su valor en cada preset (F2.8). ◇ = ningún reglamento lo dice o es ambiguo: lo decidió el autor en D-08 (tabla aprobada el 2026-10-06). Los nombres de las opciones son los del código (Kotlin).*
+
+### Opciones de reglas
+
+| # | Regla | Monopoly | Tío Rico | Opción | Clásico | Tío Rico |
+|---|---|---|---|---|---|---|
+| 1 | R-03, R-42 | $1500 por jugador | 3 billetes × 6 denominaciones (valores sin decir) | `startingMoney` | 1500 | ◇ 3 × (suma de las 6 denominaciones): el autor da el valor de los billetes |
+| 2 | R-10, R-45 | $200 al caer o pasar por la salida | $2000 | `salary` | 200 | 2000 |
+| 3 | R-06, R-43 | turno a la izquierda | turno a la derecha | — (en la app el orden es el de la lista de jugadores) | — | — |
+| 4 | R-06, R-43 | empieza el mayor; empate sin decir | empieza el mayor; «todo par…» ambiguo | `startTieRule` | ◇ repiten solo los empatados | ◇ igual |
+| 5 | R-09, R-43 | dobles: otra tirada; 3 seguidos → Cárcel | «todo par autoriza un nuevo lanzamiento» | `doublesRollAgain` · `doublesToJail` | sí · 3 | ◇ sí · 0 («par» = dobles, sin tope) |
+| 6 | R-20..R-23 | Cárcel, «Váyase a la Cárcel», de visita | no hay Cárcel | `jail` | sí | no |
+| 7 | R-22 | multa $50; máximo 3 turnos dentro | — | `jailFine` · `jailMaxTurns` | 50 · 3 | — |
+| 8 | R-12, R-44 | subasta desde cualquier precio | subasta con base = precio − $200 | `auctionBase` | 0 | precio − 200 |
+| 9 | R-12 | nadie puja: sin decir | sin decir | `unsoldStaysWithBank` | ◇ sí | ◇ sí |
+| 10 | R-14, R-49 | hipotecada no cobra alquiler | hipotecada sí cobra | `rentWhileMortgaged` | no | sí |
+| 11 | R-31, R-49 | valor impreso en la Escritura; antes se venden los edificios | 1/2 del precio total, edificios incluidos | `mortgageValue` | impreso | mitad del total |
+| 12 | R-31, R-49 | hipoteca solo sin edificios | hipoteca propiedades, casas y castillos; no se edifica mientras dure | `mortgageWithBuildings` | no | sí |
+| 13 | R-32, R-50 | levantar = hipoteca + 10 % | hipoteca + $200 | `unmortgageFee` | 10 % | 200 fijo |
+| 14 | R-32 | redondeo del 10 % sin decir | — | `percentRounding` | ◇ hacia arriba, a $1 | — |
+| 15 | R-25, R-46 | construir en cualquier momento | solo al caer en una del grupo | `buildOnlyWhenLanding` | no | sí |
+| 16 | R-26, R-46 | hasta 4 casas por solar | hasta 3 (por propiedad: R-47 habla de «una propiedad que ya tiene sus 3 casas») | `maxHouses` | 4 | 3 |
+| 17 | R-26, R-46 | construir y vender parejo | sin decir | `evenBuild` | sí | ◇ no |
+| 18 | R-25, R-46 | precio de la casa en cada Escritura | $1000 todas | `housePrice` | por casilla | 1000 fijo |
+| 19 | R-27, R-47 | hotel: 4 casas + precio de la Escritura; se devuelven las 4 | castillo: 3 casas + $2000; devolución sin decir | `hotelPrice` · `hotelReturnsHouses` | por casilla · sí | 2000 fijo · ◇ sí |
+| 20 | R-02, R-28, R-41 | 32 casas y 12 hoteles; escasez → subasta | 30 casas y 10 castillos; escasez sin decir | `houseStock` · `hotelStock` | 32 · 12 | ◇ 30 · 10 (misma escasez) |
+| 21 | R-16 | grupo completo sin construir: alquiler ×2 | igual | `groupDoubleRent` | sí | sí |
+| 22 | R-48 | — | castillo en todas las del grupo: alquiler ×2 | `hotelGroupDoubleRent` | no | ◇ sí, con castillo en todas |
+| 23 | R-30 | edificios al Banco a 1/2 | sin decir | `sellBuildingsToBank` | sí, a 1/2 | ◇ sí, a 1/2 |
+| 24 | R-29, R-51 | entre jugadores solo terrenos, a precio libre | también casas y castillos, «con base en su valor» | `tradeBuildings` | no | sí |
+| 25 | R-51 | sin derechos | $200 «c/u» por cada cosa vendida; quién paga, sin decir | `tradeFee` | 0 | ◇ 200 por cosa vendida, lo paga el vendedor al Banco |
+| 26 | R-33, R-51 | el comprador de una hipotecada paga ya el 10 % | «el nuevo dueño responde por ella» | `mortgagedTradeInterest` | 10 % | 0 |
+| 27 | R-05 | el Banco nunca se arruina | sin decir | `bankUnlimited` | sí | ◇ sí |
+| 28 | R-17 | alquiler que no se reclama se pierde | sin decir | `rentMustBeClaimed` | ◇ no (cobro automático) | ◇ no |
+| 29 | R-24 | Parada Libre: nada | no hay | `freeParkingPot` (regla casera) | ◇ no | — |
+| 30 | R-35, R-37..R-40 | fin: queda uno; variantes juego corto y límite de tiempo | queda uno | `endCondition` | último en pie (corto y tiempo, opcionales) | último en pie |
+| 31 | R-37, R-40 | juego corto o con tiempo: 2 Escrituras a cada uno, pagadas | — | `startingDeeds` | 0 (2 en corto y tiempo) | 0 |
+| 32 | R-38 | juego corto: hotel con 3 casas | — | `maxHouses` (= 3 en corto) | 4 (3 en corto) | — |
+| 33 | R-40 | recuento al acabar el tiempo: sin decir | — | `wealthCount` | ◇ el de R-39 | — |
+| 34 | R-02, R-41 | fichas para 8 (sin cifra) | 4 fichas | `players` (D-05) | 2-6 | ◇ 2-6 (la app no usa fichas físicas) |
+
+### Casillas y cartas (van en el tablero del preset, no en las opciones)
+
+| Regla | Monopoly | Tío Rico | Dónde va |
+|---|---|---|---|
+| R-19, R-52..R-54 | Impuesto: $200 o 10 % del patrimonio, a elegir antes de contar | Tierra del Futuro $1500 + $200 por castillo; de la Aventura $1800; de la Frontera $2000 | Casilla `Tax` con `fixed`, `percent`, `perHotel` |
+| R-18 | Casualidad y Arca Comunal, con «Salir libre de la Cárcel» | Lotería y Sorpresa | Mazos del preset (F2.5); el texto de las cartas lo da el autor |
+| R-07 | Salida «GO» | «Estación Santa Fe» | Nombre de la casilla `Start` |
+| R-52 | — | el dinero de las Tierras va «al centro espacial…», etc. | ◇ al Banco |
+
+Lo que no cambia entre los dos juegos (R-01, R-07, R-08, R-11, R-13, R-15, R-34, R-35, R-36) no lleva opción.
