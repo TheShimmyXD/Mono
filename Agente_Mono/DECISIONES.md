@@ -107,3 +107,14 @@
 - **Por qué:** la tirada como dato hace las pruebas exactas sin trucos de semilla, y el azar sigue saliendo solo de `GameState.random` (D-03).
 - **Cómo se revierte:** cambiar `Engine.roll` y `advance`; las pruebas de `MovementTest` dicen qué se rompe.
 - **Estado:** vigente.
+
+### D-12 · Comprar, alquiler y construir
+
+- **Pregunta:** lo que los reglamentos no fijan para F2.3: ¿se construye en una hipotecada?, ¿dónde construye Tío Rico «al llegar»?, ¿cuándo se construye en Clásico?
+- **Opciones:** preguntadas al autor con AskUserQuestion (2026-10-06).
+- **Elección (del autor):** nunca se construye en una hipotecada, en ningún preset (R-49 lo dice para Tío Rico; Monopoly calla). Con `buildOnlyWhenLanding` (Tío Rico, R-46/R-47) casas y castillo **solo en la propiedad donde cayó**, y solo en ese turno. En Clásico se construye **solo en el propio turno** (R-25 dice «en cualquier momento»), antes o después de tirar.
+- **Del agente:** el hotel pide `maxHouses` en el propio solar y, con `evenBuild`, en todo el grupo (R-27); sin `evenBuild`, solo en el propio (R-47). Ferrocarril y servicio cobran lo impreso según cuántos tiene el dueño (R-13, D-10); el servicio, con los dados de la tirada que lo trajo. Si no alcanza para el alquiler, el saldo queda negativo hasta la quiebra (F2.6). `houseStock`/`hotelStock` = 0 no descuenta del Banco.
+- **Pendiente:** subasta al rechazar (R-12, R-44) y vender edificios parejo (R-26, R-30) en F2.6; subasta por escasez (R-28) y `rentMustBeClaimed` = sí (R-17) sin implementar: ningún preset los usa; el validador (F2.7) los rechaza mientras tanto.
+- **Por qué:** las tres elecciones del autor; lo demás es la lectura literal de cada ficha.
+- **Cómo se revierte:** `Building.kt` y `Landing.kt`; las pruebas de `BuildTest` y `BuyRentTest` dicen qué se rompe.
+- **Estado:** vigente.

@@ -71,27 +71,26 @@ object Engine {
             val (dice, next) = state.random.rollDice()
             roll(config, state.copy(random = next), dice)
         }
+        Action.Buy -> buy(config, state)
+        Action.Decline -> decline(config, state)
+        is Action.Build -> build(config, state, action.square)
         Action.EndTurn -> endTurn(state)
         else -> throw UnsupportedOperationException("acción aún no implementada: $action")
     }
 
     /**
      * Tirada con dados conocidos: avanza la suma (R-07), cobra el sueldo por cada paso por
-     * la salida (R-10, R-45) y, con dobles, vuelve a tirar (R-09, R-43).
-     * El efecto de la casilla (R-08) y la Cárcel por dobles seguidos (R-09) llegan en F2.3, F2.4.
+     * la salida (R-10, R-45), resuelve la casilla (R-08) y, con dobles, vuelve a tirar (R-09, R-43).
+     * La Cárcel por dobles seguidos (R-09) llega en F2.4.
      */
     fun roll(config: GameConfig, state: GameState, dice: Dice): Result {
         if (state.phase != TurnPhase.Roll) throw IllegalActionException("no toca tirar: ${state.phase}")
         val player = state.current
         val events = mutableListOf<Event>(Event.DiceRolled(player, dice))
         val moved = advance(config, state, player, dice.total, events)
-        val again = dice.isDouble && config.rules.doublesRollAgain
-        if (again) events += Event.RollAgain(player)
-        val next = moved.copy(
-            doublesInRow = if (dice.isDouble) state.doublesInRow + 1 else 0,
-            phase = if (again) TurnPhase.Roll else TurnPhase.EndOfTurn,
-        )
-        return Result(next, events)
+            .copy(doublesInRow = if (dice.isDouble) state.doublesInRow + 1 else 0)
+        val landed = land(config, moved, player, dice, events)
+        return Result(if (landed.phase is TurnPhase.Buy) landed else finishMove(config, landed, events), events)
     }
 
     /** Pasa el turno al siguiente de la lista que no esté en quiebra (R-06). */
@@ -123,11 +122,26 @@ object Engine {
         val salary = laps * config.rules.salary
         if (laps > 0) repeat(laps) { events += Event.SalaryPaid(player, config.rules.salary) }
         val players = state.players.toMutableList()
-        players[player] = players[player].copy(position = to, money = players[player].money + salary)
-        return state.copy(players = players)
+        players[player] = players[player].copy(position = to)
+        return state.copy(players = players).addMoney(player, salary)
+    }
+
+    /** Casilla resuelta: con dobles vuelve a tirar (R-09, R-43); si no, fin del turno. */
+    internal fun finishMove(config: GameConfig, state: GameState, events: MutableList<Event>): GameState {
+        val again = state.doublesInRow > 0 && config.rules.doublesRollAgain
+        if (again) events += Event.RollAgain(state.current)
+        return state.copy(phase = if (again) TurnPhase.Roll else TurnPhase.EndOfTurn)
     }
 
     /** Índice de la salida en el anillo (R-07). */
     private fun startIndex(config: GameConfig): Int =
         config.squares.indexOfFirst { it is Start }.also { require(it >= 0) { "el tablero no tiene salida" } }
+}
+
+/** Suma `delta` (o resta, si es negativo) al dinero de `player`. */
+internal fun GameState.addMoney(player: Int, delta: Int): GameState {
+    if (delta == 0) return this
+    val list = players.toMutableList()
+    list[player] = list[player].copy(money = list[player].money + delta)
+    return copy(players = list)
 }
