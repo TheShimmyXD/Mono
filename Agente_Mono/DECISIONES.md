@@ -150,3 +150,12 @@
 - **Por qué:** elecciones del autor; lo demás sigue cada ficha al pie de la letra y evita que la partida se trabe o cree dinero.
 - **Cómo se revierte:** `Mortgage.kt`, `Auction.kt` y `Bankruptcy.kt`; `MortgageTest`, `AuctionTest` y `BankruptcyTest` dicen qué se rompe.
 - **Estado:** vigente.
+
+### D-16 · Validador de la configuración
+
+- **Pregunta:** dónde viven los mensajes en español del validador (F2.7) y qué rechaza además de los rangos de D-09.
+- **Opciones:** frases en español dentro del motor (lo más corto, pero rompe `motor.md` §5 y D-02) o errores tipados en el motor y frases en `strings.xml` de la app (elegida).
+- **Elección (del agente):** `validate(config)` en `engine/…/Validator.kt` devuelve todos los errores como `ConfigError` (14 tipos, con `SquareField`, `RuleField`, `Incoherence` y `CardProblem`); `app/…/ConfigErrorText.kt` los convierte en frases de `strings.xml` con un `when` que cubre todos los casos (un error sin mensaje no compila). Además de D-09 rechaza: `rentMustBeClaimed` y `freeParkingPot` = sí (el motor no los tiene, D-12, D-13); casillas, cartas o dobles que mandan a la Cárcel sin `jail`; con `jail`, distinto de una casilla Cárcel; casilla de carta con su mazo vacío, `MoveTo` fuera del tablero o a una casilla de carta, `MoveToNearest` sin casillas de ese tipo (D-14); alquileres: `maxHouses` + 2 en cada solar y al menos uno por ferrocarril o servicio del tablero; `startingDeeds` × `maxPlayers` más que las casillas comprables. Sin rango en D-09 y fijado aquí: factores de las cartas desde 1. La subasta por escasez (R-28) no es una opción: no hay nada que rechazar; el motor no la hace.
+- **Por qué:** `motor.md` §5 (el motor devuelve datos, no frases) y una sola fuente de textos para cuando llegue la traducción o el editor (F4).
+- **Cómo se revierte:** `Validator.kt` y `ConfigErrorText.kt`; `ValidatorTest` dice qué se rompe.
+- **Estado:** vigente.

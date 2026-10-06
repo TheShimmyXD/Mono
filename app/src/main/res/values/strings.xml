@@ -3,4 +3,60 @@
     <!-- Nombre visible provisional (P6) -->
     <string name="app_name">Mono</string>
     <string name="hello">Hola Mono</string>
+
+    <!-- Errores de la configuración (F2.7, D-16). %1$s = «nombre» (casilla n) -->
+    <string name="error_board_size">El tablero tiene %1$d casillas: debe tener de 16 a 48 y ser múltiplo de 4.</string>
+    <string name="error_start_misplaced">Debe haber una sola salida y en la primera casilla.</string>
+    <string name="error_no_groups">Falta al menos un grupo de color.</string>
+    <string name="error_duplicate_group">Hay dos grupos con el código «%1$s».</string>
+    <string name="error_group_size">El grupo «%1$s» tiene %2$d propiedades: debe tener de 1 a 4.</string>
+    <string name="error_unknown_group">%1$s es del grupo «%2$s», que no existe.</string>
+    <string name="error_name_length">%1$s: el nombre debe tener de 1 a 24 caracteres.</string>
+    <string name="error_square_amount">%1$s: %2$s fuera de rango (0 a 99 999; el porcentaje, 0 a 100).</string>
+    <string name="error_missing_amount">%1$s: falta %2$s.</string>
+    <string name="error_rent_count">%1$s tiene %3$d alquileres y necesita %2$d.</string>
+    <string name="error_rule_range">%1$s debe ir de %2$d a %3$d.</string>
+    <string name="error_doubles_range">Los dobles que mandan a la Cárcel deben ser 0 (sin tope) o de 2 a 5.</string>
+    <string name="error_empty_deck">%1$s roba del mazo %2$s, que no tiene cartas.</string>
+    <string name="error_bad_card">Carta %1$d: %2$s.</string>
+    <string name="square_label">«%1$s» (casilla %2$d)</string>
+
+    <string name="field_price">el precio</string>
+    <string name="field_rent">un alquiler</string>
+    <string name="field_house_price">el precio de la casa</string>
+    <string name="field_hotel_price">el precio del hotel</string>
+    <string name="field_mortgage">el valor de la hipoteca</string>
+    <string name="field_tax_fixed">el impuesto fijo</string>
+    <string name="field_tax_percent">el porcentaje del impuesto</string>
+    <string name="field_tax_per_hotel">el impuesto por hotel</string>
+
+    <string name="rule_players">El número de jugadores</string>
+    <string name="rule_starting_money">El dinero inicial</string>
+    <string name="rule_salary">El sueldo</string>
+    <string name="rule_doubles_to_jail">Los dobles que mandan a la Cárcel</string>
+    <string name="rule_jail_fine">La multa de la Cárcel</string>
+    <string name="rule_jail_max_turns">Los turnos máximos en la Cárcel</string>
+    <string name="rule_auction_discount">El descuento de la subasta</string>
+    <string name="rule_unmortgage_fee">El cargo fijo por levantar una hipoteca</string>
+    <string name="rule_unmortgage_fee_percent">El interés por levantar una hipoteca</string>
+    <string name="rule_max_houses">Las casas antes del hotel</string>
+    <string name="rule_house_price">El precio fijo de la casa</string>
+    <string name="rule_hotel_price">El precio fijo del hotel</string>
+    <string name="rule_house_stock">Las casas del Banco</string>
+    <string name="rule_hotel_stock">Los hoteles del Banco</string>
+    <string name="rule_trade_fee">Los derechos por venta entre jugadores</string>
+    <string name="rule_mortgaged_trade_interest">El interés de una hipotecada vendida</string>
+    <string name="rule_bankruptcy_interest">El interés de una hipotecada recibida en una quiebra</string>
+    <string name="rule_starting_deeds">Las Escrituras al empezar</string>
+
+    <string name="incoherent_players_order">El mínimo de jugadores es mayor que el máximo.</string>
+    <string name="incoherent_rent_must_be_claimed">«Hay que reclamar el alquiler» aún no está en el juego.</string>
+    <string name="incoherent_free_parking_pot">El bote de Parada Libre aún no está en el juego.</string>
+    <string name="incoherent_jail_disabled_but_used">Sin Cárcel no puede haber casillas, cartas ni dobles que manden a ella.</string>
+    <string name="incoherent_jail_square_count">Con Cárcel debe haber exactamente una casilla Cárcel.</string>
+
+    <string name="card_move_outside_board">manda a una casilla que no existe</string>
+    <string name="card_move_to_card">manda a una casilla de carta</string>
+    <string name="card_no_nearest">manda a la más cercana de un tipo que no hay en el tablero</string>
+    <string name="card_amount">una cifra fuera de rango (0 a 99 999; los factores, desde 1)</string>
 </resources>
