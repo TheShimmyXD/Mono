@@ -99,7 +99,7 @@ Topes: SKILL.md 12000 car., referencias 8000, ESTADO 5000. Criterios del observa
 - [x] **S1.1** `mono.toml` y `Agente_Mono/` (ESTADO, SESIONES, historial, DECISIONES D-01..., Observador). *Terminado:* `tablero.py` cuenta este plan.
 - [x] **S1.2** `agente-mono`: SKILL.md, `mandato.md`, referencias por fase, scripts con pruebas. *Terminado:* dentro de los topes, sin huecos, pruebas en verde.
 - [x] **S1.3** `observador-mono`: SKILL.md, `criterios.md`, scripts con pruebas, calibrado sobre la sesión de creación. *Terminado:* `senales.py` corre sobre esta sesión y sus falsos positivos están corregidos.
-- [ ] **S2.1** Prueba en frío: conversación nueva **abierta en esta carpeta**, «despliega Mono». *Terminado:* el tablero sale bien y el agente arranca F0.1 sin preguntas.
+- [x] **S2.1** Prueba en frío: conversación nueva **abierta en esta carpeta**, «despliega Mono». *Terminado:* el tablero sale bien y el agente arranca F0.1 sin preguntas.
 - [ ] **S2.2** Primera pasada del observador sobre S2.1. *Terminado:* informe `INF-<fecha>-<id8>.md`.
 
 ---
@@ -121,7 +121,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 ### F0 · Taller
 
-- [ ] **F0.1** Copiar los dos reglamentos a `fuentes/` (solo lectura), `git init` y `.gitignore` (Android, más `Agente_Mono/ESTADO*.md`, `SESIONES.md`, `Observador/trazas/`, `fuentes/`, `*.jks`, `keystore.properties`, `local.properties`). *Terminado:* `sha256sum` de las copias igual al de Descargas; `git status` no muestra `fuentes/` ni ESTADO.
+- [x] **F0.1** Copiar los dos reglamentos a `fuentes/` (solo lectura), `git init` y `.gitignore` (Android, más `Agente_Mono/ESTADO*.md`, `SESIONES.md`, `Observador/trazas/`, `fuentes/`, `*.jks`, `keystore.properties`, `local.properties`). *Terminado:* `sha256sum` de las copias igual al de Descargas; `git status` no muestra `fuentes/` ni ESTADO.
 - [ ] **F0.2** Proyecto Gradle con `engine` (Kotlin/JVM) y `app` (Android, Compose), versiones en `gradle/libs.versions.toml` y una D-## con ellas (AGP, Kotlin, minSdk). *Terminado:* `./gradlew :engine:test :app:assembleDebug` termina en BUILD SUCCESSFUL con una prueba del motor.
 - [ ] **F0.3** `[cierre] pasos` y `[android] sdk` en `mono.toml`; hook `pre-commit` con el tope de ESTADO. *Terminado:* `cierre_paso.py` dice «listo para el commit» y un commit con ESTADO sobre el tope es rechazado.
 - [ ] **F0.4** «Hola Mono» en el Redmi: depuración USB, `telefono.py instalar` y `telefono.py captura`. *Terminado:* captura del Redmi con la app abierta, y el autor la ve en su teléfono.
