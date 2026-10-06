@@ -42,6 +42,13 @@ data class PlayerState(
     val bankrupt: Boolean = false,
 )
 
+/**
+ * `debtor` debe a `creditor` (índice en `players`); null = al Banco (R-34, R-35). `amount` = lo que
+ * le pagó en la acción que lo dejó en negativo: tope de lo que devuelve el acreedor si quiebra (D-15).
+ */
+@Serializable
+data class PlayerDebt(val debtor: Int, val creditor: Int?, val amount: Int = 0)
+
 /** Dueño (índice en `players`) y lo que hay en una casilla (R-25, R-27, R-31). */
 @Serializable
 data class Holding(
@@ -92,8 +99,16 @@ sealed interface TurnPhase {
     @SerialName("endOfTurn")
     data object EndOfTurn : TurnPhase
 
-    /** Partida terminada (R-35, R-39, R-40). */
+    /**
+     * Alguien quedó con saldo negativo: `debts[0]` vende, hipoteca o se declara en quiebra
+     * (R-34, R-35); los demás esperan. Pagadas todas, sigue `resume`.
+     */
+    @Serializable
+    @SerialName("debt")
+    data class Debt(val debts: List<PlayerDebt>, val resume: TurnPhase) : TurnPhase
+
+    /** Partida terminada; varios ganadores si empatan en el recuento (R-35, R-39, R-40, D-15). */
     @Serializable
     @SerialName("over")
-    data class Over(val winner: Int) : TurnPhase
+    data class Over(val winners: List<Int>) : TurnPhase
 }

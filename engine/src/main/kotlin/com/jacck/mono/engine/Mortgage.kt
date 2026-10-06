@@ -27,10 +27,12 @@ internal fun mortgage(config: GameConfig, state: GameState, square: Int): Result
 
 /**
  * Levanta la hipoteca: su valor más `unmortgageFee` (R-32: 10 %; R-50: $200). Si el interés
- * ya se pagó en este turno (`feePaid`, R-34), solo el valor.
+ * ya se pagó en este turno (`feePaid`, R-34), solo el valor, y su dueño la levanta aunque no
+ * sea su turno (D-15).
  */
 internal fun unmortgage(config: GameConfig, state: GameState, square: Int): Result {
-    val player = state.current
+    val received = state.holdings[square]?.takeIf { it.feePaid }
+    val player = received?.owner ?: state.current
     if (state.phase != TurnPhase.Roll && state.phase != TurnPhase.EndOfTurn) illegal("no se levanta ahora: ${state.phase}")
     val holding = ownedBy(state, square, player)
     if (!holding.mortgaged) illegal("no está hipotecada: $square")
@@ -118,10 +120,11 @@ fun buildingsCost(config: GameConfig, property: Property, holding: Holding): Int
 
 /**
  * Quien hace la acción: quien juega, en las fases en que puede vender o hipotecar en su turno
- * (D-12, D-15).
+ * (D-12, D-15), o quien debe, mientras junta para pagar (R-34).
  */
 internal fun actor(state: GameState): Int = when (state.phase) {
     TurnPhase.Roll, TurnPhase.EndOfTurn, is TurnPhase.Buy, is TurnPhase.TaxChoice -> state.current
+    is TurnPhase.Debt -> (state.phase as TurnPhase.Debt).debts.first().debtor
     else -> illegal("no se hipoteca ni se vende ahora: ${state.phase}")
 }
 

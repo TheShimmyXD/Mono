@@ -87,6 +87,16 @@ sealed interface Action {
         val giveJailCards: Int = 0,
     ) : Action
 
+    /** Declararse en quiebra, si ni vendiendo ni hipotecando alcanza (R-34, R-35). */
+    @Serializable
+    @SerialName("declareBankruptcy")
+    data object DeclareBankruptcy : Action
+
+    /** Se acabó el tiempo del juego con límite: gana el más rico (R-40). Lo manda la app. */
+    @Serializable
+    @SerialName("timeUp")
+    data object TimeUp : Action
+
     /** Terminar el turno. */
     @Serializable
     @SerialName("endTurn")

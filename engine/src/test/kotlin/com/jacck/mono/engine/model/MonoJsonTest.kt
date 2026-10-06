@@ -24,7 +24,7 @@ class MonoJsonTest {
         groupDoubleRent = true, hotelGroupDoubleRent = true, sellBuildingsToBank = true,
         tradeBuildings = true, tradeFee = 200, mortgagedTradeInterest = 0,
         bankUnlimited = true, rentMustBeClaimed = false, freeParkingPot = false,
-        endCondition = EndCondition.LAST_STANDING, startingDeeds = 0,
+        endCondition = EndCondition.LAST_STANDING, startingDeeds = 0, bankruptcyInterest = 10,
     )
 
     // Un tablero pequeño con los 9 tipos de casilla; las cifras son de prueba, no de un preset.
@@ -90,7 +90,7 @@ class MonoJsonTest {
 
     @Test
     fun `F2-1 ida y vuelta de cada fase y cada accion`() {
-        val phases = listOf(TurnPhase.Roll, TurnPhase.Buy(3), TurnPhase.TaxChoice(2), TurnPhase.EndOfTurn, TurnPhase.Over(0))
+        val phases = listOf(TurnPhase.Roll, TurnPhase.Buy(3), TurnPhase.TaxChoice(2), TurnPhase.EndOfTurn, TurnPhase.Debt(listOf(PlayerDebt(0, null), PlayerDebt(2, 1)), TurnPhase.EndOfTurn), TurnPhase.Over(listOf(0, 2)))
         for (phase in phases) {
             val withPhase = state.copy(phase = phase)
             assertEquals(withPhase, MonoJson.decodeState(MonoJson.encodeState(withPhase)))
@@ -99,7 +99,7 @@ class MonoJsonTest {
             Action.Roll, Action.Buy, Action.Decline, Action.Bid(1, 2100), Action.PassBid(0),
             Action.Build(1), Action.SellBuilding(1), Action.Mortgage(3), Action.Unmortgage(3),
             Action.PayJailFine, Action.UseJailCard, Action.PayTax(percent = true), Action.Trade(0, 1, giveSquares = listOf(1), takeMoney = 900),
-            Action.EndTurn,
+            Action.DeclareBankruptcy, Action.TimeUp, Action.EndTurn,
         )
         for (action in actions) {
             assertEquals(action, MonoJson.decodeAction(MonoJson.encodeAction(action)))

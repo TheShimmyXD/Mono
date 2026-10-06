@@ -23,11 +23,13 @@ object Engine {
 
     /**
      * Partida nueva: todos en la salida con el dinero inicial (R-07, R-03, R-42), empieza
-     * el de la tirada inicial mayor (R-06, R-43) y los mazos se barajan (R-18, D-14).
+     * el de la tirada inicial mayor (R-06, R-43), los mazos se barajan (R-18, D-14) y, en el
+     * juego corto o con tiempo, se reparten Escrituras (R-37, R-40).
      */
     fun newGame(config: GameConfig, names: List<String>, seed: Long): Result {
         val dice = SeededDice(GameRandom(seed))
-        val (first, events) = firstPlayer(names.size, config.rules.startTieRule, dice)
+        val (first, rolled) = firstPlayer(names.size, config.rules.startTieRule, dice)
+        val events = rolled.toMutableList()
         val start = startIndex(config)
         val (decks, random) = shuffleDecks(config, dice.random)
         val state = GameState(
@@ -43,7 +45,7 @@ object Engine {
             random = random,
             decks = decks,
         )
-        return Result(state, events)
+        return Result(dealDeeds(config, state, events), events)
     }
 
     /**
@@ -67,11 +69,21 @@ object Engine {
         }
     }
 
-    /** Aplica una acción de quien juega. Subasta, hipotecas y negocios llegan en F2.6. */
-    fun apply(config: GameConfig, state: GameState, action: Action): Result = when (action) {
+    /**
+     * Aplica una acción y, si alguien quedó con saldo negativo, abre la deuda (R-34, R-35).
+     * Los negocios entre jugadores (`Trade`) aún no están.
+     */
+    fun apply(config: GameConfig, state: GameState, action: Action): Result {
+        if (state.phase is TurnPhase.Over) throw IllegalActionException("la partida terminó")
+        val (after, events) = dispatch(config, state, action)
+        val all = events.toMutableList()
+        return Result(openDebts(after, all), all)
+    }
+
+    private fun dispatch(config: GameConfig, state: GameState, action: Action): Result = when (action) {
         Action.Roll -> {
             val (dice, next) = state.random.rollDice()
-            roll(config, state.copy(random = next), dice)
+            move(config, state.copy(random = next), dice)
         }
         Action.Buy -> buy(config, state)
         Action.Decline -> decline(config, state)
@@ -84,17 +96,25 @@ object Engine {
         is Action.PayTax -> payTax(config, state, action.percent)
         Action.PayJailFine -> payJailFine(config, state)
         Action.UseJailCard -> useJailCard(config, state)
+        Action.DeclareBankruptcy -> declareBankruptcy(config, state)
+        Action.TimeUp -> timeUp(config, state)
         Action.EndTurn -> endTurn(state)
-        else -> throw UnsupportedOperationException("acción aún no implementada: $action")
+        is Action.Trade -> throw UnsupportedOperationException("acción aún no implementada: $action")
     }
 
     /**
      * Tirada con dados conocidos: avanza la suma (R-07), cobra el sueldo por cada paso por
      * la salida (R-10, R-45), resuelve la casilla (R-08) y, con dobles, vuelve a tirar (R-09, R-43).
      * Con `doublesToJail` dobles seguidos no avanza: va a la Cárcel (R-09, R-20). Desde la
-     * Cárcel tira para salir (R-22).
+     * Cárcel tira para salir (R-22). Si alguien queda con saldo negativo, abre la deuda (R-34).
      */
     fun roll(config: GameConfig, state: GameState, dice: Dice): Result {
+        val (after, events) = move(config, state, dice)
+        val all = events.toMutableList()
+        return Result(openDebts(after, all), all)
+    }
+
+    private fun move(config: GameConfig, state: GameState, dice: Dice): Result {
         if (state.phase != TurnPhase.Roll) throw IllegalActionException("no toca tirar: ${state.phase}")
         val player = state.current
         if (state.players[player].jailTurns != null) return rollInJail(config, state, dice)
@@ -109,13 +129,23 @@ object Engine {
         return Result(if (landed.phase == TurnPhase.Roll) finishMove(config, landed, events) else landed, events)
     }
 
-    /** Pasa el turno al siguiente de la lista que no esté en quiebra (R-06). */
+    /** Termina el turno (R-06). */
     private fun endTurn(state: GameState): Result {
         if (state.phase != TurnPhase.EndOfTurn) throw IllegalActionException("no se puede terminar: ${state.phase}")
+        val events = mutableListOf<Event>()
+        return Result(passTurn(state, events), events)
+    }
+
+    /**
+     * Pasa el turno al siguiente de la lista que no esté en quiebra (R-06). El interés ya pagado
+     * de una hipotecada recibida vale solo hasta aquí (R-34).
+     */
+    internal fun passTurn(state: GameState, events: MutableList<Event>): GameState {
         val count = state.players.size
         val next = (1..count).map { (state.current + it) % count }.first { !state.players[it].bankrupt }
-        val result = state.copy(current = next, phase = TurnPhase.Roll, doublesInRow = 0, turn = state.turn + 1)
-        return Result(result, listOf(Event.TurnPassed(next)))
+        events += Event.TurnPassed(next)
+        val holdings = state.holdings.mapValues { (_, h) -> if (h.feePaid) h.copy(feePaid = false) else h }
+        return state.copy(current = next, phase = TurnPhase.Roll, doublesInRow = 0, turn = state.turn + 1, holdings = holdings)
     }
 
     /**

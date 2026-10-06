@@ -43,7 +43,7 @@ fun testRules(
     groupDoubleRent = true, hotelGroupDoubleRent = false, sellBuildingsToBank = true,
     tradeBuildings = false, tradeFee = 0, mortgagedTradeInterest = 10,
     bankUnlimited = true, rentMustBeClaimed = false, freeParkingPot = false,
-    endCondition = EndCondition.LAST_STANDING, startingDeeds = 0,
+    endCondition = EndCondition.LAST_STANDING, startingDeeds = 0, bankruptcyInterest = 10,
 )
 
 /**

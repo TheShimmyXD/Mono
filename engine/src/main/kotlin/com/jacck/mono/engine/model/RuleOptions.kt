@@ -81,6 +81,8 @@ data class RuleOptions(
     val endCondition: EndCondition,
     /** Fila 31: Escrituras que recibe y paga cada jugador al empezar (R-37, R-40). */
     val startingDeeds: Int,
+    /** Fila 35: interés en % que paga ya quien recibe una hipotecada en una quiebra (R-34, D-15). */
+    val bankruptcyInterest: Int,
 )
 
 /** Empate en la tirada inicial (R-06, D-08). */

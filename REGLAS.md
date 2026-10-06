@@ -426,6 +426,7 @@ Tío Rico (1 página): la rejilla 2×3 parte las columnas de texto, así que el 
 | 32 | R-38 | juego corto: hotel con 3 casas | — | `maxHouses` (= 3 en corto) | 4 (3 en corto) | — |
 | 33 | R-40 | recuento al acabar el tiempo: sin decir | — | `wealthCount` | ◇ el de R-39 | — |
 | 34 | R-02, R-41 | fichas para 8 (sin cifra) | 4 fichas | `players` (D-05) | 2-6 | ◇ 2-6 (la app no usa fichas físicas) |
+| 35 | R-34 | quien recibe una hipotecada en una quiebra paga ya el 10 % | igual, 10 % | `bankruptcyInterest` (D-15) | 10 | 10 |
 
 ### Casillas y cartas (van en el tablero del preset, no en las opciones)
 

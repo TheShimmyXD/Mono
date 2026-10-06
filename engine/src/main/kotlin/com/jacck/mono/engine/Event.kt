@@ -78,6 +78,18 @@ sealed interface Event {
     /** Vendió al Banco una casa o el hotel de `square` y cobró `amount` (R-30). */
     data class BuildingSold(val player: Int, val square: Int, val amount: Int) : Event
 
+    /** `debtor` quedó con saldo negativo y debe a `creditor` (null = Banco) (R-34, R-35). */
+    data class InDebt(val debtor: Int, val creditor: Int?) : Event
+
+    /** `player` quebró ante `creditor` (null = Banco) y se retira (R-34, R-35). */
+    data class Bankrupt(val player: Int, val creditor: Int?) : Event
+
+    /** Al empezar, `player` recibió y pagó la Escritura de `square` (R-40). */
+    data class DeedDealt(val player: Int, val square: Int, val price: Int) : Event
+
+    /** Fin de la partida (R-35, R-39, R-40). */
+    data class GameOver(val winners: List<Int>) : Event
+
     /** Sacó dobles y vuelve a tirar (R-09, R-43). */
     data class RollAgain(val player: Int) : Event
 

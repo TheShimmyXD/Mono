@@ -139,3 +139,14 @@
 - **Por qué:** elección del autor; lo demás sigue R-18 al pie de la letra y D-03 (azar con semilla).
 - **Cómo se revierte:** `Cards.kt` y `model/Card.kt`; `CardTest` dice qué se rompe.
 - **Estado:** vigente.
+
+### D-15 · Hipotecas, subasta, quiebra y fin
+
+- **Pregunta:** lo que R-12, R-26, R-30..R-32, R-34, R-35 y R-37..R-40 no fijan para F2.6.
+- **Opciones:** lectura literal de cada ficha completada con lo mínimo para que el motor no se trabe (elegida) o reglas caseras (subastar al quebrar ante un jugador, préstamos del Banco).
+- **Del autor (2026-10-06):** `bankruptcyInterest` = 10 en los dos juegos (fila 35 de `## Diferencias`); en el recuento (R-39, R-40) el empate lo desempata el efectivo y, si sigue, ganan todos los empatados (`TurnPhase.Over(winners)`).
+- **Del agente:** no se construye con una hipotecada en el grupo y en una hipotecada no se venden edificios. Puja en la subasta todo el que sigue en juego desde quien juega, incluido quien la rechazó. Quien queda con saldo negativo entra en `TurnPhase.Debt` con quien le cobró por última vez en la acción (alquiler o carta) o con el Banco; mientras, solo vende, hipoteca o se declara en quiebra, y solo puede quebrar si ni vendiendo todo ni hipotecando alcanza. El saldo negativo se descuenta al acreedor hasta lo que cobró en esa acción; el resto lo pone el Banco. Quien recibe una hipotecada paga ya el interés y puede levantarla sin más interés, aunque no sea su turno, hasta que el turno vuelva a pasar (`feePaid`). Ante el Banco, los edificios vuelven a sus existencias, las casillas se subastan sin hipoteca en orden de casilla empezando por el siguiente jugador y las cartas «Salir libre» van debajo de su mazo. En la 2.ª quiebra (R-39) no se cobra interés. Las Escrituras del juego corto o con tiempo (R-37, R-40) se reparten de una en una desde quien empieza. El fin por tiempo lo manda la app con `Action.TimeUp`.
+- **Pendiente:** negocios entre jugadores (R-29, R-33, R-51); subasta por escasez de edificios (R-28).
+- **Por qué:** elecciones del autor; lo demás sigue cada ficha al pie de la letra y evita que la partida se trabe o cree dinero.
+- **Cómo se revierte:** `Mortgage.kt`, `Auction.kt` y `Bankruptcy.kt`; `MortgageTest`, `AuctionTest` y `BankruptcyTest` dicen qué se rompe.
+- **Estado:** vigente.
