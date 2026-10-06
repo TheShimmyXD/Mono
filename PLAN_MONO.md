@@ -140,7 +140,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **F2.3** Comprar, alquiler, grupos completos, casas y hoteles. *Terminado:* una prueba por R-## de la tarea.
 - [x] **F2.4** Cárcel, impuestos y casillas especiales. *Terminado:* una prueba por R-## de la tarea.
 - [x] **F2.5** Cartas: mazos del preset, barajado con semilla. *Terminado:* una prueba por R-## de la tarea.
-- [ ] **F2.6** Hipotecas, subasta (si la opción está activa), quiebra y fin. *Terminado:* una prueba por R-## de la tarea.
+- [x] **F2.6** Hipotecas, subasta (si la opción está activa), quiebra y fin. *Terminado:* una prueba por R-## de la tarea.
 - [ ] **F2.7** Validador de la configuración (N fuera de rango, grupos vacíos, precios negativos, opciones incoherentes) con mensajes en español. *Terminado:* una prueba por error; los presets pasan.
 - [ ] **F2.8** Presets «Clásico» (Monopoly) y «Tío Rico» como JSON en `engine`. *Terminado:* cada valor del preset cita su R-##.
 - [ ] **F2.9** Simulador: 1000 partidas aleatorias con 2-6 jugadores y N variable. *Terminado:* ninguna excepción; el dinero total se conserva; todas terminan o llegan al tope de turnos; tiempo medido en ESTADO.
