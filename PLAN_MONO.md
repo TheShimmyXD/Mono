@@ -100,7 +100,7 @@ Topes: SKILL.md 12000 car., referencias 8000, ESTADO 5000. Criterios del observa
 - [x] **S1.2** `agente-mono`: SKILL.md, `mandato.md`, referencias por fase, scripts con pruebas. *Terminado:* dentro de los topes, sin huecos, pruebas en verde.
 - [x] **S1.3** `observador-mono`: SKILL.md, `criterios.md`, scripts con pruebas, calibrado sobre la sesión de creación. *Terminado:* `senales.py` corre sobre esta sesión y sus falsos positivos están corregidos.
 - [x] **S2.1** Prueba en frío: conversación nueva **abierta en esta carpeta**, «despliega Mono». *Terminado:* el tablero sale bien y el agente arranca F0.1 sin preguntas.
-- [ ] **S2.2** Primera pasada del observador sobre S2.1. *Terminado:* informe `INF-<fecha>-<id8>.md`.
+- [x] **S2.2** Primera pasada del observador sobre S2.1. *Terminado:* informe `INF-<fecha>-<id8>.md`.
 
 ---
 
