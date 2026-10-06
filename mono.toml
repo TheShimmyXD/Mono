@@ -1,0 +1,64 @@
+# Configuración compartida del proyecto Mono.
+# La leen las skills agente-mono y observador-mono y sus scripts.
+# Las rutas relativas se resuelven desde la carpeta de este archivo (raíz del proyecto).
+# Creado por iniciar-proyecto el 2026-10-06.
+
+[proyecto]
+nombre = "Mono"
+slug = "mono"
+# app | sci | cli | lib | documento | otro
+perfil = "otro"
+carpeta_agente = "Agente_Mono"
+plan = "PLAN_MONO.md"
+tests = "engine/src/test"
+# lo que produce el proyecto: una escritura aquí es "un paso" (cierre con cierre_paso.py)
+codigo = ["engine/", "app/", "build.gradle.kts", "settings.gradle.kts", "gradle/"]
+
+[observador]
+skill_agente = "agente-mono"
+skill_observador = "observador-mono"
+skills = ["agente-mono", "observador-mono"]
+# letra de los criterios: K01-K11 comunes, K12+ propios
+prefijo = "K"
+check_structure = "~/.claude/skills/python-programmer/scripts/check_structure.py"
+check_leaks = "~/.claude/skills/python-programmer/scripts/check_secrets.py"
+# regla 2 del mandato: lo que nunca entra entero al contexto (regex sobre rutas)
+no_leer = ["\\.pdf$", "(^|[/\\s'\"])build/", "(^|[/\\s'\"])\\.gradle/", "\\.(apk|aab|jar)$", "logcat[^/]*\\.(txt|log)$"]
+# regla 3 del mandato: lo intocable (regex); rm, mv o escritura fuera del scratchpad es señal Alta
+intocables = ["(^|[/\\s'\"])fuentes/", "\\.(jks|keystore)$", "keystore\\.properties$"]
+# rutas de las señales propias K12-K15 (criterios.md)
+motor = "engine/src/main"
+pruebas_motor = "engine/src/test"
+interfaz = "app/src/main"
+reglas = "REGLAS.md"
+
+[topes]
+# caracteres; el observador propone consolidar cuando se superan (K09)
+skill_md = 12000
+referencia_md = 8000
+estado_md = 5000
+
+[cierre]
+# pasos de cierre_paso.py en perfiles que no son de Python: [nombre, orden] desde la raíz
+# (Mono, 2026-10-06); vacío en un documento. entorno: variables para esas órdenes (~ vale).
+pasos = [
+  ["motor", "./gradlew --console=plain -q :engine:test"],
+  ["app", "./gradlew --console=plain -q :app:assembleDebug"],
+]
+entorno = { JAVA_HOME = "~/android-studio/jbr" }
+
+[android]
+# SDK de Android Studio (adb en platform-tools); emulador de respaldo sin el Redmi (H5, H6)
+sdk = "~/Android/Sdk"
+avd = "Medium_Phone"
+# applicationId y actividad de arranque: los fija F0.2 (D-##)
+paquete = ""
+actividad = ".MainActivity"
+# etiqueta de Log.* que usa la app: telefono.py log filtra por ella (regla 2)
+etiqueta_log = "Mono"
+
+[fuentes]
+# reglamentos escaneados (sin texto): solo lectura, fuera de Git (regla 3); F0.1 los copia
+# desde ~/Descargas. pagina.py los lee por página o recorte (regla 2).
+monopoly = "fuentes/Monopoly(Spanish).pdf"
+tio_rico = "fuentes/tio_rico.pdf"

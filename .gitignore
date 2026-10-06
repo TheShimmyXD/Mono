@@ -1,0 +1,33 @@
+# Gradle y Android Studio
+.gradle/
+build/
+**/build/
+.kotlin/
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+local.properties
+*.apk
+*.aab
+
+# Python (scripts de las skills)
+__pycache__/
+*.pyc
+
+# Reglamentos escaneados: solo lectura, nunca a Git (regla 3)
+fuentes/
+
+# Estado privado del agente y trazas del observador
+Agente_Mono/ESTADO*.md
+Agente_Mono/SESIONES.md
+Agente_Mono/Observador/trazas/
+
+# Firma: nunca a Git
+*.jks
+*.keystore
+keystore.properties
+
+# Sistema
+.DS_Store

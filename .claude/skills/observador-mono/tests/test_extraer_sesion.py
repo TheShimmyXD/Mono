@@ -1,0 +1,77 @@
+"""Pruebas de extraer_sesion.py (solo biblioteca estándar).
+
+El módulo busca el .toml del proyecto al importarse: la prueba crea uno temporal si hace falta.
+"""
+
+from __future__ import annotations
+
+import importlib
+import os
+import sys
+import tempfile
+import unittest
+from collections import Counter
+from pathlib import Path
+
+SCRIPTS = Path(__file__).resolve().parents[1] / "scripts"
+
+
+def load_module():
+    sys.path.insert(0, str(SCRIPTS))
+    previous = os.getcwd()
+    with tempfile.TemporaryDirectory() as tmp:
+        Path(tmp, "x.toml").write_text(
+            '[proyecto]\ncarpeta_agente = "Agente_X"\n', encoding="utf-8"
+        )
+        os.chdir(tmp)
+        try:
+            sys.modules.pop("extraer_sesion", None)
+            return importlib.import_module("extraer_sesion")
+        finally:
+            os.chdir(previous)
+
+
+extraer_sesion = load_module()
+
+
+class TestExtraerSesion(unittest.TestCase):
+    def test_locate_explicit_transcript(self):
+        import argparse
+        import tempfile
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = os.path.join(tmp, "abcd1234-x.jsonl")
+            open(path, "w").close()
+            args = argparse.Namespace(transcripcion=path, listar=False, actual=False)
+            self.assertEqual(extraer_sesion.locate(args), path)
+            args.transcripcion = os.path.join(tmp, "no.jsonl")
+            with self.assertRaises(SystemExit):
+                extraer_sesion.locate(args)
+
+    def test_transcripts_folder_replaces_every_non_alphanumeric(self):
+        name = extraer_sesion.transcripts_folder_name("/datos/u/0_Python_Codes/Ogata_lib")
+        self.assertEqual(name, "-datos-u-0-Python-Codes-Ogata-lib")
+
+    def test_masks_secrets_and_counts_them(self):
+        counts = Counter()
+        text = "password: hunter22 correo ana@ejemplo.com y noreply@anthropic.com"
+        masked = extraer_sesion.mask_secrets(text, counts)
+        self.assertNotIn("hunter22", masked)
+        self.assertNotIn("ana@ejemplo.com", masked)
+        self.assertIn("noreply@anthropic.com", masked)
+        self.assertEqual(counts["password"], 1)
+        self.assertEqual(counts["correo"], 1)
+
+    def test_common_phrase_is_not_a_password(self):
+        self.assertEqual(
+            extraer_sesion.mask_secrets("Palabras clave: robot"), "Palabras clave: robot"
+        )
+
+    def test_bash_paths_separates_reads_and_writes(self):
+        read, written = extraer_sesion.bash_paths("cat a/b.md > c/d.md")
+        self.assertIn("c/d.md", written)
+        self.assertIn("a/b.md", read)
+
+
+if __name__ == "__main__":
+    unittest.main()
