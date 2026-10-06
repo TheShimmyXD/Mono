@@ -1,5 +1,7 @@
 package com.jacck.mono.engine
 
+import kotlinx.serialization.Serializable
+
 /**
  * Azar inmutable con semilla (D-03): cada tirada devuelve el número y el generador
  * siguiente, que se guarda en el estado de la partida. Así una partida guardada o enviada
@@ -8,6 +10,7 @@ package com.jacck.mono.engine
  * Es SplitMix64, el mismo algoritmo de `java.util.SplittableRandom`, pero con el estado
  * en un `Long` visible para poder serializarlo.
  */
+@Serializable
 data class GameRandom(val state: Long) {
 
     /** Un `Long` uniforme y el generador para la siguiente tirada. */

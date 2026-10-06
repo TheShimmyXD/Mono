@@ -3,6 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 // Motor de reglas: Kotlin puro, sin Android (D-02). Se prueba en la JVM en segundos.
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    // Genera en compilación el código que pasa cada clase @Serializable a JSON y de vuelta.
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // Bytecode Java 17: lo mismo que la app, para que Android lo pueda usar.
@@ -18,6 +20,7 @@ kotlin {
 }
 
 dependencies {
+    implementation(libs.kotlinx.serialization.json)
     testImplementation(platform(libs.junit.bom))
     testImplementation(libs.junit.jupiter)
     testRuntimeOnly(libs.junit.platform.launcher)
