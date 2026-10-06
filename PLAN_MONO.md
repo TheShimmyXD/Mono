@@ -136,7 +136,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 ### F2 · Motor
 
 - [x] **F2.1** Modelo: configuración (tablero, tipos de casilla, reglas), estado de la partida y acciones, con serialización JSON. *Terminado:* ida y vuelta JSON idéntica de un tablero y de una partida, en prueba.
-- [ ] **F2.2** Dados con semilla, movimiento en el anillo de N casillas, salida y salario. *Terminado:* una prueba por R-## con dados fijados; misma semilla, misma partida.
+- [x] **F2.2** Dados con semilla, movimiento en el anillo de N casillas, salida y salario. *Terminado:* una prueba por R-## con dados fijados; misma semilla, misma partida.
 - [ ] **F2.3** Comprar, alquiler, grupos completos, casas y hoteles. *Terminado:* una prueba por R-## de la tarea.
 - [ ] **F2.4** Cárcel, impuestos y casillas especiales. *Terminado:* una prueba por R-## de la tarea.
 - [ ] **F2.5** Cartas: mazos del preset, barajado con semilla. *Terminado:* una prueba por R-## de la tarea.
