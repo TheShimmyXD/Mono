@@ -24,6 +24,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`).
 
 ## Flujo
 
+0. Si leíste este archivo con cat o Read, dile al autor lo mismo que el punto 0 del Arranque del agente (abrir un Claude Code nuevo desde la raíz; `/clear` no recarga las skills), y sigue.
 1. **Elegir la sesión.** En la misma conversación del agente: `--actual --corte-skill observador-mono`. En una nueva: `--ultima-con agente-mono` o el id de la última entrada de `SESIONES.md`. Varias: `--listar`.
    ```
    D=$(python3 .claude/skills/observador-mono/scripts/extraer_sesion.py --ultima-con agente-mono | head -1)

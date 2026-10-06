@@ -6,7 +6,9 @@ Desde la raíz del proyecto (donde está su .toml):
   check_structure.py y check_secrets.py (de python-programmer);
 - otros perfiles: los pasos de [cierre].pasos del .toml ([nombre, orden]), con las
   variables de [cierre].entorno (admiten ~); p. ej. ./gradlew :engine:test (Mono, 2026-10-06);
-- todos los perfiles: el tope de ESTADO.md ([topes].estado_md).
+- todos los perfiles: el tope de ESTADO.md ([topes].estado_md);
+- si existe [observador].reglas (Mono M-010): fichas R-## únicas y consecutivas desde R-01,
+  y cada R-## citado en ellas, en el motor o en sus pruebas tiene su ficha.
 Imprime una línea por paso y, si uno falla, las últimas líneas de su salida.
 Sale 1 si algo falló; el commit va después.
 
@@ -28,6 +30,8 @@ PP_SCRIPTS = Path.home() / ".claude" / "skills" / "python-programmer" / "scripts
 PYTHON_PROFILES = {"app", "sci", "cli", "lib"}
 # Líneas de salida que se muestran de un paso que falló.
 TAIL_LINES = 15
+RULE_HEADER = re.compile(r"^### R-(\d+)\b", re.MULTILINE)
+RULE_CITE = re.compile(r"\bR-(\d+)\b")
 
 
 def find_config(start: Path) -> Path | None:
@@ -100,6 +104,41 @@ def check_state_limit(root: Path, conf: dict) -> tuple[bool, str]:
     return ok, f"estado: {'OK' if ok else 'FALLA'} - {size}/{limit} caracteres"
 
 
+def rule_problems(rules_text: str, cited_texts: list[str]) -> list[str]:
+    """Problemas de numeración de las fichas R-## y citas sin ficha (pura)."""
+    ids = [int(n) for n in RULE_HEADER.findall(rules_text)]
+    problems = []
+    repeated = sorted({n for n in ids if ids.count(n) > 1})
+    if repeated:
+        problems.append("repetidas: " + ", ".join(f"R-{n:02d}" for n in repeated))
+    missing = sorted(set(range(1, max(ids, default=0) + 1)) - set(ids))
+    if missing:
+        problems.append("huecos: " + ", ".join(f"R-{n:02d}" for n in missing))
+    cited = {int(n) for text in (rules_text, *cited_texts) for n in RULE_CITE.findall(text)}
+    orphan = sorted(cited - set(ids))
+    if orphan:
+        problems.append("citadas sin ficha: " + ", ".join(f"R-{n:02d}" for n in orphan))
+    return problems
+
+
+def check_rules(root: Path, conf: dict) -> tuple[bool, list[str]] | None:
+    """Fichas R-## de [observador].reglas frente a sus citas; None si no hay fichas."""
+    section = conf.get("observador") or {}
+    path = root / section.get("reglas", "")
+    if not section.get("reglas") or not path.is_file():
+        return None
+    text = path.read_text(encoding="utf-8")
+    cited = [
+        source.read_text(encoding="utf-8", errors="replace")
+        for key in ("motor", "pruebas_motor") if section.get(key)
+        for source in sorted((root / section[key]).rglob("*.kt"))
+    ]
+    problems = rule_problems(text, cited)
+    count = len(RULE_HEADER.findall(text))
+    head = f"reglas: {'FALLA' if problems else 'OK'} - {count} fichas R-##"
+    return not problems, [head, *(f"  {line}" for line in problems)]
+
+
 def main() -> int:
     cfg = find_config(Path.cwd())
     if cfg is None:
@@ -124,6 +163,10 @@ def main() -> int:
     ok, line = check_state_limit(root, conf)
     print(line)
     all_ok = all_ok and ok
+    rules = check_rules(root, conf)
+    if rules is not None:
+        print("\n".join(rules[1]))
+        all_ok = all_ok and rules[0]
     print(
         "Cierre: listo para el commit."
         if all_ok

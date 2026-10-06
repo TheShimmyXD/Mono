@@ -57,5 +57,27 @@ class TestCierrePaso(unittest.TestCase):
             self.assertIn("50/40", line)
 
 
+    def test_rules_numbering_and_orphan_citations(self):
+        rules = "### R-01 · A\nver R-03\n### R-03 · C\n### R-03 · C bis\n"
+        problems = cierre_paso.rule_problems(rules, ["// R-01, R-07"])
+        self.assertEqual(problems, ["repetidas: R-03", "huecos: R-02", "citadas sin ficha: R-07"])
+
+    def test_rules_ok_and_ranges(self):
+        rules = "R-01..R-02\n### R-01 · A\n### R-02 · B\n"
+        self.assertEqual(cierre_paso.rule_problems(rules, ["fun r02() // R-02"]), [])
+
+    def test_check_rules_reads_engine_sources(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "REGLAS.md").write_text("### R-01 · A\n", encoding="utf-8")
+            (root / "engine").mkdir()
+            (root / "engine" / "Salario.kt").write_text("// R-02\n", encoding="utf-8")
+            conf = {"observador": {"reglas": "REGLAS.md", "motor": "engine"}}
+            ok, lines = cierre_paso.check_rules(root, conf)
+            self.assertFalse(ok)
+            self.assertIn("citadas sin ficha: R-02", lines[1])
+            self.assertIsNone(cierre_paso.check_rules(root, {}))
+
+
 if __name__ == "__main__":
     unittest.main()

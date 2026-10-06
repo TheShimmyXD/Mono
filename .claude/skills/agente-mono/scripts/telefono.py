@@ -10,6 +10,7 @@ Desde la raiz del proyecto:
   python3 .claude/skills/agente-mono/scripts/telefono.py captura --salida <carpeta>  (crea captura_HHMMSS.png)
   python3 .claude/skills/agente-mono/scripts/telefono.py log [-n 60]
   python3 .claude/skills/agente-mono/scripts/telefono.py emulador       (arranca el AVD aparte)
+  python3 .claude/skills/agente-mono/scripts/telefono.py adb -- shell wm size   (cualquier orden de adb, M-007)
 Con varios dispositivos se prefiere el fisico (el Redmi); --serie elige uno.
 """
 
@@ -100,6 +101,11 @@ def logcat_command(adb: str, serial: str, tag: str) -> list[str]:
     return [adb, "-s", serial, "logcat", "-d", "-v", "brief", f"{tag}:V", "AndroidRuntime:E", "*:S"]
 
 
+def adb_passthrough(adb: str, serial: str, rest: list[str]) -> list[str]:
+    """Orden de adb con la ruta del SDK y la serie elegida; quita el '--' separador."""
+    return [adb, "-s", serial, *(rest[1:] if rest[:1] == ["--"] else rest)]
+
+
 def launch_target(conf: dict) -> str | None:
     """paquete/actividad para `am start -n`; None si F0.2 aun no fijo el paquete."""
     package = conf["android"].get("paquete") or ""
@@ -121,10 +127,11 @@ def run(argv: list[str], **kwargs) -> subprocess.CompletedProcess:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador"])
+    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb"])
     parser.add_argument("--serie")
     parser.add_argument("--salida", type=Path)
     parser.add_argument("-n", type=int, default=DEFAULT_LOG_LINES)
+    parser.add_argument("resto", nargs=argparse.REMAINDER, help="para adb: -- <argumentos>")
     args = parser.parse_args()
 
     cfg = find_config(Path.cwd())
@@ -157,6 +164,14 @@ def main() -> int:
         print("\n".join(problems) if problems else
               "Sin dispositivo: conecta el Redmi (depuracion USB) o corre `telefono.py emulador`.")
         return 1
+
+    if args.orden == "adb":
+        if not args.resto:
+            print("Falta la orden: telefono.py adb -- <argumentos> (p. ej. shell wm size).")
+            return 1
+        done = run(adb_passthrough(adb, serial, args.resto))
+        print((done.stdout + done.stderr).rstrip())
+        return done.returncode
 
     if args.orden == "instalar":
         env = gradle_env(conf) | {"ANDROID_SERIAL": serial}

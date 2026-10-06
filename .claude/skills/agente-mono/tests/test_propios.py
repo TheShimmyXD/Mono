@@ -93,6 +93,13 @@ class TestTelefono(unittest.TestCase):
         self.assertIn("-d", argv)
         self.assertEqual(argv[-3:], ["Mono:V", "AndroidRuntime:E", "*:S"])
 
+    def test_adb_passthrough_uses_serial_and_drops_separator(self):
+        self.assertEqual(
+            telefono.adb_passthrough("/sdk/adb", "abc", ["--", "shell", "wm", "size"]),
+            ["/sdk/adb", "-s", "abc", "shell", "wm", "size"],
+        )
+        self.assertEqual(telefono.adb_passthrough("adb", "abc", ["shell"]), ["adb", "-s", "abc", "shell"])
+
     def test_launch_target_waits_for_package(self):
         self.assertIsNone(telefono.launch_target({"android": {"paquete": ""}}))
         conf = {"android": {"paquete": "com.x.mono", "actividad": ".MainActivity"}}

@@ -25,13 +25,13 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `references/interfaz.md` | F0.4, F3 y F4: opciones con captura, teléfono por adb (Redmi listo), el hito. |
 | `references/enlace.md` | F5 (solo después del hito): decisión del transporte, protocolo, permisos. |
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
-| `scripts/cierre_paso.py` | Pruebas del motor, compilación de la app (`[cierre] pasos`) y tope de ESTADO en una orden; sale 1 si algo falla. |
+| `scripts/cierre_paso.py` | Pruebas del motor, compilación de la app (`[cierre] pasos`), tope de ESTADO y fichas R-## (únicas, consecutivas, sin citas huérfanas) en una orden; sale 1 si algo falla. |
 | `scripts/pagina.py` | Una página o un recorte de un reglamento a PNG (`--info`, `--rejilla 2x3`, `--recorte x,y,an,al`). Nunca el PDF entero. |
-| `scripts/telefono.py` | `dispositivos`, `instalar` (installDebug + abrir), `captura --salida <carpeta>`, `log -n 60` (filtrado) y `emulador`. |
+| `scripts/telefono.py` | `dispositivos`, `instalar` (installDebug + abrir), `captura --salida <carpeta>`, `log -n 60` (filtrado), `emulador` y `adb -- <args>` (nunca `adb` suelto: no está en el PATH). |
 
 ## Arranque
 
-0. Si leíste este archivo con cat o Read (la skill no se cargó sola), díselo al autor en una línea: «Abre Claude Code desde la raíz de Mono para que se carguen las skills», y sigue.
+0. Si leíste este archivo con cat o Read (la skill no se cargó sola), díselo al autor en una línea: «Esta sesión se lanzó antes de que existieran las skills o en otra carpeta, y `/clear` no las recarga: cierra este trabajo y abre uno nuevo con `cd ~/Escritorio/0_SP_Codes/Project_Mono && claude`», y sigue.
 1. Lee `Agente_Mono/ESTADO.md` y las 2 últimas entradas de `SESIONES.md`. No re-audites la carpeta.
 2. Corre `python3 .claude/skills/agente-mono/scripts/tablero.py --tasks 1`. Si ESTADO y las casillas no coinciden, corrígelo antes de seguir.
 3. Muestra el tablero, **10 líneas como máximo**: *Dónde vamos* (fase y contador), *Qué ya funciona* (con su comando), *Qué sigue hoy* y, solo si hace falta, *Qué necesito de ti*.
@@ -49,7 +49,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 - **Pasos de 30-45 min** con **punto de control** al terminar cada uno: casilla `[x]` si cumple su *Terminado* y el autor lo aprobó con AskUserQuestion (Aprobar / Con un cambio / Todavía no; otro pedido sin aprobar = sin `[x]`, a «Pendiente del autor»), ESTADO al día (fase y contador, lo hecho con su ruta, siguiente paso) y dentro de su tope. Una tarea sin *Terminado*: propón uno medible como pregunta cerrada.
 - **Primero el motor; cada regla, su prueba** (`motor.md` §4): una prueba JUnit por R-## con el ID en el nombre y dados fijados, en `engine/src/test`. No se escribe interfaz para algo que el motor no resuelva ya, probado. `engine` no importa Android ni usa azar sin semilla (D-02, D-03).
 - **Interfaz:** 2-3 opciones con captura antes de una pantalla nueva, y `telefono.py instalar` + `captura` después de cambiarla, antes de mostrarla (`interfaz.md`).
-- **Cierre de cada paso:** `python3 .claude/skills/agente-mono/scripts/cierre_paso.py` (pruebas del motor, `assembleDebug`, tope de ESTADO) y un commit local, antes del punto de control. Una dependencia nueva va a `gradle/libs.versions.toml` en el mismo commit y a ESTADO con su versión.
+- **Cierre de cada paso:** `python3 .claude/skills/agente-mono/scripts/cierre_paso.py` (pruebas del motor, `assembleDebug`, tope de ESTADO) y un commit local, antes del punto de control (ESTADO, SESIONES, trazas, `capturas/` y `fuentes/` están fuera de Git a propósito: el commit lleva el plan, el código, `REGLAS.md` y `DECISIONES.md`). Una dependencia nueva va a `gradle/libs.versions.toml` en el mismo commit y a ESTADO con su versión.
 - **Cada cifra se mide.** Lo que se afirma lleva el número real de una corrida o una fuente; lo que juzga el autor (calidad, estética) no lo declaras tú.
 - **Decisiones:** toda elección no trivial va como ficha D-## en el mismo paso. Un cambio de pila o de enfoque se consulta antes.
 - **Lo visible primero:** cuando algo nuevo se puede correr o ver, deja el comando en ESTADO («Qué ya funciona») y muéstralo en una línea con números.
