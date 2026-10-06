@@ -1,0 +1,18 @@
+#!/bin/sh
+# Rechaza el commit si ESTADO.md pasa de su tope (F0.3, D-07).
+# Misma medida que cierre_paso.py: caracteres de texto contra [topes].estado_md de mono.toml.
+cd "$(git rev-parse --show-toplevel)" || exit 1
+exec python3 - <<'EOF'
+import sys
+import tomllib
+from pathlib import Path
+
+conf = tomllib.loads(Path("mono.toml").read_text(encoding="utf-8"))
+path = Path(conf["proyecto"]["carpeta_agente"]) / "ESTADO.md"
+limit = int(conf["topes"]["estado_md"])
+size = len(path.read_text(encoding="utf-8")) if path.is_file() else 0
+if size > limit:
+    print(f"pre-commit: {path} tiene {size}/{limit} caracteres. "
+          "Pasa lo cerrado a ESTADO_historial.md y vuelve a intentar.", file=sys.stderr)
+    sys.exit(1)
+EOF
