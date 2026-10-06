@@ -97,3 +97,13 @@
 - **Por qué:** es la librería oficial de Kotlin y funciona igual en `engine` (JVM) y en `app` (Android); separar configuración y estado permite cargar un preset sin partida y enviar solo el estado por Bluetooth.
 - **Cómo se revierte:** el modelo no depende del formato; cambiar `MonoJson` y quitar las anotaciones.
 - **Estado:** vigente.
+
+### D-11 · Turnos, dados y sueldo en el motor
+
+- **Pregunta:** ¿cómo se tira, se mueve y se cobra en `engine`, y cómo se prueba con dados fijados?
+- **Opciones:** dados falsos inyectados en todo el motor · la tirada como dato (`Engine.roll(config, state, dice)`) y `apply(Roll)` que la saca del generador del estado.
+- **Elección:** `Engine` es un `object` (una sola instancia, sin estado propio) con funciones puras: `newGame`, `apply`, `roll` (dados conocidos: sirve a las pruebas y, si un día se quiere, a jugar con dados físicos) y `firstPlayer` (recibe los dados como `Iterator`). La tirada inicial usa los dos dados en los dos presets (R-43 dice «el dado», pero Tío Rico trae dos, R-41). Empieza el mayor y el turno sigue el orden de la lista desde él (fila 3 de Diferencias). El sueldo se paga una vez por cada paso por la salida (R-10), aunque la salida no esté en la casilla 0; estar en la salida y salir de ella no cobra. Con dobles y `doublesRollAgain` vuelve a tirar sin pasar por «fin de turno». Una acción fuera de fase lanza `IllegalActionException`.
+- **Pendiente:** la Cárcel por dobles seguidos (R-09) va con la Cárcel en F2.4; el efecto de la casilla (R-08) en F2.3..F2.5; construir entre dos tiradas de dobles, cuando haya casas (F2.3).
+- **Por qué:** la tirada como dato hace las pruebas exactas sin trucos de semilla, y el azar sigue saliendo solo de `GameState.random` (D-03).
+- **Cómo se revierte:** cambiar `Engine.roll` y `advance`; las pruebas de `MovementTest` dicen qué se rompe.
+- **Estado:** vigente.
