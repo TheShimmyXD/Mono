@@ -1,6 +1,9 @@
 package com.jacck.mono.engine
 
 import com.jacck.mono.engine.model.Action
+import com.jacck.mono.engine.model.Card
+import com.jacck.mono.engine.model.CardEffect
+import com.jacck.mono.engine.model.Deck
 import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.Holding
 import com.jacck.mono.engine.model.TurnPhase
@@ -14,14 +17,14 @@ import org.junit.jupiter.api.assertThrows
 /** Cárcel, dobles seguidos y Parada Libre (F2.4) en `jailBoard`: Cárcel en 4, «Váyase» en 13. */
 class JailTest {
 
-    private val config = jailBoard()
+    private val config = jailBoard().copy(cards = listOf(Card(Deck.A, "Salir libre", CardEffect.GetOutOfJail)))
 
     /** Ana en la Cárcel con `turns` turnos dentro y `cards` cartas; le toca tirar. */
-    private fun jailed(turns: Int = 0, cards: Int = 0, holdings: Map<Int, Holding> = emptyMap()): GameState {
+    private fun jailed(turns: Int = 0, cards: List<Int> = emptyList(), holdings: Map<Int, Holding> = emptyMap()): GameState {
         val state = twoPlayers(config, holdings, position = 4)
         val players = state.players.toMutableList()
         players[0] = players[0].copy(jailTurns = turns, jailCards = cards)
-        return state.copy(players = players)
+        return state.copy(players = players, decks = emptyMap())
     }
 
     @Test
@@ -111,12 +114,12 @@ class JailTest {
 
     @Test
     fun `R-22 sale con la carta Salir libre de la Carcel`() {
-        val (free, _) = Engine.apply(config, jailed(cards = 1), Action.UseJailCard)
+        val (free, _) = Engine.apply(config, jailed(cards = listOf(0)), Action.UseJailCard)
         val ana = free.players[0]
         assertNull(ana.jailTurns)
-        assertEquals(0, ana.jailCards)
+        assertEquals(emptyList<Int>(), ana.jailCards)
         assertEquals(1500, ana.money)
-        assertThrows<IllegalActionException> { Engine.apply(config, jailed(cards = 0), Action.UseJailCard) }
+        assertThrows<IllegalActionException> { Engine.apply(config, jailed(), Action.UseJailCard) }
     }
 
     @Test

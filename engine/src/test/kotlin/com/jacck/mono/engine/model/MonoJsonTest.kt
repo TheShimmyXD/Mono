@@ -44,12 +44,18 @@ class MonoJsonTest {
             Rest("Parada Libre"),
         ),
         rules = rules,
+        cards = listOf(
+            Card(Deck.A, "Avance hasta la salida", CardEffect.MoveTo(0)),
+            Card(Deck.A, "Salir libre", CardEffect.GetOutOfJail),
+            Card(Deck.B, "Al tren más cercano", CardEffect.MoveToNearest(NearestKind.STATION, rentFactor = 2)),
+            Card(Deck.B, "Reparaciones", CardEffect.Repairs(perHouse = 25, perHotel = 100)),
+        ),
     )
 
     private val state = GameState(
         players = listOf(
             PlayerState("Ana", money = 13400, position = 3),
-            PlayerState("Beto", money = 9000, position = 7, jailTurns = 1, jailCards = 1),
+            PlayerState("Beto", money = 9000, position = 7, jailTurns = 1, jailCards = listOf(1)),
             PlayerState("Caro", money = 0, position = 0, bankrupt = true),
         ),
         holdings = mapOf(1 to Holding(owner = 0, houses = 2), 3 to Holding(0, hotel = true, mortgaged = true)),
@@ -61,6 +67,7 @@ class MonoJsonTest {
         pot = 0,
         turn = 41,
         random = GameRandom(-7L),
+        decks = mapOf(Deck.A to listOf(0), Deck.B to listOf(3, 2)),
     )
 
     @Test

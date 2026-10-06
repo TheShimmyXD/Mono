@@ -128,3 +128,14 @@
 - **Por qué:** «Nada se supone de las reglas»: donde la ficha dice algo, se sigue al pie de la letra.
 - **Cómo se revierte:** `Jail.kt` y `Taxes.kt`; `JailTest` y `TaxTest` dicen qué se rompe.
 - **Estado:** vigente.
+
+### D-14 · Cartas: efectos y mazos
+
+- **Pregunta:** qué efectos puede tener una carta (R-18 no lo dice: está en las barajas) y lo que el motor necesita para robarlas.
+- **Opciones:** los del juego clásico, un mínimo (cobrar, pagar, ir a, Cárcel, salir libre) o sacarlos de las barajas del autor.
+- **Elección (del autor, 2026-10-06):** los del juego clásico: `Collect`, `Pay`, `MoveTo`, `MoveBy` (negativo = retrocede), `GoToJail`, `GetOutOfJail`, `Repairs` (por casa y por hotel), `CollectFromEach`, `PayEach` y `MoveToNearest` (ferrocarril con `rentFactor`; servicio con `diceMultiplier`, que tira los dados de nuevo con la semilla). El texto de cada carta lo escribe el autor en el preset (F2.8).
+- **Del agente:** `GameConfig.cards` (sin barajar) y `GameState.decks` (orden de cada mazo, barajado en `newGame` con la semilla, Fisher-Yates). La carta vuelve debajo antes de cumplirse; «Salir libre» se guarda en `PlayerState.jailCards` (índices, para saber a qué mazo vuelve). `MoveTo` siempre avanza (si ya está ahí, vuelta entera) y cobra el sueldo al pasar la salida; retroceder no lo cobra. Mazo vacío → no pasa nada. Pagos de cartas con el Banco o entre jugadores pueden dejar el saldo negativo (F2.6).
+- **Pendiente:** el validador (F2.7) rechaza una casilla de carta sin cartas en su mazo, `MoveTo` fuera del tablero o a una casilla de carta, y `MoveToNearest` sin casillas de ese tipo.
+- **Por qué:** elección del autor; lo demás sigue R-18 al pie de la letra y D-03 (azar con semilla).
+- **Cómo se revierte:** `Cards.kt` y `model/Card.kt`; `CardTest` dice qué se rompe.
+- **Estado:** vigente.

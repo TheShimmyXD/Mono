@@ -26,6 +26,8 @@ data class GameState(
     /** Turnos jugados, para el tope del simulador (F2.9). */
     val turn: Int,
     val random: GameRandom,
+    /** Orden de cada mazo, de arriba abajo, con índices de `GameConfig.cards` (R-18). */
+    val decks: Map<Deck, List<Int>> = emptyMap(),
 )
 
 /** Un jugador. `jailTurns` = turnos ya pasados en la Cárcel; null si está libre (R-22). */
@@ -35,8 +37,8 @@ data class PlayerState(
     val money: Int,
     val position: Int,
     val jailTurns: Int? = null,
-    /** Cartas «Salir libre de la Cárcel» guardadas (R-18). */
-    val jailCards: Int = 0,
+    /** Cartas «Salir libre de la Cárcel» guardadas, índices de `GameConfig.cards` (R-18). */
+    val jailCards: List<Int> = emptyList(),
     val bankrupt: Boolean = false,
 )
 

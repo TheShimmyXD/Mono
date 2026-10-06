@@ -69,17 +69,18 @@ internal fun payJailFine(config: GameConfig, state: GameState): Result {
 }
 
 /**
- * Usa una carta «Salir libre de la Cárcel» antes de tirar y luego tira normal (R-18, R-22).
- * Que la carta vuelva debajo de su mazo llega con las cartas (F2.5).
+ * Usa una carta «Salir libre de la Cárcel» antes de tirar y luego tira normal (R-22); la
+ * carta vuelve debajo de su mazo (R-18).
  */
-internal fun useJailCard(state: GameState): Result {
+internal fun useJailCard(config: GameConfig, state: GameState): Result {
     val player = state.current
     jailedBeforeRoll(state)
     val p = state.players[player]
-    if (p.jailCards == 0) throw IllegalActionException("no tiene la carta")
+    val card = p.jailCards.firstOrNull() ?: throw IllegalActionException("no tiene la carta")
     val players = state.players.toMutableList()
-    players[player] = p.copy(jailTurns = null, jailCards = p.jailCards - 1)
-    return Result(state.copy(players = players), listOf(Event.LeftJail(player, JailExit.CARD)))
+    players[player] = p.copy(jailTurns = null, jailCards = p.jailCards.drop(1))
+    val freed = state.copy(players = players).putUnder(config, card)
+    return Result(freed, listOf(Event.LeftJail(player, JailExit.CARD)))
 }
 
 /** Turnos que lleva dentro quien juega, si está en la Cárcel y aún no ha tirado. */

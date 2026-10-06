@@ -14,6 +14,8 @@ data class GameConfig(
     val groups: List<ColorGroup>,
     val squares: List<Square>,
     val rules: RuleOptions,
+    /** Las cartas de los dos mazos (R-18, D-14); el orden es el de la caja, sin barajar. */
+    val cards: List<Card> = emptyList(),
 )
 
 /** Grupo de color (R-16, R-25). `color` es `#RRGGBB` y solo lo usa la interfaz. */

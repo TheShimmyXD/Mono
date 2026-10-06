@@ -1,5 +1,6 @@
 package com.jacck.mono.engine
 
+import com.jacck.mono.engine.model.CardSquare
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.GoToJail
@@ -14,7 +15,7 @@ import com.jacck.mono.engine.model.Utility
 /**
  * Efecto de caer en una casilla (R-08). La que se compra: del Banco → se ofrece (R-11); de
  * otro → paga el alquiler (R-13). Impuesto → R-19, R-52..R-54; «Váyase a la Cárcel» → R-20;
- * la Cárcel de visita (R-21) y Parada Libre (R-24) no hacen nada. Las cartas llegan en F2.5.
+ * carta → R-18; la Cárcel de visita (R-21) y Parada Libre (R-24) no hacen nada.
  * Si no alcanza el dinero, el saldo queda negativo hasta la quiebra (F2.6).
  */
 internal fun land(config: GameConfig, state: GameState, player: Int, dice: Dice, events: MutableList<Event>): GameState {
@@ -22,6 +23,7 @@ internal fun land(config: GameConfig, state: GameState, player: Int, dice: Dice,
     when (val sq = config.squares[square]) {
         is Tax -> return landOnTax(state, player, square, sq, events)
         is GoToJail -> return sendToJail(config, state, player, JailCause.SQUARE, events)
+        is CardSquare -> return drawCard(config, state, player, sq.deck, dice, events)
         !is OwnableSquare -> return state
         else -> {}
     }

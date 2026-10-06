@@ -22,13 +22,14 @@ class IllegalActionException(message: String) : IllegalStateException(message)
 object Engine {
 
     /**
-     * Partida nueva: todos en la salida con el dinero inicial (R-07, R-03, R-42) y empieza
-     * el de la tirada inicial mayor (R-06, R-43).
+     * Partida nueva: todos en la salida con el dinero inicial (R-07, R-03, R-42), empieza
+     * el de la tirada inicial mayor (R-06, R-43) y los mazos se barajan (R-18, D-14).
      */
     fun newGame(config: GameConfig, names: List<String>, seed: Long): Result {
         val dice = SeededDice(GameRandom(seed))
         val (first, events) = firstPlayer(names.size, config.rules.startTieRule, dice)
         val start = startIndex(config)
+        val (decks, random) = shuffleDecks(config, dice.random)
         val state = GameState(
             players = names.map { PlayerState(it, config.rules.startingMoney, start) },
             holdings = emptyMap(),
@@ -39,7 +40,8 @@ object Engine {
             bankHotels = config.rules.hotelStock,
             pot = 0,
             turn = 0,
-            random = dice.random,
+            random = random,
+            decks = decks,
         )
         return Result(state, events)
     }
@@ -76,7 +78,7 @@ object Engine {
         is Action.Build -> build(config, state, action.square)
         is Action.PayTax -> payTax(config, state, action.percent)
         Action.PayJailFine -> payJailFine(config, state)
-        Action.UseJailCard -> useJailCard(state)
+        Action.UseJailCard -> useJailCard(config, state)
         Action.EndTurn -> endTurn(state)
         else -> throw UnsupportedOperationException("acción aún no implementada: $action")
     }

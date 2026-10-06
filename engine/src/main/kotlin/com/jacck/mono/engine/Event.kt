@@ -39,6 +39,12 @@ sealed interface Event {
     /** Pagó al Banco el impuesto de `square` (R-19, R-52..R-54). */
     data class TaxPaid(val player: Int, val square: Int, val amount: Int) : Event
 
+    /** Robó la carta `card` (índice de `GameConfig.cards`) (R-18). */
+    data class CardDrawn(val player: Int, val card: Int) : Event
+
+    /** Pago por una carta; `null` es el Banco (D-14). */
+    data class CardPayment(val from: Int?, val to: Int?, val amount: Int) : Event
+
     /** Fue a la Cárcel, sin cobrar el sueldo (R-20). */
     data class SentToJail(val player: Int, val cause: JailCause) : Event
 
