@@ -297,7 +297,7 @@ Tío Rico (1 página): la rejilla 2×3 parte las columnas de texto, así que el 
 - **Cifras:** 3 billetes × 6 denominaciones.
 - **Fuente:** tio_rico p. 1 r40-38-20-62 («PREPARACIÓN DEL JUEGO»).
 - **Monopoly:** difiere de R-03 y R-04.
-- **Sin decir:** el valor de las 6 denominaciones, así que el dinero inicial no se puede calcular (lo decide el autor o se lee de los billetes).
+- **Sin decir:** el valor de las 6 denominaciones. El autor lo leyó de los billetes: $100, $200, $500, $1000, $2000 y $5000 → dinero inicial 3 × 8800 = $26 400 (D-08).
 - **Opción:** `startingMoney` (F1.3).
 
 ### R-43 · Quién empieza, sentido del turno y «par»
@@ -392,7 +392,7 @@ Tío Rico (1 página): la rejilla 2×3 parte las columnas de texto, así que el 
 
 | # | Regla | Monopoly | Tío Rico | Opción | Clásico | Tío Rico |
 |---|---|---|---|---|---|---|
-| 1 | R-03, R-42 | $1500 por jugador | 3 billetes × 6 denominaciones (valores sin decir) | `startingMoney` | 1500 | ◇ 3 × (suma de las 6 denominaciones): el autor da el valor de los billetes |
+| 1 | R-03, R-42 | $1500 por jugador | 3 billetes × 6 denominaciones (valores sin decir) | `startingMoney` | 1500 | ◇ 26 400 = 3 × (100 + 200 + 500 + 1000 + 2000 + 5000) |
 | 2 | R-10, R-45 | $200 al caer o pasar por la salida | $2000 | `salary` | 200 | 2000 |
 | 3 | R-06, R-43 | turno a la izquierda | turno a la derecha | — (en la app el orden es el de la lista de jugadores) | — | — |
 | 4 | R-06, R-43 | empieza el mayor; empate sin decir | empieza el mayor; «todo par…» ambiguo | `startTieRule` | ◇ repiten solo los empatados | ◇ igual |
