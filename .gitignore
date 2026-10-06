@@ -24,6 +24,9 @@ Agente_Mono/ESTADO*.md
 Agente_Mono/SESIONES.md
 Agente_Mono/Observador/trazas/
 
+# Capturas del teléfono: muestran la barra de estado del autor
+capturas/
+
 # Firma: nunca a Git
 *.jks
 *.keystore
