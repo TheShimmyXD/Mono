@@ -177,4 +177,33 @@
     <string name="card_tax">Paga %1$s</string>
     <string name="card_tax_percent">o el %1$d %% de lo que tiene</string>
     <string name="card_tax_hotel">y %1$s por cada hotel</string>
+
+    <!-- Editor de casillas (F4.1, D-39) -->
+    <string name="menu_edit">Editar casillas</string>
+    <string name="menu_edited">Editar casillas · editado</string>
+    <string name="editor_title">Casillas · %1$s</string>
+    <string name="editor_hint">Toca una casilla\npara editarla</string>
+    <string name="editor_selected">Casilla %1$d\n%2$s</string>
+    <string name="editor_name">Nombre</string>
+    <string name="editor_price">Precio</string>
+    <string name="editor_value">Valor</string>
+    <string name="editor_group">Grupo</string>
+    <string name="editor_rent">Alquiler</string>
+    <string-array name="editor_rents_property">
+        <item>Solar</item>
+        <item>1 casa</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>Hotel</item>
+    </string-array>
+    <string-array name="editor_rents_station">
+        <item>Con 1</item>
+        <item>Con 2</item>
+        <item>Con 3</item>
+        <item>Con 4</item>
+    </string-array>
+    <string name="editor_blank">Falta una cifra.</string>
+    <string name="editor_save">Guardar casilla</string>
+    <string name="editor_done">Listo</string>
 </resources>

@@ -30,6 +30,9 @@ enum class Deck { A, B }
 @Serializable
 sealed interface Square {
     val name: String
+
+    /** Clave del dibujo en la app (FA); null = la que sale del nombre. El editor la fija al renombrar (F4.1, D-39). */
+    val art: String?
 }
 
 /** Casilla que se compra: tiene precio y, si no lo fija la regla, valor de hipoteca. */
@@ -42,7 +45,7 @@ sealed interface OwnableSquare : Square {
 /** La salida: GO o Estación Santa Fe (R-07, R-10, R-45). */
 @Serializable
 @SerialName("start")
-data class Start(override val name: String) : Square
+data class Start(override val name: String, override val art: String? = null) : Square
 
 /**
  * Propiedad de un grupo de color (R-11, R-13, R-15). `rents` va del solar sin construir al
@@ -59,6 +62,7 @@ data class Property(
     val housePrice: Int? = null,
     val hotelPrice: Int? = null,
     override val mortgage: Int? = null,
+    override val art: String? = null,
 ) : OwnableSquare
 
 /** Ferrocarril: `rents[k]` es el alquiler con k + 1 en manos del mismo dueño. Sin casas. */
@@ -69,6 +73,7 @@ data class Station(
     override val price: Int,
     val rents: List<Int>,
     override val mortgage: Int? = null,
+    override val art: String? = null,
 ) : OwnableSquare
 
 /** Servicio público: alquiler = dados × `diceMultipliers[k]`, con k + 1 del mismo dueño. */
@@ -79,6 +84,7 @@ data class Utility(
     override val price: Int,
     val diceMultipliers: List<Int>,
     override val mortgage: Int? = null,
+    override val art: String? = null,
 ) : OwnableSquare
 
 /**
@@ -92,24 +98,25 @@ data class Tax(
     val fixed: Int,
     val percent: Int = 0,
     val perHotel: Int = 0,
+    override val art: String? = null,
 ) : Square
 
 /** Roba una carta del mazo (R-18). */
 @Serializable
 @SerialName("card")
-data class CardSquare(override val name: String, val deck: Deck) : Square
+data class CardSquare(override val name: String, val deck: Deck, override val art: String? = null) : Square
 
 /** La Cárcel, o «De visita» si se cae en ella (R-20, R-21). */
 @Serializable
 @SerialName("jail")
-data class Jail(override val name: String) : Square
+data class Jail(override val name: String, override val art: String? = null) : Square
 
 /** «Váyase a la Cárcel» (R-20). */
 @Serializable
 @SerialName("goToJail")
-data class GoToJail(override val name: String) : Square
+data class GoToJail(override val name: String, override val art: String? = null) : Square
 
 /** Descanso: Parada Libre (R-24). */
 @Serializable
 @SerialName("rest")
-data class Rest(override val name: String) : Square
+data class Rest(override val name: String, override val art: String? = null) : Square

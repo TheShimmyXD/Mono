@@ -49,7 +49,10 @@ import com.jacck.mono.engine.model.GameState
  * Bajo cada nombre, los 8 personajes (FB.4, D-36): el suyo grande con su color, los de otros atenuados.
  */
 @Composable
-fun NewGameScreen(saved: GameState?, onResume: () -> Unit, onStart: (Preset, List<String>, List<String>) -> Unit) {
+fun NewGameScreen(
+    saved: GameState?, onResume: () -> Unit, edited: Set<Preset> = emptySet(), onEdit: (Preset) -> Unit = {},
+    onStart: (Preset, List<String>, List<String>) -> Unit,
+) {
     val defaults = stringArrayResource(R.array.default_names).toList()
     var preset by rememberSaveable { mutableStateOf(Preset.CLASSIC) }
     var count by rememberSaveable { mutableStateOf(3) }
@@ -93,6 +96,9 @@ fun NewGameScreen(saved: GameState?, onResume: () -> Unit, onStart: (Preset, Lis
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OpcionChiva(stringResource(R.string.preset_classic), preset == Preset.CLASSIC, { preset = Preset.CLASSIC }, Modifier.weight(1f))
                         OpcionChiva(stringResource(R.string.preset_tio_rico), preset == Preset.TIO_RICO, { preset = Preset.TIO_RICO }, Modifier.weight(1f))
+                    }
+                    Box(Modifier.padding(end = 3.dp)) {
+                        BotonChiva(stringResource(if (preset in edited) R.string.menu_edited else R.string.menu_edit), { onEdit(preset) }, principal = false)
                     }
                 }
             }

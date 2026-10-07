@@ -92,7 +92,7 @@ enum class Incoherence {
 enum class CardProblem { MOVE_OUTSIDE_BOARD, MOVE_TO_CARD, NO_NEAREST, AMOUNT }
 
 private const val MAX_AMOUNT = 99_999
-private const val MAX_NAME = 24
+const val MAX_SQUARE_NAME = 24
 private val BOARD_SIZES = 16..48
 private const val MAX_GROUP = 4
 
@@ -137,7 +137,7 @@ private fun squareErrors(config: GameConfig, i: Int): List<ConfigError> {
     fun rentsInRange(values: List<Int>) {
         if (values.any { it !in 0..MAX_AMOUNT }) errors += ConfigError.SquareAmount(i, SquareField.RENT)
     }
-    if (sq.name.length !in 1..MAX_NAME) errors += ConfigError.NameLength(i)
+    if (sq.name.length !in 1..MAX_SQUARE_NAME) errors += ConfigError.NameLength(i)
     if (sq is OwnableSquare) {
         amount(sq.price, SquareField.PRICE, required = true)
         amount(sq.mortgage, SquareField.MORTGAGE, required = rules.mortgageValue == MortgageValue.PRINTED)

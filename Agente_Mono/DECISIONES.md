@@ -392,3 +392,17 @@
 - **Cómo se revierte:** quitar `icon`/`roundIcon` del manifiesto (vuelve el ícono de Android); otro logo = otra función en `LOGOS` y cambiar `LOGO_APP`.
 - **Estado:** vigente.
 
+
+### D-39 · Editor de casillas: tablero + ficha (F4.1)
+
+- **Pregunta:** cómo se ve y cómo funciona el editor de casillas (nombre, precio, grupo, alquileres).
+- **Del autor:** opción **B**, el tablero en anillo arriba (se toca la casilla) y su ficha debajo (`capturas/F4.1_maquetas.png`; descartadas A, lista + ficha, y C, la escritura con − / +; las tres en `15b5882`).
+- **Del agente:**
+  - *Motor:* `GameConfig.withSquare(i, casilla)` (`engine/Editor.kt`), puro y sin validar; el ViewModel llama después a `validate` y solo guarda si la edición no añade errores (los ya presentes del preset no bloquean). `EditorTest`: el alquiler editado es el que cobra R-13 y el precio el que paga R-11.
+  - *Arte:* cada casilla lleva `art: String?` (null = la clave sale del nombre, como hasta FA). Al renombrar una casilla sin clave, el editor le pone la de su nombre de antes (`SquareDraft.applyTo`), así «Las Cruces» renombrada conserva su dibujo. Los JSON viejos cargan igual (por defecto null).
+  - *Qué se edita:* propiedad (nombre, precio, grupo, 6 alquileres), ferrocarril (nombre, precio, 4 alquileres), servicio (nombre y precio; los multiplicadores de dados no), impuesto (nombre y valor fijo), las demás solo el nombre. Cifras: solo dígitos, hasta 5; nombre hasta 24 (`MAX_SQUARE_NAME`, el del validador, ahora público).
+  - *Dónde vive:* botón «Editar casillas» del menú, para el juego elegido; «Listo» o atrás vuelve. El tablero editado vive mientras la app esté abierta (`rememberSaveable`, JSON por preset) y se usa al «Empezar»; guardarlo en archivo es F4.4. La partida guardada ya lleva su configuración, así que «Seguir la partida» conserva lo editado.
+  - *Extra de prueba:* `--ei editor <casilla>` abre el editor del Clásico con esa casilla elegida.
+- **Captura:** `capturas/F4.1_editor.png`.
+- **Cómo se revierte:** quitar el botón del menú y `editing` en `MainActivity`; `art` y `withSquare` no estorban.
+- **Estado:** vigente.

@@ -74,7 +74,7 @@ fun SquareCard(config: GameConfig, state: GameState, square: Int, onClose: () ->
                 Box(Modifier.fillMaxWidth().background(band).padding(8.dp), contentAlignment = Alignment.Center) {
                     Text(sq.name.uppercase(), color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp, textAlign = TextAlign.Center)
                 }
-                val art = ArteLugares[artKey(sq.name)]
+                val art = ArteLugares[sq.art ?: artKey(sq.name)]
                 val icon = sq.icon()
                 if (art != null) {
                     Image(painterResource(art), null, Modifier.fillMaxWidth().aspectRatio(200f / 140f), contentScale = ContentScale.FillWidth)

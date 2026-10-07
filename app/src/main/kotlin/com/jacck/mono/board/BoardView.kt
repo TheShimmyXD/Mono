@@ -53,6 +53,7 @@ val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E
 @Composable
 fun Board(
     config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
+    highlight: Int? = state.players[state.current].position, showTokens: Boolean = true,
     center: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier) {
@@ -60,7 +61,6 @@ fun Board(
         val grid = remember(n, maxWidth, maxHeight) { RingGrid.fit(n, maxWidth.value, maxHeight.value) }
         val cw = maxWidth / grid.cols
         val ch = maxHeight / grid.rows
-        val current = state.players[state.current].position
         for (i in 0 until n) {
             val at = grid.cellOf(i)
             SquareCell(
@@ -68,8 +68,8 @@ fun Board(
                 state = state,
                 square = config.squares[i],
                 holding = state.holdings[i],
-                tokens = state.players.indices.filter { state.players[it].position == i && !state.players[it].bankrupt },
-                highlighted = i == current,
+                tokens = if (showTokens) state.players.indices.filter { state.players[it].position == i && !state.players[it].bankrupt } else emptyList(),
+                highlighted = i == highlight,
                 width = cw,
                 modifier = Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).clickable { onSquare(i) },
             )
