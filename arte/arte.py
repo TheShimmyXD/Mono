@@ -296,8 +296,132 @@ def raquira():
     return s
 
 
+def espiral(cx, cy, r0, r1, vueltas):
+    k = math.log(r0 / r1) / (vueltas * 2 * math.pi)
+    pts = [(cx + r0 * math.exp(-k * t) * math.cos(t), cy + r0 * math.exp(-k * t) * math.sin(t))
+           for t in [i * vueltas * 2 * math.pi / 120 for i in range(121)]]
+    return polyline(pts), k
+
+
+def arbol_musgo(cx, base, r):
+    """Árbol del Gallineral con barbas de viejo colgando."""
+    out = [("trunk", poly([(cx - 3, base), (cx + 3, base), (cx + 2, base - r * 1.6), (cx - 2, base - r * 1.6)])),
+           ("leaf", circle(cx, base - r * 2, r))]
+    for dx, largo in ((-0.7, 1.1), (-0.25, 1.4), (0.25, 1.2), (0.7, 1.0)):
+        x = cx + dx * r
+        out.append(("moss", poly([(x - 3.5, base - r * 1.5), (x + 3.5, base - r * 1.5), (x, base - r * 1.5 + r * largo)])))
+    return out
+
+
+def guane():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(32, 26, 10)),
+         ("far", poly([(0, 62), (34, 42), (64, 54), (100, 36), (140, 52), (172, 40), (200, 50), (200, 96), (0, 96)])),
+         ("near", poly([(0, 82), (50, 72), (100, 80), (150, 70), (200, 78), (200, 100), (0, 100)])),
+         # capilla de Santa Lucía al fondo
+         ("wall", rect(144, 62, 38, 34)), ("wshade", rect(172, 62, 10, 34)),
+         ("wall", poly([(140, 64), (163, 50), (186, 64)])), ("wall", poly([(156, 52), (156, 40), (163, 34), (170, 40), (170, 52)])),
+         ("door", arch(160, 41, 6, 8)), ("door", arch(156, 78, 14, 18)), ("ink", lines([(163, 27, 163, 34), (160.5, 30, 165.5, 30)])),
+         ("wall", rect(8, 70, 40, 28)), ("wshade", rect(8, 72, 40, 3)), ("roof", poly([(4, 72), (13, 63), (44, 63), (52, 72)])),
+         ("window", rect(14, 78, 8, 8)), ("door", arch(32, 82, 9, 16)),
+         ("ground", rect(0, 96, W, 44))]
+    # Camino Real empedrado
+    s += [("stone", poly([(56, 140), (88, 96), (112, 96), (150, 140)])),
+          ("gline", lines([(62, 132, 140, 132), (70, 121, 129, 121), (78, 110, 120, 110), (84, 102, 115, 102),
+                           (90, 140, 96, 132), (110, 140, 112, 132), (86, 132, 92, 121), (104, 132, 106, 121),
+                           (120, 132, 118, 121), (94, 121, 96, 110), (108, 121, 108, 110), (96, 110, 98, 102)]))]
+    # amonita gigante sobre su piedra
+    cx, cy, r = 100, 62, 30
+    s += [("sand", rect(70, 88, 60, 12)), ("sandshade", rect(70, 96, 60, 4)),
+          ("stone", circle(cx, cy, r))]
+    (d, _), k = espiral(cx, cy, r, 3, 3)
+    costillas = []
+    for i in range(36):
+        t = i * 2 * math.pi / 18
+        r_a, r_b = r * math.exp(-k * t), r * math.exp(-k * (t + 2 * math.pi))
+        if r_b < 4:
+            break
+        costillas.append((cx + r_a * math.cos(t), cy + r_a * math.sin(t), cx + r_b * math.cos(t), cy + r_b * math.sin(t)))
+    s += [("sandshade", circle(cx, cy, 8)), ("dash", lines(costillas)), ("ink", (d, None))]
+    return s
+
+
+def zapatoca():
+    s = [("sky", rect(0, 0, W, H)),
+         ("cloud", poly([(130, 28), (136, 20), (146, 20), (152, 14), (164, 16), (170, 24), (178, 28)])),
+         ("canyon", poly([(0, 46), (30, 40), (60, 52), (90, 44), (130, 54), (170, 42), (200, 48), (200, 96), (0, 96)])),
+         ("canyon2", poly([(0, 62), (40, 58), (60, 70), (100, 66), (140, 72), (170, 60), (200, 64), (200, 96), (0, 96)])),
+         ("gline", lines([(20, 64, 50, 64), (110, 70, 150, 74), (160, 66, 190, 66)])),
+         # Cueva del Nitro en la peña
+         ("canyon", poly([(0, 66), (18, 60), (42, 68), (52, 100), (0, 100)])),
+         ("coal", arch(10, 76, 22, 24)),
+         ("near", rect(0, 98, W, 4))]
+    tierra_plaza(s, 100)
+    # templo de San Joaquín: fachada blanca y torre alta con reloj
+    s += [("wall", rect(70, 60, 60, 42)), ("wshade", rect(118, 60, 12, 42)),
+          ("wall", poly([(66, 62), (100, 46), (134, 62)])), ("wshade", rect(66, 61, 68, 2.6)),
+          ("wall", rect(90, 30, 20, 32)), ("wshade", rect(104, 30, 6, 32)),
+          ("window", arch(88, 13, 24, 19)), ("wall", rect(86, 28, 28, 4)),
+          ("ochre", circle(100, 41, 5.5)), ("ink", lines([(100, 41, 100, 37.5), (100, 41, 103, 42.5)])),
+          ("door", arch(96, 49, 8, 9)),
+          ("door", arch(92, 80, 16, 22)), ("door", arch(76, 84, 9, 14)), ("door", arch(115, 84, 9, 14)),
+          ("ink", lines([(100, 7, 100, 13)]))]
+    # casa de balcón
+    s += [("wall", rect(146, 66, 50, 36)), ("wshade", rect(146, 68, 50, 3)),
+          ("roof", poly([(142, 68), (151, 59), (192, 59), (200, 68)])),
+          ("window", rect(152, 72, 8, 10)), ("window", rect(166, 72, 8, 10)), ("window", rect(180, 72, 8, 10)),
+          ("trunk", rect(148, 82, 46, 3)), ("dash", lines([(x, 85, x, 90) for x in range(151, 194, 5)])),
+          ("trunk", rect(148, 90, 46, 2)), ("door", arch(164, 92, 10, 10))]
+    return s
+
+
+def san_gil():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(100, 24, 10)),
+         ("far", poly([(0, 58), (30, 40), (64, 54), (100, 44), (136, 56), (170, 38), (200, 50), (200, 90), (0, 90)])),
+         ("near", poly([(0, 78), (40, 68), (90, 76), (140, 66), (200, 74), (200, 92), (0, 92)])),
+         ("sea", rect(0, 86, W, 34)),
+         ("wave", lines([(6, 92, 20, 92), (40, 112, 58, 112), (136, 94, 150, 94), (150, 114, 168, 114),
+                         (60, 96, 70, 96), (176, 102, 192, 102), (8, 106, 22, 106)])),
+         ("near", rect(0, 118, W, 22))]
+    for cx, base, r in ((22, 100, 17), (178, 100, 17)):
+        s += arbol_musgo(cx, base, r)
+    # balsa de rafting por el río Fonce
+    rem = [(76, 80, 64, 108), (100, 79, 92, 108), (124, 80, 136, 108)]
+    s += [("paint", rect(73, 84, 10, 12)), ("window", rect(95, 83, 10, 12)), ("leaf", rect(117, 84, 10, 12)),
+          ("stone", circle(78, 79, 4)), ("stone", circle(100, 78, 4)), ("stone", circle(122, 79, 4)),
+          ("roof", arch(73.5, 72, 9, 6)), ("ochre", arch(95.5, 71, 9, 6)), ("roof", arch(117.5, 72, 9, 6)),
+          ("bar", lines(rem)),
+          ("ochre", rrect(58, 94, 84, 16, 8)), ("oshade", rect(64, 104, 72, 3)),
+          ("wave", lines([(44, 102, 54, 98), (146, 98, 156, 102)]))]
+    return s
+
+
+def barichara():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(30, 26, 10)),
+         ("far", poly([(0, 64), (36, 44), (70, 56), (104, 40), (140, 56), (174, 44), (200, 54), (200, 96), (0, 96)])),
+         ("near", poly([(0, 84), (40, 74), (90, 80), (140, 72), (200, 80), (200, 100), (0, 100)]))]
+    for x0, w in ((2, 58), (140, 58)):
+        s += [("wall", rect(x0, 76, w, 24)), ("wshade", rect(x0, 78, w, 3)),
+              ("roof", poly([(x0 - 4, 78), (x0 + 5, 69), (x0 + w - 5, 69), (x0 + w + 4, 78)])),
+              ("door", arch(x0 + 8, 84, 9, 16)), ("window", rect(x0 + 26, 84, 8, 8)), ("trunk", rect(x0 + 24, 92, 12, 2.4)),
+              ("door", arch(x0 + w - 16, 84, 9, 16))]
+    s.append(("stone", rect(0, 98, W, 42)))
+    s.append(("gline", lines([(0, 106, W, 106), (0, 116, W, 116), (0, 128, W, 128)]
+                             + [(x + (y % 20), y, x + (y % 20), y + 8) for y in (98, 108, 118) for x in range(6, 200, 20)])))
+    # catedral de la Inmaculada en piedra arenisca, dos torres
+    for x in (68, 116):
+        s += [("sand", rect(x, 34, 16, 68)), ("sandshade", rect(x + 11, 34, 5, 68)),
+              ("sand", rect(x - 2, 32, 20, 4)), ("door", arch(x + 4.5, 40, 7, 11)),
+              ("sand", arch(x + 2, 20, 12, 14)), ("ink", lines([(x + 8, 12, x + 8, 20)])),
+              ("window", arch(x + 5, 64, 6, 10))]
+    s += [("sand", rect(84, 52, 32, 50)), ("sandshade", rect(84, 52, 32, 3)),
+          ("sand", poly([(82, 54), (100, 36), (118, 54)])), ("window", circle(100, 64, 5)),
+          ("door", arch(91, 76, 18, 26)), ("sandshade", rect(66, 100, 68, 3))]
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
-           "topaga": topaga, "mongua": mongua, "raquira": raquira}
+           "topaga": topaga, "mongua": mongua, "raquira": raquira,
+           "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -442,7 +566,8 @@ PALETA = {
     "sea": "#1D7BEF", "trunk": "#8B5A2B", "leaf": "#2BB04A", "paint": "#E5007E", "slate": "#7B61D9",
     "pip": "#1B1B1B", "tire": "#1B1B1B", "bolt": "#FFC21A",
     "coal": "#3A3340", "clay": "#D9622B", "cshade": "#A8441B", "lake": "#155FA8", "frailejon": "#BFE08F",
-    "fstem": "#7A6A55", "moor": "#C7C24E",
+    "fstem": "#7A6A55", "moor": "#C7C24E", "sand": "#EDB35C", "sandshade": "#C98536", "moss": "#C9D3C2",
+    "canyon": "#D99A5B", "canyon2": "#B5673A",
 }
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),
