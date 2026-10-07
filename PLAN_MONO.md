@@ -172,7 +172,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **FB.2** Aplicar el estilo a todas las pantallas: menú, tablero, panel, diálogos de turno, subasta, quiebra, fin y «Mis propiedades». *Terminado:* captura de cada pantalla en el Redmi aprobada; pruebas de la app en verde.
 - [x] **FB.3** Personajes: 8 personajes en estilo chiva (p. ej. mono, chiva, sombrero vueltiao, colibrí, perro criollo, arepa), dibujados en `arte/arte.py`, y 2-3 opciones de cómo se ven en una casilla del tablero. *Terminado:* hoja de contacto y captura aprobadas.
 - [x] **FB.4** Escoger personaje en el menú: cada jugador elige uno sin repetir; reemplaza al círculo en el tablero, el panel y los diálogos, y se guarda con la partida (una partida guardada antes carga con personajes por defecto). *Terminado:* en el Redmi, partida de 3 con personajes elegidos que se conservan al salir y «Seguir la partida»; prueba de la app.
-- [ ] **FB.5** Logo e ícono de la app: 2-3 logos en estilo chiva, sin texto mientras P6 siga pendiente; ícono adaptativo (fondo y frente) desde `arte.py`. *Terminado:* el autor elige; captura del lanzador del Redmi con el ícono nuevo.
+- [x] **FB.5** Logo e ícono de la app: 2-3 logos en estilo chiva, sin texto mientras P6 siga pendiente; ícono adaptativo (fondo y frente) desde `arte.py`. *Terminado:* el autor elige; captura del lanzador del Redmi con el ícono nuevo.
 
 ### F4 · Editor y hito «Primera quiebra»
 
