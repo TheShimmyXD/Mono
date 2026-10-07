@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -12,16 +13,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -32,13 +43,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jacck.mono.R
 import com.jacck.mono.board.Board
+import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.board.PlayersPanel
+import com.jacck.mono.board.Token
 import com.jacck.mono.engine.Dice
 import com.jacck.mono.engine.minimumBid
 import com.jacck.mono.engine.mortgageValue
 import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
+import com.jacck.mono.engine.model.Holding
 import com.jacck.mono.engine.model.OwnableSquare
 import com.jacck.mono.engine.model.Property
 import com.jacck.mono.engine.model.Station
@@ -48,13 +62,19 @@ import com.jacck.mono.engine.model.Utility
 
 /**
  * La partida en el tablero (F3.3, D-22): en el centro, de quién es el turno, los dados, los
- * jugadores y la acción principal; cada decisión del motor sale en un diálogo encima.
+ * jugadores y la acción principal; cada decisión del motor sale en un diálogo encima. Las
+ * propiedades de quien juega se manejan en una hoja que sube desde abajo (F3.4, D-24).
  */
 @Composable
-fun GameScreen(vm: GameViewModel, newSeed: () -> Long) {
+fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, newSeed: () -> Long) {
     val state = vm.state
+    var showProperties by remember { mutableStateOf(openProperties) }
     Box(Modifier.fillMaxSize().background(Color(0xFF2E5E4E)).safeDrawingPadding()) {
-        Board(vm.config, state, Modifier.fillMaxSize().padding(2.dp)) { Center(vm) }
+        Board(vm.config, state, Modifier.fillMaxSize().padding(2.dp)) { Center(vm) { showProperties = true } }
+    }
+    if (showProperties && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
+        PropertiesSheet(vm) { showProperties = false }
+        return
     }
     val lines = vm.notices.mapNotNull { eventLine(it, vm.config, state) }
     if (lines.isNotEmpty()) {
@@ -73,7 +93,7 @@ fun GameScreen(vm: GameViewModel, newSeed: () -> Long) {
 }
 
 @Composable
-private fun Center(vm: GameViewModel) {
+private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
     val state = vm.state
     val player = state.players[state.current]
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
@@ -85,6 +105,9 @@ private fun Center(vm: GameViewModel) {
         PlayersPanel(state)
         vm.error?.let {
             Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
+        }
+        if (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn) {
+            OutlinedButton(onClick = onProperties, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.my_properties)) }
         }
         when {
             state.phase == TurnPhase.Roll && player.jailTurns == null ->
@@ -102,6 +125,77 @@ private fun DiceRow(dice: Dice) {
         Text("${faces[dice.first - 1]} ${faces[dice.second - 1]}", fontSize = 48.sp)
         Spacer(Modifier.padding(4.dp))
         Text("= ${dice.total}", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+    }
+}
+
+/**
+ * Hoja «Mis propiedades» (F3.4, D-24): las casillas de quien juega en orden del anillo, con su
+ * franja, sus edificios y un botón por cada jugada que el motor acepta ahora (`propertyMoves`).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun PropertiesSheet(vm: GameViewModel, onClose: () -> Unit) {
+    val state = vm.state
+    val owner = state.current
+    val mine = state.holdings.filter { it.value.owner == owner }.toSortedMap()
+    ModalBottomSheet(onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(
+            Modifier.padding(horizontal = 16.dp).padding(bottom = 24.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Token(PlayerColors[owner], 14.dp)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    stringResource(R.string.properties_title, state.players[owner].name), fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f),
+                )
+                Text(money(state.players[owner].money), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            }
+            vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+            if (mine.isEmpty()) Text(stringResource(R.string.properties_none))
+            mine.forEach { (square, holding) -> PropertyRow(vm, square, holding) }
+        }
+    }
+}
+
+@Composable
+private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
+    val sq = vm.config.squares[square]
+    val band = (sq as? Property)?.let { p -> vm.config.groups.firstOrNull { it.id == p.group } }
+        ?.let { Color(android.graphics.Color.parseColor(it.color)) } ?: Color.LightGray
+    val status = when {
+        holding.mortgaged -> stringResource(R.string.mortgaged_short)
+        holding.hotel -> "🏨"
+        holding.houses > 0 -> "🏠".repeat(holding.houses)
+        sq is Property -> stringResource(R.string.no_houses)
+        else -> null
+    }
+    val small = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+        Box(Modifier.size(10.dp, 36.dp).background(band))
+        Column(Modifier.weight(1f)) {
+            Text(sq.name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
+            status?.let { Text(it, fontSize = 12.sp) }
+        }
+        propertyMoves(vm.config, vm.state, square).forEach { move ->
+            val amount = money(move.amount)
+            when (move.action) {
+                is Action.Build -> FilledTonalButton(onClick = { vm.act(move.action) }, contentPadding = small) {
+                    Text(stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount))
+                }
+                is Action.SellBuilding -> OutlinedButton(onClick = { vm.act(move.action) }, contentPadding = small) {
+                    Text(stringResource(R.string.move_sell, amount))
+                }
+                is Action.Mortgage -> OutlinedButton(onClick = { vm.act(move.action) }, contentPadding = small) {
+                    Text(stringResource(R.string.move_mortgage, amount))
+                }
+                is Action.Unmortgage -> Button(onClick = { vm.act(move.action) }, contentPadding = small) {
+                    Text(stringResource(R.string.move_unmortgage, amount))
+                }
+                else -> Unit
+            }
+        }
     }
 }
 

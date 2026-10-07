@@ -19,7 +19,12 @@ import com.jacck.mono.engine.model.GameState
  * es la clase de Android que sobrevive a girar la pantalla; Compose redibuja al cambiar `state`.
  * La interfaz no decide reglas: si el motor rechaza la acción, se muestra su motivo en `error`.
  */
-class GameViewModel(val config: GameConfig, private val names: List<String>, seed: Long) : ViewModel() {
+class GameViewModel(
+    val config: GameConfig,
+    private val names: List<String>,
+    seed: Long,
+    private val prepare: (GameState) -> GameState = { it },
+) : ViewModel() {
 
     private val first = start(seed)
 
@@ -37,7 +42,8 @@ class GameViewModel(val config: GameConfig, private val names: List<String>, see
     var error: String? by mutableStateOf(null)
         private set
 
-    private fun start(seed: Long) = Engine.newGame(config, names, seed)
+    /** La partida nueva; `prepare` reparte propiedades de prueba (extra `propiedades`, F3.4). */
+    private fun start(seed: Long) = Engine.newGame(config, names, seed).let { it.copy(state = prepare(it.state)) }
 
     fun act(action: Action) {
         try {

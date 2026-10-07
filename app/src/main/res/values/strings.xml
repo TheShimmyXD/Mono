@@ -78,6 +78,15 @@
     <string name="in_jail">%1$s está en la Cárcel</string>
     <string name="roll">Tirar los dados</string>
     <string name="end_turn">Terminar turno</string>
+    <string name="my_properties">🏠 Mis propiedades</string>
+    <string name="properties_title">Propiedades de %1$s</string>
+    <string name="properties_none">Todavía no tiene propiedades.</string>
+    <string name="no_houses">Sin casas</string>
+    <string name="move_house">+🏠 %1$s</string>
+    <string name="move_hotel">+🏨 %1$s</string>
+    <string name="move_sell">−🏠 +%1$s</string>
+    <string name="move_mortgage">Hipotecar +%1$s</string>
+    <string name="move_unmortgage">Levantar −%1$s</string>
     <string name="next">Seguir</string>
     <string name="buy_title">%1$s cayó en %2$s</string>
     <string name="buy">Comprar %1$s</string>

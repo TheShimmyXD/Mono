@@ -10,6 +10,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jacck.mono.demo.DemoBoardScreen
+import com.jacck.mono.demo.withSampleProperties
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.game.GameScreen
 import com.jacck.mono.game.GameViewModel
@@ -20,7 +21,9 @@ const val LOG_TAG = "Mono"
 /**
  * Pantalla de arranque: una partida del Clásico (F3.3) hasta que exista el menú (F3.5). Extras del
  * intent: `jugadores` (2-6; 4), `tio_rico` (true: ese preset) y `semilla` (repite una partida).
- * Con `n` (16..48) se abre en cambio el tablero de muestra de F3.2.
+ * Con `n` (16..48) se abre en cambio el tablero de muestra de F3.2. Para probar F3.4 sin jugar media
+ * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
+ * y `hoja` (true: abre «Mis propiedades»).
  */
 class MainActivity : ComponentActivity() {
 
@@ -30,6 +33,8 @@ class MainActivity : ComponentActivity() {
         val demo = if (intent.hasExtra("n")) intent.getIntExtra("n", 40) else null
         val preset = if (intent.getBooleanExtra("tio_rico", false)) Preset.TIO_RICO else Preset.CLASSIC
         val seed = intent.getLongExtra("semilla", System.currentTimeMillis())
+        val sample = intent.getBooleanExtra("propiedades", false)
+        val sheet = intent.getBooleanExtra("hoja", false)
         val names = resources.getStringArray(R.array.default_names).take(players)
         Log.i(LOG_TAG, "MainActivity creada: ${demo?.let { "muestra de $it" } ?: "$preset"}, $players jugadores, semilla $seed")
         setContent {
@@ -38,8 +43,10 @@ class MainActivity : ComponentActivity() {
                     if (demo != null) {
                         DemoBoardScreen(demo, players)
                     } else {
-                        val vm = viewModel { GameViewModel(preset.load(), names, seed) }
-                        GameScreen(vm) { System.currentTimeMillis() }
+                        val vm = viewModel {
+                            GameViewModel(preset.load(), names, seed, prepare = if (sample) ::withSampleProperties else { s -> s })
+                        }
+                        GameScreen(vm, openProperties = sheet) { System.currentTimeMillis() }
                     }
                 }
             }

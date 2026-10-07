@@ -226,3 +226,13 @@
 - **Por qué:** la interfaz no decide reglas (D-02); el orden de pujas es solo de quién tiene el teléfono, no una regla (R-12 deja pujar a cualquiera).
 - **Cómo se revierte:** `nextBidder` y `isNotable` son funciones sueltas en `app/…/game/`.
 - **Estado:** vigente.
+
+### D-24 · Panel de propiedades: hoja desde abajo (F3.4)
+
+- **Pregunta:** cómo construye, vende, hipoteca y levanta quien juega desde la partida.
+- **Opciones vistas en el Redmi:** A escritura al tocar una casilla, B hoja «Mis propiedades» que sube desde abajo, C pantalla de jugadores con pestañas (`capturas/F3.4_maqueta_{A,B,C}.png`).
+- **Elección (del autor):** B. Botón «🏠 Mis propiedades» en el centro durante `Roll` y `EndOfTurn`; la hoja (`ModalBottomSheet` de Material 3) lista las casillas de quien juega en orden del anillo, con franja, edificios y un botón por jugada válida, con su cifra (`+🏠 $50`, `−🏠 +$25`, `Hipotecar +$30`, `Levantar −$110`).
+- **Cómo sabe la interfaz qué vale (del agente):** `Engine.tryApply` (nuevo, público) prueba la acción sin tocar el estado y devuelve el resultado o null; `propertyMoves` (`app/…/game/PropertyMoves.kt`, 5 pruebas) toma la cifra del evento del motor. Ninguna regla ni precio se calcula en la interfaz (D-02). En la deuda sigue el diálogo de F3.3.
+- **Extras de prueba:** `propiedades` (`demo/SampleProperties.kt`: quien empieza tiene los marrones con 2 casas, los celestes y la Sabana hipotecada; solo para el Clásico) y `hoja` (la abre al arrancar), porque adb no toca la pantalla (D-23).
+- **Cómo se revierte:** la hoja es `PropertiesSheet`/`PropertyRow` en `GameScreen.kt`; `tryApply` no cambia `apply`.
+- **Estado:** vigente.

@@ -80,6 +80,17 @@ object Engine {
         return Result(openDebts(after, all), all)
     }
 
+    /**
+     * Prueba una acción sin tocar `state`: su resultado si el motor la acepta, o null si no. La
+     * interfaz lo usa para saber qué botones mostrar y con qué cifra (F3.4), sin repetir reglas.
+     */
+    fun tryApply(config: GameConfig, state: GameState, action: Action): Result? =
+        try {
+            apply(config, state, action)
+        } catch (e: IllegalActionException) {
+            null
+        }
+
     private fun dispatch(config: GameConfig, state: GameState, action: Action): Result = when (action) {
         Action.Roll -> {
             val (dice, next) = state.random.rollDice()

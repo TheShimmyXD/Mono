@@ -6,6 +6,7 @@ import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.Holding
 import com.jacck.mono.engine.model.TurnPhase
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
@@ -42,6 +43,15 @@ class BuildTest {
         val two = build(classic, build(classic, one, 3), 1)
         assertEquals(2, two.holdings.getValue(1).houses)
         assertEquals(1, two.holdings.getValue(3).houses)
+    }
+
+    @Test
+    fun `R-26 tryApply dice qué se puede construir y no cambia el estado`() {
+        val one = build(classic, twoPlayers(classic, reds(Holding(0))), 1)
+        assertNull(Engine.tryApply(classic, one, Action.Build(1)))
+        val ok = Engine.tryApply(classic, one, Action.Build(3))!!
+        assertEquals(listOf(Event.HouseBuilt(0, 3, 1, 50)), ok.events)
+        assertEquals(0, one.holdings.getValue(3).houses)
     }
 
     @Test
