@@ -2,7 +2,10 @@
 <resources>
     <!-- Nombre visible provisional (P6) -->
     <string name="app_name">Mono</string>
-    <string name="hello">Hola Mono</string>
+
+    <!-- Tablero (F3.2) -->
+    <string name="money">$%1$d</string>
+    <string name="mortgaged_short">Hipotecada</string>
 
     <!-- Errores de la configuración (F2.7, D-16). %1$s = «nombre» (casilla n) -->
     <string name="error_board_size">El tablero tiene %1$d casillas: debe tener de 16 a 48 y ser múltiplo de 4.</string>

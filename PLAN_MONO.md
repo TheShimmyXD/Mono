@@ -148,7 +148,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 ### F3 · Interfaz de juego
 
 - [x] **F3.1** 2-3 maquetas del tablero en anillo, con captura en el teléfono. *Terminado:* el autor elige; D-##.
-- [ ] **F3.2** Tablero dibujado desde la configuración (cualquier N) con fichas de 2-6 jugadores. *Terminado:* capturas con N = 20, 40 y 60 aprobadas por el autor.
+- [ ] **F3.2** Tablero dibujado desde la configuración (cualquier N) con fichas de 2-6 jugadores. *Terminado:* capturas con N = 16, 40 y 48 (extremos de D-09) aprobadas por el autor.
 - [ ] **F3.3** Turno: tirar, mover, comprar o pagar, con diálogos. *Terminado:* una vuelta completa jugada en el Redmi; captura.
 - [ ] **F3.4** Panel de jugadores y propiedades (dinero, casas, hipotecas). *Terminado:* captura aprobada por el autor.
 - [ ] **F3.5** Nueva partida: preset, 2-6 jugadores y nombres. *Terminado:* partida de 3 jugadores empezada desde el menú.

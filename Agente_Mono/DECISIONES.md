@@ -200,3 +200,12 @@
 - **Por qué:** es la única de las tres en la que se leen los nombres y aprovecha todo el alto del teléfono.
 - **Cómo se revierte:** cambiar la función de geometría por la del cuadrado (A) o el círculo (C); las maquetas están en `app/…/maquetas/Maquetas.kt` (se borra en F3.2).
 - **Estado:** vigente.
+
+### D-21 · Tablero desde la configuración (F3.2)
+
+- **Pregunta:** cómo repartir N casillas en el rectángulo de D-20 y cómo ver el tablero antes de que haya partida.
+- **Elección (del agente; el rango de N, del autor):** `RingGrid.fit(n, ancho, alto)` (`app/…/board/RingGrid.kt`) prueba todas las columnas de 5 (centro de 3 casillas para el panel) a (N+4)/2 − 3 y se queda con las casillas más cuadradas; en el Redmi (393 × 840 dp) da 5 × 5 con N = 16, 7 × 15 con 40 y 8 × 18 con 48. Letra = ancho/7 (7-12 sp) y fichas de hasta 12 dp. Propiedad sin dueño: nombre y precio; con dueño: casas 🏠, hotel 🏨 o «Hipotecada» (atenuada) y franja del color del dueño; las demás, un ícono. `demo/DemoGame.kt` arma el Clásico (40), el Tío Rico (44) o el Clásico recortado o con descansos para otro N, con dueños y fichas puestos a mano; se elige con `--ei n` y `--ei jugadores`. Pruebas de la app con JUnit 5 (`testOptions.unitTests`), como el motor.
+- **Rango de N (del autor, 2026-10-06):** el *Terminado* de F3.2 pasa de N = 20, 40, 60 a 16, 40, 48, los extremos de D-09; el motor no cambia.
+- **Por qué:** una función pura con prueba para cualquier N (D-05) y sin tocar el motor para mostrar el tablero.
+- **Cómo se revierte:** `RingGrid.MIN_COLS` y el criterio de `fit`; `DemoGame.kt` se va cuando F3.3 tenga partida de verdad.
+- **Estado:** vigente.
