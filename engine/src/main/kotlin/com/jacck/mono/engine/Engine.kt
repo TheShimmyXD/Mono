@@ -24,16 +24,17 @@ object Engine {
     /**
      * Partida nueva: todos en la salida con el dinero inicial (R-07, R-03, R-42), empieza
      * el de la tirada inicial mayor (R-06, R-43), los mazos se barajan (R-18, D-14) y, en el
-     * juego corto o con tiempo, se reparten Escrituras (R-37, R-40).
+     * juego corto o con tiempo, se reparten Escrituras (R-37, R-40). `tokens` = personaje de cada
+     * jugador, en el orden de `names` (FB.4, D-36); si falta, null.
      */
-    fun newGame(config: GameConfig, names: List<String>, seed: Long): Result {
+    fun newGame(config: GameConfig, names: List<String>, seed: Long, tokens: List<String> = emptyList()): Result {
         val dice = SeededDice(GameRandom(seed))
         val (first, rolled) = firstPlayer(names.size, config.rules.startTieRule, dice)
         val events = rolled.toMutableList()
         val start = startIndex(config)
         val (decks, random) = shuffleDecks(config, dice.random)
         val state = GameState(
-            players = names.map { PlayerState(it, config.rules.startingMoney, start) },
+            players = names.mapIndexed { i, name -> PlayerState(name, config.rules.startingMoney, start, token = tokens.getOrNull(i)) },
             holdings = emptyMap(),
             current = first,
             phase = TurnPhase.Roll,

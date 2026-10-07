@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
                     } else if (demo != null) {
                         DemoBoardScreen(demo, players)
                     } else {
-                        var chosen by rememberSaveable { mutableStateOf(if (direct) preset to names else null) }
+                        var chosen by rememberSaveable { mutableStateOf(if (direct) Triple(preset, names, emptyList<String>()) else null) }
                         var resumed by rememberSaveable { mutableStateOf(false) }
                         val saved = remember {
                             (if (direct) null else saveFile.read()).also { Log.i(LOG_TAG, "guardada al abrir: ${it?.state?.turn?.let { t -> "turno $t" } ?: "ninguna"}") }
@@ -76,9 +76,9 @@ class MainActivity : ComponentActivity() {
                         val resume = saved.takeIf { resumed }
                         val game = chosen
                         if (game == null && resume == null) {
-                            NewGameScreen(saved?.state, onResume = { resumed = true }) { p, n ->
-                                Log.i(LOG_TAG, "menú: $p con ${n.size} jugadores")
-                                chosen = p to n
+                            NewGameScreen(saved?.state, onResume = { resumed = true }) { p, n, t ->
+                                Log.i(LOG_TAG, "menú: $p con ${n.size} jugadores, personajes $t")
+                                chosen = Triple(p, n, t)
                             }
                         } else {
                             val keep: (GameConfig, GameState) -> Unit = if (direct) { _, _ -> } else { c, s ->
@@ -90,14 +90,14 @@ class MainActivity : ComponentActivity() {
                                     Log.i(LOG_TAG, "sigue la partida guardada: turno ${resume.state.turn}, ${resume.state.players.map { it.name to it.money }}")
                                     GameViewModel(resume.config, resume.state.players.map { it.name }, seed, resumed = resume.state, onState = keep)
                                 } else {
-                                    val (p, n) = requireNotNull(game)
+                                    val (p, n, t) = requireNotNull(game)
                                     val config = p.load()
                                     val prepare: (GameState) -> GameState = when {
                                         phase != null -> withPhase(config, phase)
                                         sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep).also { if (phase != null) it.dismissNotices() }
+                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t).also { if (phase != null) it.dismissNotices() }
                                 }
                             }
                             GameScreen(vm, openProperties = sheet, openSquare = square) { System.currentTimeMillis() }

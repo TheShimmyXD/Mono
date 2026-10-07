@@ -47,10 +47,9 @@ import com.jacck.mono.board.Board
 import com.jacck.mono.board.BuildingIcons
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
-import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.board.PlayersPanel
 import com.jacck.mono.board.SquareCard
-import com.jacck.mono.board.Token
+import com.jacck.mono.board.PlayerToken
 import com.jacck.mono.engine.Dice
 import com.jacck.mono.engine.minimumBid
 import com.jacck.mono.engine.mortgageValue
@@ -168,7 +167,7 @@ private fun PropertiesSheet(vm: GameViewModel, onClose: () -> Unit) {
         ) {
             Calcomania {
                 Row(Modifier.fillMaxWidth().background(Chiva.Techo).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Token(PlayerColors[owner], 18.dp)
+                    PlayerToken(state, owner, 30.dp)
                     Spacer(Modifier.width(8.dp))
                     Text(
                         stringResource(R.string.properties_title, state.players[owner].name), color = Color.White, fontSize = 20.sp,

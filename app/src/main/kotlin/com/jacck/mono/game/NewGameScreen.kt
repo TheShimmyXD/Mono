@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.semantics.Role
@@ -35,7 +36,8 @@ import com.jacck.mono.OpcionChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import com.jacck.mono.board.PlayerColors
-import com.jacck.mono.board.Token
+import com.jacck.mono.board.Medallon
+import com.jacck.mono.board.Personajes
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.GameState
 
@@ -44,13 +46,16 @@ import com.jacck.mono.engine.model.GameState
  * en una pantalla. Una casilla vacía juega con el nombre de muestra (gris); con nombres repetidos
  * no se puede empezar. `rememberSaveable` guarda lo elegido si Android recrea la pantalla.
  * Con una partida guardada (`saved`), arriba va «Seguir la partida» (F3.6, D-26). Estilo chiva (FB.2c, D-33).
+ * Bajo cada nombre, los 8 personajes (FB.4, D-36): el suyo grande con su color, los de otros atenuados.
  */
 @Composable
-fun NewGameScreen(saved: GameState?, onResume: () -> Unit, onStart: (Preset, List<String>) -> Unit) {
+fun NewGameScreen(saved: GameState?, onResume: () -> Unit, onStart: (Preset, List<String>, List<String>) -> Unit) {
     val defaults = stringArrayResource(R.array.default_names).toList()
     var preset by rememberSaveable { mutableStateOf(Preset.CLASSIC) }
     var count by rememberSaveable { mutableStateOf(3) }
     var typed by rememberSaveable { mutableStateOf(List(defaults.size) { "" }) }
+    var picks by rememberSaveable { mutableStateOf(List(defaults.size) { it }) }
+    val tokens = playerTokens(picks, count, Personajes.size)
     val names = playerNames(typed, defaults, count)
     val repeated = repeatedNames(names)
 
@@ -98,8 +103,7 @@ fun NewGameScreen(saved: GameState?, onResume: () -> Unit, onStart: (Preset, Lis
                         (2..defaults.size).forEach { n -> OpcionChiva("$n", n == count, { count = n }, Modifier.weight(1f)) }
                     }
                     (0 until count).forEach { i ->
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Token(PlayerColors[i], 22.dp)
+                        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             OutlinedTextField(
                                 value = typed[i],
                                 onValueChange = { v -> typed = typed.toMutableList().also { it[i] = v.take(MAX_NAME) } },
@@ -110,13 +114,23 @@ fun NewGameScreen(saved: GameState?, onResume: () -> Unit, onStart: (Preset, Lis
                                 colors = fieldColors,
                                 modifier = Modifier.fillMaxWidth(),
                             )
+                            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                Personajes.forEachIndexed { k, (_, pj) ->
+                                    val owner = tokens.indexOf(k)
+                                    Medallon(
+                                        pj, if (owner >= 0) PlayerColors[owner] else Color.LightGray, if (owner == i) 38.dp else 32.dp,
+                                        Modifier.alpha(if (owner >= 0 && owner != i) 0.3f else 1f)
+                                            .clickable(enabled = owner < 0, role = Role.Button) { picks = picks.toMutableList().also { it[i] = k } },
+                                    )
+                                }
+                            }
                         }
                     }
                 }
             }
         }
         Box(Modifier.padding(start = 16.dp, end = 19.dp, bottom = 14.dp, top = 4.dp)) {
-            BotonChiva(stringResource(R.string.menu_start), { onStart(preset, names) }, enabled = repeated.isEmpty())
+            BotonChiva(stringResource(R.string.menu_start), { onStart(preset, names, tokens.map { Personajes[it].first }) }, enabled = repeated.isEmpty())
         }
     }
 }

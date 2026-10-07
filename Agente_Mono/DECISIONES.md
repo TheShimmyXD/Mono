@@ -357,3 +357,16 @@
 - **Elección del autor:** C, medallones blancos con aro del color del jugador, encimados abajo (26 dp; FB.4 los lleva al tablero, el panel y los diálogos).
 - **Cómo se revierte:** quitar la sección «personajes» de `arte.py` y correrlo; `Maquetas.kt` vuelve a `dab05d0`.
 - **Estado:** vigente.
+
+### D-36 · Escoger personaje en el menú y guardarlo con el jugador (FB.4)
+
+- **Pregunta:** cómo escoge cada jugador su personaje y dónde se guarda.
+- **Del autor:** opción **B** de la maqueta (`capturas/FB.4_opciones.png`): los 8 bajo cada nombre; y el personaje guardado en el jugador.
+- **Del agente:**
+  - *Motor:* `PlayerState.token: String? = null` (id de `arte.py`) y `Engine.newGame(…, tokens)`; el motor no lo usa para ninguna regla. Una partida guardada antes no trae la clave y carga con null (kotlinx-serialization usa el valor por defecto); pruebas en `SavedGameTest`. En F5 viaja solo con el estado.
+  - *Menú:* cada jugador empieza con el personaje de su posición (Ana el mono, Beto la chiva…); tocar uno libre lo escoge; los de otros salen atenuados con el aro de su dueño y no se pueden tocar. `playerTokens` (`NewGameForm.kt`) garantiza que no se repitan, también al subir cuántos juegan (el posterior toma el primero libre).
+  - *Lista y dibujos:* `board/Personajes.kt` lo genera `arte.py` (orden = el de `PERSONAJES`); `personaje(token, k)` da el dibujo, y sin personaje o con un id desconocido, el de la posición `k`.
+  - *Dónde se ve:* `PlayerToken` (medallón de D-35) reemplaza a `Token` en el tablero (encimados abajo, hasta 30 dp), el panel de jugadores (20 dp), «Mis propiedades» (30 dp) y la carta (dueño, 24 dp). Los diálogos de turno no tenían círculo; no se les añadió nada.
+- **Capturas:** `capturas/FB.4_opciones.png` (maqueta), `capturas/FB.4_pantallas.png` (menú, partida y hoja).
+- **Cómo se revierte:** `Token` y el menú sin personajes están en `29e7480`; el campo `token` puede quedarse (null no cambia nada).
+- **Estado:** vigente.

@@ -141,7 +141,7 @@ private fun OwnableDetails(config: GameConfig, state: GameState, square: Int, sq
         Text(stringResource(R.string.card_free), fontWeight = FontWeight.Bold)
     } else {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Token(PlayerColors[holding.owner], 14.dp)
+            PlayerToken(state, holding.owner, 24.dp)
             Spacer(Modifier.width(6.dp))
             Text(stringResource(R.string.card_owner, state.players[holding.owner].name), fontWeight = FontWeight.Bold)
             Spacer(Modifier.width(8.dp))

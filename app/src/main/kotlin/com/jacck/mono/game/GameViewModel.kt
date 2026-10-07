@@ -20,6 +20,7 @@ import com.jacck.mono.engine.model.GameState
  * es la clase de Android que sobrevive a girar la pantalla; Compose redibuja al cambiar `state`.
  * La interfaz no decide reglas: si el motor rechaza la acción, se muestra su motivo en `error`.
  * Con `resumed` sigue una partida guardada; `onState` recibe cada estado nuevo para guardarlo (F3.6).
+ * `tokens`: el personaje de cada jugador, escogido en el menú (FB.4, D-36).
  */
 class GameViewModel(
     val config: GameConfig,
@@ -28,6 +29,7 @@ class GameViewModel(
     private val prepare: (GameState) -> GameState = { it },
     resumed: GameState? = null,
     private val onState: (GameConfig, GameState) -> Unit = { _, _ -> },
+    private val tokens: List<String> = emptyList(),
 ) : ViewModel() {
 
     private val first = resumed?.let { Result(it, emptyList()) } ?: start(seed)
@@ -51,7 +53,7 @@ class GameViewModel(
     }
 
     /** La partida nueva; `prepare` reparte propiedades de prueba (extra `propiedades`, F3.4). */
-    private fun start(seed: Long) = Engine.newGame(config, names, seed).let { it.copy(state = prepare(it.state)) }
+    private fun start(seed: Long) = Engine.newGame(config, names, seed, tokens).let { it.copy(state = prepare(it.state)) }
 
     fun act(action: Action) {
         try {

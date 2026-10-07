@@ -6,6 +6,7 @@ import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.MonoJson
 import com.jacck.mono.engine.model.SavedGame
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -34,5 +35,25 @@ class SavedGameTest {
             assertEquals(SavedGame(config, middle), back)
             assertEquals(play(config, middle, 40), play(back.config, back.state, 40), "$preset: mismas 40 jugadas después")
         }
+    }
+
+    @Test
+    fun `FB-4 el personaje de cada jugador se guarda con la partida`() {
+        val config = Preset.CLASSIC.load()
+        val state = Engine.newGame(config, listOf("Ana", "Beto", "Caro"), 7, tokens = listOf("arepa", "mono", "tinto")).state
+        val back = MonoJson.decodeSaved(MonoJson.encodeSaved(SavedGame(config, state))).state
+        assertEquals(listOf("arepa", "mono", "tinto"), back.players.map { it.token })
+    }
+
+    @Test
+    fun `FB-4 una partida guardada antes de los personajes carga sin ellos`() {
+        val config = Preset.CLASSIC.load()
+        val state = Engine.newGame(config, listOf("Ana", "Beto"), 7, tokens = listOf("arepa", "mono")).state
+        val json = MonoJson.encodeSaved(SavedGame(config, state))
+        val old = json.replace(Regex(",\\s*\"token\":\\s*\"[a-z]+\""), "")
+        assertTrue("\"token\"" !in old, "el JSON viejo no trae personajes")
+        val back = MonoJson.decodeSaved(old).state
+        back.players.forEach { assertNull(it.token) }
+        assertEquals(state.players.map { it.copy(token = null) }, back.players)
     }
 }

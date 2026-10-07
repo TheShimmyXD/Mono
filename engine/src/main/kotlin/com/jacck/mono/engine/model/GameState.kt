@@ -40,6 +40,8 @@ data class PlayerState(
     /** Cartas «Salir libre de la Cárcel» guardadas, índices de `GameConfig.cards` (R-18). */
     val jailCards: List<Int> = emptyList(),
     val bankrupt: Boolean = false,
+    /** Personaje que escogió (id de `arte.py`, FB.4, D-36); el motor no lo usa. null = partida de antes: el de su posición. */
+    val token: String? = null,
 )
 
 /**

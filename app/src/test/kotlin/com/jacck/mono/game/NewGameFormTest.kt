@@ -35,4 +35,16 @@ class NewGameFormTest {
         val names = playerNames(listOf("", "Ana"), defaults, 2)
         assertEquals(setOf(0, 1), repeatedNames(names))
     }
+
+    @Test
+    fun `FB-4 por defecto cada jugador tiene el personaje de su posicion`() {
+        assertEquals(listOf(0, 1, 2), playerTokens(List(6) { it }, 3, 8))
+    }
+
+    @Test
+    fun `FB-4 lo escogido se respeta y no se repite`() {
+        assertEquals(listOf(5, 1, 0), playerTokens(listOf(5, 1, 0, 3, 4, 5), 3, 8))
+        // Ana escogió el 3 con 3 jugadores; al subir a 4, Dani (que tenía el 3) toma el primero libre.
+        assertEquals(listOf(3, 1, 2, 0), playerTokens(listOf(3, 1, 2, 3, 4, 5), 4, 8))
+    }
 }
