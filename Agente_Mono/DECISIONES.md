@@ -159,3 +159,12 @@
 - **Por qué:** `motor.md` §5 (el motor devuelve datos, no frases) y una sola fuente de textos para cuando llegue la traducción o el editor (F4).
 - **Cómo se revierte:** `Validator.kt` y `ConfigErrorText.kt`; `ValidatorTest` dice qué se rompe.
 - **Estado:** vigente.
+
+### D-17 · Precios de las casillas y texto de las cartas
+
+- **Pregunta:** de dónde salen los precios, alquileres e hipotecas de cada casilla y el texto de las cartas de los presets (F2.8): no están en los reglamentos.
+- **Opciones:** que los dé el autor desde sus juegos o que los balancee el agente.
+- **Elección (del autor, 2026-10-06):** los balancea el agente, porque el autor no tiene los juegos a mano; el texto de las cartas también lo escribe el agente, con los efectos clásicos de D-14. En F2.8 cada cifra de los presets cita esta ficha (lo que no viene de una R-##), y el método de balanceo se anota aquí al hacerlo.
+- **Por qué:** decisión del autor; los valores se pueden cambiar en el editor (F4).
+- **Cómo se revierte:** se cambian los JSON de los presets; el validador y las pruebas de F2.8 dicen si siguen siendo válidos.
+- **Estado:** vigente; el método, pendiente de F2.8.
