@@ -209,3 +209,20 @@
 - **Por qué:** una función pura con prueba para cualquier N (D-05) y sin tocar el motor para mostrar el tablero.
 - **Cómo se revierte:** `RingGrid.MIN_COLS` y el criterio de `fit`; `DemoGame.kt` se va cuando F3.3 tenga partida de verdad.
 - **Estado:** vigente.
+
+### D-22 · Panel del turno: diálogos (F3.3)
+
+- **Pregunta:** cómo se ve el centro del tablero durante el turno y dónde se toman las decisiones (comprar, impuesto, Cárcel, subasta, deuda).
+- **Elección (del autor, 2026-10-06):** maqueta **B** de tres vistas en el Redmi (`capturas/F3.3_maqueta_{A,B,C}.png`; A = dados, escritura y botones fijos en el centro; C = bitácora y barra de decisión): el centro muestra el turno, los dados, los jugadores y el botón de la acción principal; cada decisión del motor (`TurnPhase.Buy`, `TaxChoice`, …) sale en un `AlertDialog` encima del tablero con la escritura de la casilla.
+- **Por qué:** el centro queda limpio y cada decisión nueva es otro diálogo, sin pelear por espacio (lo pide la tarea: «con diálogos»).
+- **Cómo se revierte:** el contenido del diálogo es el mismo `Composable` que iría fijo en el centro (opción A).
+- **Estado:** vigente.
+
+### D-23 · Partida jugable en un teléfono (F3.3)
+
+- **Pregunta:** cómo conectar la pantalla con el motor y resolver lo que el motor deja abierto en un solo teléfono.
+- **Elección (del agente):** `game/GameViewModel.kt` (dependencia `androidx.lifecycle:lifecycle-viewmodel-compose` 2.9.4, la misma versión que ya traía `activity-compose`) guarda `GameConfig` y `GameState` y pasa cada botón a `Engine.apply`; si el motor rechaza la acción, se muestra su motivo («El motor no lo permite: …») y no cambia nada. «Lo que pasó» (D-22) sale solo cuando hay algún evento notable (`isNotable`: sueldo, alquiler, impuesto, carta, Cárcel, subasta cerrada, deuda, quiebra, fin, dobles); los textos de cada evento, en `strings.xml` (`ev_*`). Subasta: puja el siguiente de la lista después de quien va ganando (`nextBidder`, 4 pruebas en `app/src/test`), con botones de base, +10, +50 o +100 que no pasen de su dinero. Para la escritura y la base de la subasta, `mortgageValue` y `minimumBid` del motor se hacen públicas (sin cambiar reglas). `MainActivity` arranca el Clásico con 4 jugadores; extras `jugadores`, `tio_rico`, `semilla` (la misma semilla y los mismos toques repiten la partida) y `n` (tablero de muestra de F3.2).
+- **Pruebas en el Redmi:** HyperOS rechaza `adb shell input tap` (`INJECT_EVENTS`) sin «Depuración USB (ajustes de seguridad)»; la vuelta la juega el autor y el agente captura.
+- **Por qué:** la interfaz no decide reglas (D-02); el orden de pujas es solo de quién tiene el teléfono, no una regla (R-12 deja pujar a cualquiera).
+- **Cómo se revierte:** `nextBidder` y `isNotable` son funciones sueltas en `app/…/game/`.
+- **Estado:** vigente.

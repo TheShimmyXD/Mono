@@ -48,7 +48,7 @@ internal fun passBid(config: GameConfig, state: GameState, player: Int): Result 
 }
 
 /** Base de la subasta: precio − `auctionPriceDiscount` (R-44), o $1 si no hay (R-12). */
-internal fun minimumBid(config: GameConfig, square: Int): Int {
+fun minimumBid(config: GameConfig, square: Int): Int {
     val discount = config.rules.auctionPriceDiscount ?: return 1
     return maxOf(1, (config.squares[square] as OwnableSquare).price - discount)
 }
