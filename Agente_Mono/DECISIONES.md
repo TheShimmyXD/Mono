@@ -344,3 +344,16 @@
 - **Capturas:** `capturas/FB.2b_dialogos.png`, `capturas/FB.2c_menu_hoja.png`.
 - **Cómo se revierte:** los diálogos, el menú y la hoja vuelven a los componentes de Material desde `2eb9a48`.
 - **Estado:** vigente.
+
+### D-35 · Personajes en estilo chiva y cómo van en la casilla (FB.3)
+
+- **Pregunta:** qué 8 personajes y cómo se ven en una casilla del tablero (hoy la ficha es un círculo de color de 12 dp como máximo, en casillas de 49 a 78 dp).
+- **Del autor:** los 8 de la «mezcla»: mono, chiva, sombrero vueltiao, colibrí, perro criollo, arepa, tinto y guacamaya (los 6 del plan más tinto y guacamaya).
+- **Del agente:**
+  - *Lienzo propio de 48 × 48, sin fondo*, contorno 1,4 y la paleta de D-28 (`arte.py`, sección «personajes», `PERSONAJES`); salen como `arte/svg/pj_<id>.svg` y `res/drawable/pj_<id>.xml` (ids `mono`, `chiva`, `sombrero`, `colibri`, `perro`, `arepa`, `tinto`, `guacamaya`). Sin fondo para que el color del jugador lo ponga la ficha, no el dibujo: los colores de jugador siguen marcando al dueño de cada propiedad.
+  - *Ojos con brillo* (`brillos`, un trazo blanco de largo casi cero) en mono, perro y arepa.
+  - *Tres opciones en la maqueta* (extra `maqueta`, `demo/Maquetas.kt`), con 1 a 4 fichas en casillas de 54 × 66 dp: **A** en la fila de abajo como hoy, cada personaje sobre un disco de su color (18 dp, 12 dp con 4); **B** grandes (60 % del ancho) escalonados encima de la casilla, parados en una base de su color; **C** medallones blancos de 26 dp con aro de su color, encimados abajo.
+- **Captura:** `capturas/FB.3_personajes.png`.
+- **Elección:** pendiente del autor.
+- **Cómo se revierte:** quitar la sección «personajes» de `arte.py` y correrlo; `Maquetas.kt` vuelve a `dab05d0`.
+- **Estado:** propuesta.
