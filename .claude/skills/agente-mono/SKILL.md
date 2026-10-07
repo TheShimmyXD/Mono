@@ -60,7 +60,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 ## Economía de contexto
 
 - Lee por partes (`sed -n`, `grep --exclude-dir=build --exclude-dir=.gradle --exclude-dir=.claude`) y limita la salida; entero, solo el archivo que vas a editar.
-- Scripts temporales al scratchpad que indica el sistema (ruta literal, nunca una variable de entorno).
+- Scripts temporales al scratchpad que indica el sistema (ruta literal, nunca una variable de entorno); si el sistema lo retira, `capturas/tmp/` (fuera de Git) y al cerrar se pide borrarla.
 - Varios reemplazos a la vez: un script con `assert old in s` por reemplazo y después una relectura del bloque.
 - No repitas en el chat lo que ya está en un archivo: da la ruta.
 

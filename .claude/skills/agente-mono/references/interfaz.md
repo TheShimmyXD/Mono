@@ -20,9 +20,12 @@ Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arreg
 - `unauthorized`: aceptar «¿Permitir depuración USB?» en el teléfono.
 - Pantalla apagada (HyperOS la apaga a los ~10 min y adb no puede encenderla): `captura` lo detecta y no guarda nada; se pide al autor que desbloquee el Redmi (M-020).
 - `INSTALL_FAILED_USER_RESTRICTED`: HyperOS pide «Instalar vía USB» en Opciones de desarrollador y tocar Instalar en el teléfono a tiempo.
+- **adb no puede tocar la pantalla:** `input tap` da `INJECT_EVENTS` (haría falta «Depuración USB (ajustes de seguridad)»). Las partidas de prueba las juega el autor; tú instalas, le dices hasta dónde jugar y capturas (D-23, M-023). Antes de automatizar algo por adb, prueba un solo paso a mano y lee su stderr.
+- **Sin `svc power stayon`** (el autor, 2026-10-06): pide el desbloqueo justo antes y agrupa `instalar` + capturas en la misma llamada.
 
 ## 3. Reglas de la interfaz
 
+- La API del motor se lee por firmas, no entera: `grep -nE '^\s*(fun|data class|class|sealed interface|data object|object) ' engine/src/main/kotlin/com/jacck/mono/engine/<Archivo>.kt` (M-024).
 - La interfaz no decide reglas: llama al motor con una acción y dibuja el estado y los eventos que devuelve. Si la interfaz necesita algo que el motor no da, primero va al motor con su prueba (regla 4).
 - Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 16, 40 y 48: extremos de D-09 y el Clásico; M-021).
 - Pantalla del Redmi: se mide con `adb shell wm size` y `wm density` en F0.4 y se anota en ESTADO; todo se ve en vertical, sin girar el teléfono. Textos en `strings.xml`.
