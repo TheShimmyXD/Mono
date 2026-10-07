@@ -151,7 +151,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **F3.2** Tablero dibujado desde la configuración (cualquier N) con fichas de 2-6 jugadores. *Terminado:* capturas con N = 16, 40 y 48 (extremos de D-09) aprobadas por el autor.
 - [x] **F3.3** Turno: tirar, mover, comprar o pagar, con diálogos. *Terminado:* una vuelta completa jugada en el Redmi; captura.
 - [x] **F3.4** Panel de jugadores y propiedades (dinero, casas, hipotecas). *Terminado:* captura aprobada por el autor.
-- [ ] **F3.5** Nueva partida: preset, 2-6 jugadores y nombres. *Terminado:* partida de 3 jugadores empezada desde el menú.
+- [x] **F3.5** Nueva partida: preset, 2-6 jugadores y nombres. *Terminado:* partida de 3 jugadores empezada desde el menú.
 - [ ] **F3.6** Guardar y retomar. *Terminado:* tras cerrar la app a mitad de partida, vuelve igual.
 
 ### F4 · Editor y hito «Primera quiebra»
