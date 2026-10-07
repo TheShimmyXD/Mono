@@ -12,7 +12,7 @@ Las maquetas van siempre en `app/src/main/kotlin/com/jacck/mono/demo/Maquetas.kt
 
 - `python3 .claude/skills/agente-mono/scripts/telefono.py instalar` y después `telefono.py captura --salida <scratchpad>`; se lee la captura antes de decir que algo se ve bien.
 - Lo que juzga el autor (si se ve bien, si se entiende) no lo declaras tú: le muestras la captura (SendUserFile si está disponible) y preguntas.
-- **Abrir con un extra** (maqueta o prueba): `telefono.py adb -- shell am start -S -n com.jacck.mono/.MainActivity --es maqueta A` (`-S` cierra antes la app; `--ez`/`--ei` para booleanos o enteros). Varias maquetas: `instalar` y, por letra, `am start` + 3 s + `captura --salida <scratchpad>/<letra>`, todo en una llamada; se unen en una imagen, se lee esa sola y va al autor con SendUserFile (M-035).
+- **Abrir con un extra** (maqueta o prueba): `telefono.py adb -- shell am start -S -n com.jacck.mono/.MainActivity --es maqueta A` (`-S` cierra antes la app; `--ez`/`--ei` para booleanos o enteros). Varias maquetas: `instalar` y, por letra, `am start` + 3 s (6 s si abre un diálogo: con 3 s sale a medio aparecer) + `captura --salida <scratchpad>/<letra>`, todo en una llamada; se unen en una imagen, se lee esa sola y va al autor con SendUserFile (M-035). Los extras de partida abren con el aviso «Lo que pasó» encima del tablero (M-046).
 - Si algo falla en el teléfono: `telefono.py log -n 60` (solo la etiqueta `Mono` y los errores fatales), nunca el logcat completo.
 - Sin el Redmi conectado: `telefono.py emulador` (AVD `Medium_Phone`) y se espera a que `telefono.py dispositivos` lo liste.
 
@@ -39,6 +39,7 @@ Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arreg
 - Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 16, 40 y 48: extremos de D-09 y el Clásico; M-021).
 - Pantalla del Redmi: se mide con `adb shell wm size` y `wm density` en F0.4 y se anota en ESTADO; todo se ve en vertical, sin girar el teléfono. Textos en `strings.xml`.
 - Un ViewModel por pantalla que guarda el estado del motor; el guardado de partidas y tableros (F3.6, F4.4) en archivos JSON de la app.
+- **Letra o imagen de terceros:** solo con licencia libre (OFL, CC0, Apache); se baja a una carpeta propia del scratchpad junto con su licencia, se comprueba que tenga tildes, ñ, ¿ y ¡ (`~/.cache/mono-arte/bin/python -I -c` con `ImageFont.truetype(ttf, 40)`: un glifo que falta da los mismos `bytes(f.getmask(ch))` que `'\uE000'`; no hay `fontTools`), la licencia queda en `arte/<tipo>/` y se cita en su D-## (D-33, M-047).
 
 ## 4. El hito (F4.5)
 

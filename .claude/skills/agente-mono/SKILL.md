@@ -42,7 +42,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 
 ## Durante la sesión
 
-- **Pasos de 30-45 min** con **punto de control** al terminar cada uno: casilla `[x]` si cumple su *Terminado* y el autor lo aprobó con AskUserQuestion (Aprobar / Con un cambio / Todavía no; otro pedido sin aprobar = sin `[x]`, a «Pendiente del autor»), ESTADO al día (fase y contador, lo hecho con su ruta, siguiente paso) y dentro de su tope. Una tarea sin *Terminado*: propón uno medible como pregunta cerrada.
+- **Pasos de 30-45 min** con **punto de control** al terminar cada uno: primero la pregunta (AskUserQuestion: Aprobar / Con un cambio / Todavía no) y, solo con «Aprobar» y el *Terminado* cumplido, la casilla `[x]` y el contador de ESTADO (otro pedido sin aprobar = sin `[x]`, a «Pendiente del autor»), ESTADO al día (fase y contador, lo hecho con su ruta, siguiente paso) y dentro de su tope. Una tarea sin *Terminado*: propón uno medible como pregunta cerrada.
 - **Primero el motor; cada regla, su prueba** (`motor.md` §4): una prueba JUnit por R-## con el ID en el nombre y dados fijados, en `engine/src/test`. No se escribe interfaz para algo que el motor no resuelva ya, probado. `engine` no importa Android ni usa azar sin semilla (D-02, D-03).
 - **Interfaz:** 2-3 opciones con captura antes de una pantalla nueva, y `telefono.py instalar` + `captura` después de cambiarla, antes de mostrarla (`interfaz.md`).
 - **Tarea grande** (más de ~6 R-##): pártela en sub-pasos (a, b, c), cada uno con `cierre_paso.py` y su commit; la casilla se marca con el último; ESTADO dice solo qué sub-pasos faltan (hashes y capturas, a SESIONES). Entre llamadas el árbol compila: el modelo nuevo va en la misma tanda que el código que lo usa.
