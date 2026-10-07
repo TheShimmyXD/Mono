@@ -876,13 +876,145 @@ def cali():
     return s
 
 
+def caballo(cx, base, papel="trunk"):
+    """Caballo mirando a la derecha; cx al centro del lomo."""
+    return [(papel, rect(cx - 12, base - 10, 3, 10)), (papel, rect(cx - 6, base - 10, 3, 10)),
+            (papel, rect(cx + 6, base - 10, 3, 10)), (papel, rect(cx + 11, base - 10, 3, 10)),
+            (papel, poly([(cx - 14, base - 22), (cx - 22, base - 12), (cx - 18, base - 12), (cx - 13, base - 18)])),
+            (papel, rrect(cx - 15, base - 24, 30, 15, 6)),
+            (papel, poly([(cx + 9, base - 22), (cx + 16, base - 34), (cx + 26, base - 28), (cx + 24, base - 24), (cx + 18, base - 26), (cx + 15, base - 18)])),
+            ("coal", poly([(cx + 9, base - 24), (cx + 15, base - 34), (cx + 13, base - 34), (cx + 7, base - 25)]))]
+
+
+def llanero(cx, base):
+    """Jinete sentado en el lomo (base = lomo del caballo)."""
+    return [("window", rect(cx - 2, base - 4, 4, 10)), ("wall", poly([(cx - 4, base), (cx + 4, base), (cx + 3, base - 13), (cx - 3, base - 13)])),
+            ("bar", lines([(cx + 2, base - 9, cx + 10, base - 5)])),
+            ("stone", circle(cx, base - 16, 3.4)),
+            ("coal", rect(cx - 9, base - 19, 18, 2.2)), ("coal", rrect(cx - 4, base - 24, 8, 6, 2))]
+
+
+def vaca(cx, base):
+    return [("wall", rect(cx - 11, base - 8, 3, 8)), ("wall", rect(cx + 7, base - 8, 3, 8)),
+            ("wall", rrect(cx - 13, base - 20, 26, 13, 4)), ("coal", circle(cx - 4, base - 15, 3)), ("coal", circle(cx + 6, base - 12, 2.4)),
+            ("wall", rrect(cx - 21, base - 22, 9, 9, 3)), ("ink", lines([(cx - 21, base - 22, cx - 25, base - 26), (cx - 12, base - 22, cx - 9, base - 26)]))]
+
+
+def puerto_gaitan():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(100, 52, 13)),
+         ("cloud", poly([(20, 30), (26, 23), (36, 23), (42, 17), (54, 19), (60, 27), (68, 30)])),
+         ("far", poly([(0, 66), (60, 62), (140, 64), (200, 60), (200, 80), (0, 80)])),
+         ("moor", rect(0, 76, W, 14))]
+    # morichales
+    for cx, h in ((18, 52), (36, 44), (164, 50), (186, 56), (148, 38)):
+        s += palma_cera(cx, 86, h)
+    # río Manacacías con su playa de arena
+    s += [("sea", rect(0, 88, W, 43)),
+          ("sand", poly([(0, 131), (0, 112), (40, 106), (90, 110), (120, 122), (150, 131)])),
+          ("sandshade", poly([(0, 131), (0, 124), (60, 120), (110, 126), (124, 131)])),
+          ("wave", lines([(120, 98, 136, 98), (160, 108, 176, 108), (20, 96, 34, 96), (70, 94, 82, 94), (170, 124, 186, 124)]))]
+    # curiara con su pescador
+    s += [("trunk", poly([(116, 104), (178, 104), (170, 112), (124, 112)])), ("wood", rect(126, 104, 42, 2.5)),
+          ("ochre", rect(140, 92, 6, 12)), ("stone", circle(143, 89, 3.2)), ("leaf", rect(137, 86, 12, 2)),
+          ("bar", lines([(146, 96, 164, 116)]))]
+    # garza en la playa
+    s += [("wall", poly([(56, 108), (66, 104), (72, 98), (70, 96), (64, 100), (54, 104)])),
+          ("ink", lines([(60, 107, 60, 116), (63, 106, 64, 116), (72, 97, 78, 99)]))]
+    return s
+
+
+def yopal():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(44, 32, 11)),
+         ("cloud", poly([(130, 30), (136, 23), (146, 23), (152, 17), (164, 19), (170, 27), (178, 30)])),
+         ("far", poly([(0, 70), (40, 60), (80, 66), (120, 56), (160, 66), (200, 62), (200, 82), (0, 82)])),
+         ("moor", rect(0, 80, W, 51)),
+         ("gline", lines([(0, 96, 60, 94), (120, 108, 200, 104), (0, 122, 80, 120)]))]
+    # casa llanera con techo de palma
+    s += [("wall", rect(140, 64, 50, 22)), ("wshade", rect(140, 66, 50, 3)),
+          ("sand", poly([(132, 66), (150, 48), (180, 48), (198, 66)])), ("dash", lines([(140 + 6 * i, 52, 136 + 6 * i, 64) for i in range(10)])),
+          ("door", rect(160, 72, 10, 14)), ("window", rect(146, 72, 8, 7)), ("window", rect(176, 72, 8, 7))]
+    s += palma_cera(124, 86, 44) + palma_cera(14, 84, 50)
+    # vaquería: el llanero arrea el ganado
+    s += vaca(52, 116) + vaca(84, 108) + vaca(30, 128)
+    s += caballo(126, 124) + llanero(124, 100)
+    return s
+
+
+def leticia():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(166, 26, 9)),
+         ("coffee", poly([(0, 74), (0, 50), (12, 44), (24, 50), (36, 40), (52, 46), (66, 38), (82, 48), (100, 42),
+                          (118, 48), (134, 38), (150, 46), (168, 40), (186, 48), (200, 44), (200, 74)])),
+         ("leaf", poly([(0, 78), (0, 62), (16, 58), (34, 64), (54, 56), (74, 62), (96, 56), (120, 62), (146, 54),
+                        (170, 62), (200, 56), (200, 78)]))]
+    # ceiba que sobresale de la selva
+    s += [("trunk", poly([(30, 76), (40, 76), (37, 34), (33, 34)])),
+          ("coffee", circle(24, 30, 10)), ("coffee", circle(46, 30, 10)), ("leaf", circle(35, 24, 11))]
+    # palafitos a la orilla
+    for x, w, papel in ((140, 28, "paint"), (172, 24, "ochre")):
+        s += [("trunk", rect(x + 3, 72, 3, 16)), ("trunk", rect(x + w - 6, 72, 3, 16)), ("wood", rect(x - 2, 72, w + 4, 3)),
+              (papel, rect(x, 58, w, 14)), ("sand", poly([(x - 4, 60), (x + w / 2, 48), (x + w + 4, 60)])),
+              ("door", rect(x + w / 2 - 3, 62, 6, 10))]
+    # río Amazonas, delfín rosado y victorias regias
+    s += [("lake", rect(0, 82, W, 49)),
+          ("wave", lines([(10, 96, 24, 96), (150, 98, 166, 98), (40, 120, 54, 120), (110, 126, 124, 126)])),
+          ("dolphin", poly([(78, 108), (84, 94), (96, 86), (110, 88), (120, 96), (124, 106), (118, 104), (112, 96),
+                            (102, 94), (92, 98), (86, 108)])),
+          ("dolphin", poly([(118, 92), (126, 88), (124, 94)])), ("dolphin", poly([(96, 88), (100, 80), (104, 88)])),
+          ("dolphin", poly([(78, 108), (72, 112), (82, 114), (86, 108)])), ("ink", lines([(114, 92, 114.5, 92.5)])),
+          ("wave", lines([(70, 110, 92, 110)]))]
+    for cx, cy, r in ((26, 112, 12), (52, 124, 9), (160, 116, 13), (186, 126, 8)):
+        s += [("leaf", circle(cx, cy, r)), ("trim", rect(cx - r, cy - 1.2, 2 * r, 2.4)), ("leaf", circle(cx, cy, r - 2.5))]
+    # guacamaya en vuelo
+    s += [("roof", poly([(96, 30), (108, 26), (118, 30), (108, 34)])), ("window", poly([(104, 28), (100, 16), (110, 26)])),
+          ("ochre", poly([(108, 32), (104, 42), (112, 32)])), ("roof", poly([(96, 30), (82, 38), (98, 32)])),
+          ("wall", circle(118, 29, 2.4))]
+    return s
+
+
+def villavicencio():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(170, 30, 11)),
+         ("far", poly([(0, 96), (0, 24), (20, 30), (36, 22), (56, 40), (74, 54), (96, 70), (120, 80), (200, 82), (200, 96)])),
+         ("near", poly([(0, 100), (0, 52), (24, 58), (46, 70), (70, 84), (100, 90), (200, 90), (200, 104), (0, 104)])),
+         ("moor", poly([(80, 90), (200, 84), (200, 104), (80, 104)]))]
+    for cx, h in ((176, 30), (192, 26), (150, 24)):
+        s += palma_cera(cx, 92, h)
+    # catedral de Nuestra Señora del Carmen
+    s += [("wall", rect(10, 66, 34, 34)), ("wshade", rect(36, 66, 8, 34)),
+          ("wall", rect(20, 44, 14, 24)), ("wshade", rect(29, 44, 5, 24)), ("slate", poly([(18, 44), (27, 30), (36, 44)])),
+          ("door", gothic(23.5, 50, 7, 11)), ("door", gothic(20, 82, 14, 18)), ("ink", lines([(27, 30, 27, 24), (24.5, 26, 29.5, 26)]))]
+    # monumento del arpa llanera: caja diagonal, cuello curvo y columna
+    cx = 104
+    p0, p1, p2 = (cx - 14, 32), (cx, 20), (cx + 20, 28)
+    cuerdas = []
+    for k in range(1, 9):
+        t = k / 9
+        x = (1 - t) ** 2 * p0[0] + 2 * t * (1 - t) * p1[0] + t ** 2 * p2[0]
+        y = (1 - t) ** 2 * p0[1] + 2 * t * (1 - t) * p1[1] + t ** 2 * p2[1]
+        fondo = 92 - 60 * max(0, cx + 8 - x) / 22
+        cuerdas.append((x, y, x, fondo))
+    s += [("stone", rect(cx - 24, 92, 50, 10)), ("sshade", rect(cx + 14, 92, 12, 10)),
+          ("ink", lines(cuerdas)),
+          ("wood", poly([(cx + 8, 92), (cx + 20, 92), (cx - 18, 26), (cx - 14, 32)])),
+          ("wood", rect(cx + 18, 24, 5, 68)),
+          ("wood", raw(f"M{cx - 18} 26 Q{cx} 12 {cx + 23} 21 L{cx + 23} 28 Q{cx} 20 {cx - 14} 32 Z")),
+          ("ochre", circle(cx + 20.5, 20, 3))]
+    s += [("ground", rect(0, 100, W, 31)), ("gline", lines([(0, 110, W, 110), (0, 122, W, 122), (60, 100, 40, 131), (140, 100, 160, 131)]))]
+    # pareja bailando joropo
+    s += [("wall", poly([(150, 126), (162, 126), (158, 110), (154, 110)])), ("coal", rect(154, 102, 4, 9)), ("stone", circle(156, 99, 3)),
+          ("coal", rect(150, 96, 12, 2)),
+          ("roof", poly([(166, 126), (184, 126), (178, 110), (172, 110)])), ("wall", rect(172, 102, 6, 9)), ("stone", circle(175, 99, 3)),
+          ("trim", circle(178, 97, 1.6)), ("bar", lines([(158, 106, 172, 106)]))]
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
            "marsella": marsella, "filandia": filandia, "salento": salento, "manizales": manizales,
            "jerico": jerico, "jardin": jardin, "guatape": guatape, "rionegro": rionegro,
            "cienaga": cienaga, "mompox": mompox, "santa_marta": santa_marta, "barranquilla": barranquilla,
-           "tulua": tulua, "buga": buga, "palmira": palmira, "cali": cali}
+           "tulua": tulua, "buga": buga, "palmira": palmira, "cali": cali,
+           "puerto_gaitan": puerto_gaitan, "yopal": yopal, "leticia": leticia, "villavicencio": villavicencio}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -1029,7 +1161,7 @@ PALETA = {
     "coal": "#3A3340", "clay": "#D9622B", "cshade": "#A8441B", "lake": "#155FA8", "frailejon": "#BFE08F",
     "fstem": "#7A6A55", "moor": "#C7C24E", "sand": "#EDB35C", "sandshade": "#C98536", "moss": "#C9D3C2",
     "canyon": "#D99A5B", "canyon2": "#B5673A", "coffee": "#1E8A3C", "palm": "#E4DCC8", "bamboo": "#9BC53D",
-    "wood": "#D49A5A", "granite": "#C3C6D6", "gshade": "#9599B2",
+    "wood": "#D49A5A", "granite": "#C3C6D6", "gshade": "#9599B2", "dolphin": "#F497B6",
 }
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),
