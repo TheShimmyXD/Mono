@@ -746,12 +746,143 @@ def barranquilla():
     return s
 
 
+def saman(cx, base, w, h):
+    out = [("trunk", poly([(cx - 4, base), (cx + 4, base), (cx + 3, base - h * 0.5), (cx + 16, base - h * 0.78),
+                           (cx + 11, base - h * 0.8), (cx, base - h * 0.6), (cx - 11, base - h * 0.8),
+                           (cx - 16, base - h * 0.78), (cx - 3, base - h * 0.5)]))]
+    r = w / 6
+    for i, dy in enumerate((0.9, 0.35, 0.1, 0.35, 0.9)):
+        out.append(("coffee", circle(cx - w / 2 + r + i * (w - 2 * r) / 4, base - h + r + dy * r, r)))
+    for i, dy in enumerate((0.2, -0.2, 0.2)):
+        out.append(("leaf", circle(cx - w / 4 + i * w / 4, base - h + r * 0.9 + dy * r, r * 0.8)))
+    return out
+
+
+def tulua():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(30, 28, 10)),
+         ("far", poly([(0, 60), (30, 44), (64, 56), (100, 40), (140, 54), (176, 42), (200, 50), (200, 96), (0, 96)])),
+         ("near", poly([(0, 82), (50, 72), (110, 80), (160, 70), (200, 78), (200, 104), (0, 104)])),
+         ("ground", rect(0, 100, W, 12))]
+    # iglesia de San Bartolomé
+    s += [("wall", rect(142, 60, 42, 40)), ("wshade", rect(174, 60, 10, 40)),
+          ("wall", poly([(138, 62), (163, 48), (188, 62)])), ("wshade", rect(138, 61, 50, 2.6)),
+          ("wall", rect(156, 32, 14, 18)), ("wshade", rect(165, 32, 5, 18)), ("roof", poly([(154, 32), (163, 19), (172, 32)])),
+          ("door", arch(159.5, 36, 7, 10)), ("window", circle(163, 56, 3)), ("door", arch(156, 80, 14, 20)),
+          ("ink", lines([(163, 19, 163, 12), (160.5, 14.5, 165.5, 14.5)]))]
+    # samán del Jardín Botánico Juan María Céspedes
+    s += saman(76, 102, 96, 74)
+    # casita a la izquierda
+    s += [("wall", rect(2, 80, 22, 20)), ("roof", poly([(0, 82), (6, 74), (20, 74), (26, 82)])), ("door", rect(9, 90, 7, 10))]
+    # río Tuluá con su puente
+    s += [("sea", rect(0, 110, W, 21)),
+          ("wave", lines([(8, 120, 22, 120), (60, 126, 74, 126), (150, 124, 166, 124), (100, 116, 112, 116)])),
+          ("stone", poly([(98, 112), (106, 104), (200, 104), (200, 131), (106, 131)])), ("sshade", rect(106, 104, 94, 3)),
+          ("sea", arch(114, 114, 34, 17)), ("sea", arch(158, 114, 34, 17)),
+          ("trim", rect(104, 100, 96, 4)), ("dash", lines([(x, 100, x, 104) for x in range(108, 200, 8)]))]
+    return s
+
+
+def buga():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(176, 26, 9)),
+         ("cloud", poly([(14, 34), (20, 27), (30, 27), (36, 21), (48, 23), (54, 31), (62, 34)])),
+         ("far", poly([(0, 66), (36, 50), (76, 62), (120, 48), (160, 60), (200, 50), (200, 96), (0, 96)])),
+         ("near", poly([(0, 84), (50, 76), (100, 82), (150, 74), (200, 80), (200, 104), (0, 104)]))]
+    # casas coloniales a los lados
+    for x0 in (2, 156):
+        s += [("wall", rect(x0, 74, 42, 26)), ("wshade", rect(x0, 76, 42, 3)),
+              ("roof", poly([(x0 - 3, 76), (x0 + 5, 68), (x0 + 37, 68), (x0 + 45, 76)])),
+              ("window", rect(x0 + 5, 82, 8, 9)), ("window", rect(x0 + 29, 82, 8, 9)), ("door", arch(x0 + 16, 84, 10, 16))]
+    # Basílica del Señor de los Milagros: ladrillo rosado, dos torres con cúpula y cúpula central
+    s += [("roof", arch(84, 36, 32, 26)), ("brick", rect(96, 28, 8, 9)), ("ink", lines([(100, 28, 100, 20), (97.5, 23, 102.5, 23)]))]
+    for x0 in (60, 120):
+        s += [("brick", rect(x0, 42, 20, 58)), ("bshade", rect(x0 + 14, 42, 6, 58)),
+              ("trim", rect(x0 - 2, 58, 24, 3)), ("trim", rect(x0 - 2, 40, 24, 3)),
+              ("brick", rect(x0 + 2, 28, 16, 12)), ("door", arch(x0 + 6, 30, 8, 10)),
+              ("roof", arch(x0 + 1, 17, 18, 13)), ("ink", lines([(x0 + 10, 17, x0 + 10, 12)])),
+              ("door", arch(x0 + 6, 45, 8, 11)), ("window", arch(x0 + 6, 66, 8, 12))]
+    s += [("brick", rect(80, 56, 40, 44)), ("bshade", rect(80, 56, 40, 3)),
+          ("brick", poly([(78, 58), (100, 44), (122, 58)])),
+          ("wall", circle(100, 66, 6)), ("window", circle(100, 66, 4)),
+          ("door", arch(91, 78, 18, 22)), ("trim", rect(80, 75, 40, 2.4))]
+    tierra_plaza(s, 100)
+    return s
+
+
+def palmira():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(160, 26, 10)),
+         ("far", poly([(0, 62), (40, 48), (84, 58), (130, 44), (170, 56), (200, 48), (200, 90), (0, 90)])),
+         ("near", rect(0, 86, W, 16)),
+         ("cloud", poly([(22, 22), (30, 14), (40, 16), (46, 12), (56, 20), (50, 26), (30, 26)]))]
+    # ingenio azucarero con su chimenea
+    s += [("cloud", poly([(36, 30), (42, 24), (52, 26), (58, 20), (66, 24), (64, 32), (46, 34)])),
+          ("brick", poly([(40, 100), (52, 100), (49, 32), (43, 32)])), ("bshade", poly([(48, 100), (52, 100), (49, 32), (47, 32)])),
+          ("trim", rect(42, 34, 8, 3)), ("trim", rect(41, 52, 10, 3)),
+          ("wall", rect(54, 66, 56, 34)), ("wshade", rect(54, 68, 56, 3)),
+          ("slate", poly([(50, 68), (66, 54), (98, 54), (114, 68)])),
+          ("window", rect(60, 74, 10, 10)), ("window", rect(76, 74, 10, 10)), ("window", rect(92, 74, 10, 10)),
+          ("door", rect(76, 88, 12, 12))]
+    # palmas de la Villa de las Palmas
+    for cx, h in ((136, 60), (186, 70), (14, 62)):
+        s += palma_cera(cx, 102, h)
+    # cañaduzal
+    s += [("bamboo", rect(0, 100, W, 31))]
+    tallos = []
+    for x in range(4, W, 7):
+        tallos += [(x, 131, x + 2, 104), (x + 3, 131, x - 3, 108)]
+    s.append(("dash", lines(tallos)))
+    s += [("gline", lines([(0, 112, W, 112)]))]
+    # carreta de caña
+    s += [("bamboo", poly([(112, 106), (114, 94), (168, 94), (170, 106)])),
+          ("dash", lines([(114, 98, 168, 98), (113, 102, 169, 102)])), ("leaf", poly([(166, 94), (178, 88), (170, 96)])),
+          ("leaf", poly([(114, 94), (104, 87), (116, 97)])),
+          ("paint", rect(112, 106, 58, 10)), ("wall", rect(118, 108, 46, 3)),
+          ("tire", circle(124, 118, 6)), ("tire", circle(158, 118, 6)),
+          ("wall", circle(124, 118, 2.2)), ("wall", circle(158, 118, 2.2))]
+    return s
+
+
+def cali():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(140, 26, 9)),
+         ("far", poly([(0, 70), (14, 46), (30, 30), (48, 40), (70, 56), (110, 48), (150, 58), (200, 50), (200, 96), (0, 96)])),
+         ("near", poly([(0, 86), (40, 78), (100, 84), (160, 76), (200, 82), (200, 104), (0, 104)]))]
+    # Cristo Rey en el cerro
+    s += [("wall", poly([(28, 30), (32, 30), (33, 18), (27, 18)])),
+          ("wall", poly([(21, 18), (39, 18), (39, 15.5), (21, 15.5)])), ("wall", circle(30, 12.5, 2.6))]
+    # palmas
+    for cx, h in ((44, 58), (190, 64)):
+        s += palma_cera(cx, 104, h)
+    # iglesia de San Francisco y su Torre Mudéjar
+    s += [("ochre", rect(108, 64, 52, 38)), ("oshade", rect(148, 64, 12, 38)),
+          ("ochre", poly([(104, 66), (134, 52), (164, 66)])), ("oshade", rect(104, 65, 60, 2.6)),
+          ("door", arch(126, 80, 14, 22)), ("window", circle(133, 72, 3))]
+    s += [("brick", rect(76, 34, 26, 68)), ("bshade", rect(95, 34, 7, 68)),
+          ("trim", rect(73, 32, 32, 3)), ("trim", rect(73, 60, 32, 3)),
+          ("brick", rect(80, 18, 18, 15)), ("bshade", rect(93, 18, 5, 15)),
+          ("roof", poly([(78, 18), (89, 9), (100, 18)])),
+          ("door", arch(85, 21, 8, 10)), ("door", arch(80, 40, 6, 14)), ("door", arch(92, 40, 6, 14)),
+          ("dash", lines([(78 + 6 * i, 66, 84 + 6 * i, 72) for i in range(4)] + [(84 + 6 * i, 66, 78 + 6 * i, 72) for i in range(4)]
+                         + [(78 + 6 * i, 76, 84 + 6 * i, 82) for i in range(4)] + [(84 + 6 * i, 76, 78 + 6 * i, 82) for i in range(4)])),
+          ("door", arch(84, 88, 10, 14))]
+    s += [("ground", rect(0, 100, W, 12)), ("gline", lines([(0, 106, W, 106)])),
+          ("sea", rect(0, 112, W, 19)), ("wave", lines([(10, 120, 24, 120), (90, 124, 104, 124), (170, 120, 184, 120)]))]
+    # Gato del Río sobre su pedestal
+    cx = 160
+    s += [("stone", rect(cx - 12, 92, 24, 12)), ("sshade", rect(cx + 6, 92, 6, 12)),
+          ("oshade", poly([(cx - 9, 92), (cx + 9, 92), (cx + 7, 74), (cx - 5, 74)])),
+          ("oshade", circle(cx + 1, 70, 7)),
+          ("oshade", poly([(cx - 5, 66), (cx - 4, 58), (cx, 64)])), ("oshade", poly([(cx + 2, 64), (cx + 6, 58), (cx + 7, 66)])),
+          ("ink", lines([(cx - 2, 69, cx - 2, 70.5), (cx + 4, 69, cx + 4, 70.5)])),
+          ("oshade", poly([(cx + 9, 90), (cx + 16, 88), (cx + 18, 80), (cx + 15, 79), (cx + 14, 86), (cx + 8, 87)]))]
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
            "marsella": marsella, "filandia": filandia, "salento": salento, "manizales": manizales,
            "jerico": jerico, "jardin": jardin, "guatape": guatape, "rionegro": rionegro,
-           "cienaga": cienaga, "mompox": mompox, "santa_marta": santa_marta, "barranquilla": barranquilla}
+           "cienaga": cienaga, "mompox": mompox, "santa_marta": santa_marta, "barranquilla": barranquilla,
+           "tulua": tulua, "buga": buga, "palmira": palmira, "cali": cali}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
