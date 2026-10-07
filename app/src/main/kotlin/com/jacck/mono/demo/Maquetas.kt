@@ -20,9 +20,9 @@ import com.jacck.mono.PantallaChiva
 
 /**
  * Maquetas de la pantalla que se está diseñando (M-029), con datos falsos; se abren con el extra
- * `maqueta`. F4.4, tableros propios: A lista en el menú con Editar / Duplicar / Borrar y el nombre
- * ahí mismo, B pantalla «Mis tableros» con una tarjeta por tablero, C fichas en el menú y el nombre
- * arriba en el editor («Guardar» / «Guardar como nuevo»).
+ * `maqueta`. F5.3, crear o unirse a una partida por Bluetooth: A sala de espera desde el menú (el
+ * amigo toma el último jugador; «Unirme» lista los emparejados), B cada jugador del menú elige
+ * «Aquí» u «Otro teléfono», C como A pero «Unirme» busca teléfonos cercanos sin emparejar antes.
  */
 @Composable
 fun Maqueta(letra: String) {
@@ -37,12 +37,6 @@ fun Maqueta(letra: String) {
     }
 }
 
-/** Tableros falsos: nombre, casillas, salario y si es propio. */
-private val tableros = listOf(
-    Triple("Clásico", 40, false), Triple("Tío Rico", 40, false),
-    Triple("Clásico de 24", 24, true), Triple("La candelaria", 40, true),
-)
-
 @Composable
 private fun Titulo(texto: String) =
     Text(texto, fontSize = 30.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
@@ -50,85 +44,65 @@ private fun Titulo(texto: String) =
 @Composable
 private fun Nota(texto: String) = Text(texto, fontSize = 14.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
 
-/** A: la tarjeta «Juego» lista todos; con uno propio elegido, su nombre y Editar / Duplicar / Borrar. */
+/** A: la sala con lo que se crea (tablero y jugadores del menú) y, abajo, unirse a un emparejado. */
 @Composable
 private fun MaquetaA() {
-    Titulo("Nueva partida")
+    Titulo("Por Bluetooth")
     Calcomania {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Juego", fontSize = 18.sp)
-            tableros.forEach { (n, c, propio) ->
-                OpcionChiva("${if (propio) "★ " else ""}$n · $c casillas", n == "Clásico de 24", {}, Modifier.fillMaxWidth())
-            }
-            OutlinedTextField("Clásico de 24", {}, label = { Text("Nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                BotonChiva("Editar", {}, Modifier.weight(1f), principal = false)
-                BotonChiva("Duplicar", {}, Modifier.weight(1f), principal = false)
-                BotonChiva("Borrar", {}, Modifier.weight(1f), principal = false)
-            }
-            Nota("Editar el Clásico o Tío Rico guarda una copia ★: los originales no cambian.")
+            Text("Crear partida", fontSize = 20.sp)
+            Nota("Clásico · 40 casillas · Ana, Beto y Caro aquí")
+            Text("📶 Caro juega en el otro teléfono", fontSize = 16.sp)
+            Text("Esperando… este teléfono se llama «Redmi Note 13 Pro»", fontSize = 16.sp)
+            BotonChiva("Cancelar", {}, principal = false)
         }
     }
-    Calcomania { Text("Jugadores …", Modifier.padding(12.dp), fontSize = 18.sp) }
+    Calcomania {
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Unirme a la de un amigo", fontSize = 20.sp)
+            OutlinedTextField("Caro", {}, label = { Text("Mi nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            BotonChiva("Teléfono de Juan", {}, principal = false)
+            BotonChiva("PC-Jacck", {}, principal = false)
+            Nota("¿No sale? Emparéjalos antes en Ajustes › Bluetooth.")
+        }
+    }
 }
 
-/** B: el menú solo dice cuál y «Cambiar»; la pantalla «Mis tableros» tiene una tarjeta por tablero. */
+/** B: el menú de siempre; cada jugador dice dónde juega y «Empezar» espera al otro teléfono. */
 @Composable
 private fun MaquetaB() {
+    Titulo("Nueva partida")
+    BotonChiva("📶 Unirme a la partida de un amigo", {}, principal = false)
+    Calcomania { Text("Juego: Clásico · 40 casillas", Modifier.padding(12.dp), fontSize = 18.sp) }
     Calcomania {
-        Row(Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Juego: Clásico de 24", fontSize = 18.sp, modifier = Modifier.weight(1f).padding(top = 10.dp))
-            BotonChiva("Cambiar", {}, Modifier.weight(0.7f), principal = false)
-        }
-    }
-    Titulo("Mis tableros")
-    tableros.forEach { (n, c, propio) ->
-        Calcomania {
-            Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("${if (propio) "★ " else ""}$n", fontSize = 18.sp)
-                Nota("$c casillas · salario $200${if (propio) "" else " · original"}")
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Jugadores", fontSize = 18.sp)
+            listOf("Ana" to true, "Beto" to true, "Caro" to false, "Dani" to false).forEach { (n, aqui) ->
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    BotonChiva("Jugar", {}, Modifier.weight(1f), principal = n == "Clásico de 24")
-                    BotonChiva("Editar", {}, Modifier.weight(1f), principal = false)
-                    BotonChiva("Copiar", {}, Modifier.weight(1f), principal = false)
-                    if (propio) BotonChiva("Borrar", {}, Modifier.weight(1f), principal = false)
+                    Text(n, fontSize = 18.sp, modifier = Modifier.weight(1f).padding(top = 10.dp))
+                    OpcionChiva("Aquí", aqui, {}, Modifier.weight(1f))
+                    OpcionChiva("📶 Otro", !aqui, {}, Modifier.weight(1f))
                 }
             }
+            Nota("Caro y Dani juegan en el otro teléfono.")
         }
     }
+    BotonChiva("Esperar al otro teléfono", {})
 }
 
-/** C: fichas en el menú (como hoy, con los propios); el nombre y «Guardar como nuevo» van en el editor. */
+/** C: unirse buscando teléfonos cercanos; uno nuevo pide emparejar al tocarlo. */
 @Composable
 private fun MaquetaC() {
+    Titulo("Unirme por Bluetooth")
     Calcomania {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Juego", fontSize = 18.sp)
-            tableros.chunked(2).forEach { fila ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    fila.forEach { (n, _, propio) -> OpcionChiva("${if (propio) "★ " else ""}$n", n == "Clásico de 24", {}, Modifier.weight(1f)) }
-                }
-            }
-            BotonChiva("Editar casillas y reglas", {}, principal = false)
+            OutlinedTextField("Caro", {}, label = { Text("Mi nombre") }, singleLine = true, modifier = Modifier.fillMaxWidth())
+            Text("Buscando teléfonos con Mono abierto…", fontSize = 16.sp)
+            BotonChiva("Teléfono de Juan · nuevo", {}, principal = false)
+            BotonChiva("Redmi de Laura · emparejado", {}, principal = false)
+            Nota("Uno nuevo pide emparejar al tocarlo (un código en los dos teléfonos).")
+            BotonChiva("Buscar otra vez", {}, principal = false)
         }
     }
-    Text("En el editor ↓", fontSize = 16.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-    Calcomania {
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField("Clásico de 24", {}, label = { Text("Nombre del tablero") }, singleLine = true, modifier = Modifier.fillMaxWidth())
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                OpcionChiva("Casillas", true, {}, Modifier.weight(1f))
-                OpcionChiva("Reglas", false, {}, Modifier.weight(1f))
-            }
-            Text("(anillo y ficha como hoy)", fontSize = 14.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                BotonChiva("Guardar", {}, Modifier.weight(1f))
-                BotonChiva("Guardar como nuevo", {}, Modifier.weight(1.4f), principal = false)
-            }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                BotonChiva("Borrar tablero", {}, Modifier.weight(1f), principal = false)
-                BotonChiva("Volver sin guardar", {}, Modifier.weight(1.2f), principal = false)
-            }
-        }
-    }
+    Nota("Pide «Dispositivos cercanos» también para buscar (BLUETOOTH_SCAN).")
 }
