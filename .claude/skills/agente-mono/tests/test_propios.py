@@ -117,6 +117,7 @@ class TestTelefono(unittest.TestCase):
     def test_logcat_is_filtered(self):
         argv = telefono.logcat_command("adb", "abc", "Mono")
         self.assertIn("-d", argv)
+        self.assertIn("time", argv)
         self.assertEqual(argv[-3:], ["Mono:V", "AndroidRuntime:E", "*:S"])
 
     def test_adb_passthrough_uses_serial_and_drops_separator(self):

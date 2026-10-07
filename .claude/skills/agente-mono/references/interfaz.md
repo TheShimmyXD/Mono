@@ -1,6 +1,6 @@
-# Interfaz (fases F3 y F4)
+# Interfaz (fases F3, F4 y F5)
 
-*Se lee en F3 y F4. Compose con Material 3. Reglas 4 y 7 del mandato.*
+*Se lee en F3, F4 y en las pantallas de F5. Compose con Material 3. Reglas 4 y 7 del mandato.*
 
 ## 1. Antes de una pantalla nueva: 2-3 opciones
 
@@ -8,7 +8,7 @@ Un pedido de diseño abierto (tablero, panel, editor) se resuelve con 2-3 opcion
 
 Las maquetas van siempre en `app/src/main/kotlin/com/jacck/mono/demo/Maquetas.kt` (`@Composable fun Maqueta(letra: String)`, extra `maqueta` de `MainActivity`), con su commit: la pantalla siguiente sobrescribe ese archivo con Write y, tras la elección, queda el esqueleto vacío. Así no hay archivos que el autor tenga que borrar (M-029).
 
-La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><opción>` (p. ej. `FB.4c`) pone esa opción arriba y salen juntas con `pantallas maqueta=FB.4 maqueta=FB.4c`. Datos falsos que cumplen los `require` de lo que dibujan (índices válidos; `RingGrid` hasta F4.3 pedía N par): si no, la app se cierra y se gasta una instalación (M-055). Un valor de extra no lleva comas (`pantallas` separa por comas): listas con `+` (`quitar=13+14`, M-068).
+La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><opción>` (p. ej. `FB.4c`) pone esa opción arriba y salen juntas con `pantallas maqueta=FB.4 maqueta=FB.4c`. Datos falsos que cumplen los `require` de lo que dibujan (índices válidos): si no, la app se cierra y se gasta una instalación (M-055). Un valor de extra no lleva comas (`pantallas` separa por comas): listas con `+` (`quitar=13+14`, M-068).
 
 ## 2. Después de cambiar una pantalla: captura
 
@@ -20,11 +20,7 @@ La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><o
 
 ### Pruebas en el Redmi
 
-Si el teléfono no responde (`dispositivos`, `instalar`, `captura`): `redmi.md`.
-- **adb no puede tocar la pantalla:** `input tap` da `INJECT_EVENTS` (haría falta «Depuración USB (ajustes de seguridad)»). Las partidas de prueba las juega el autor; tú instalas, le dices hasta dónde jugar y capturas (D-23, M-023). Antes de automatizar algo por adb, prueba un solo paso a mano y lee su stderr.
-- **Estado avanzado sin tocar:** para capturar una pantalla que necesita media partida, un extra de prueba en `MainActivity` que prepara el estado o abre la pantalla (`propiedades`, `hoja`; D-24), anotado en su KDoc y en ESTADO (M-028).
-- **`instalar` cierra la app, pero `files/partida.json` sigue:** «Seguir la partida» abre la de antes de instalar. La prueba del autor pide «Partida nueva» con los toques desde el menú, y la evidencia compara la hora de `partida.json` con la de la instalación (M-058). La pregunta del resultado trae los fallos probables como opciones («no salió X», «se cerró», «salió distinto»; M-033). Si no cuadra, antes de buscar el fallo: la hora de su respuesta (¿alcanzó a hacerlo?) y el log desde `MainActivity creada`; `--------- beginning of main` lo imprime logcat siempre, no es rotación (M-031).
-- **Un *Terminado* con prueba del autor:** antes, el comando que la comprueba va a ESTADO (p. ej. `telefono.py adb -- shell run-as com.jacck.mono cat files/partida.json | grep token`); busca sin distinguir mayúsculas (`grep -i`) y, si puede, por lo que el autor no teclea (campo, índice), no por el texto exacto que le pediste escribir (M-060). La primera pregunta es «¿Ya la jugaste?» (Ya / Después), no la aprobación; con «Ya», se corre ese comando y solo entonces Aprobar / Con un cambio / Todavía no. Sin evidencia, sin `[x]` (M-052).
+Prueba del autor en el Redmi (o el teléfono no responde): `redmi.md`.
 
 ## 3. Reglas de la interfaz
 
@@ -36,11 +32,8 @@ Si el teléfono no responde (`dispositivos`, `instalar`, `captura`): `redmi.md`.
 - **Pantalla que sale del menú y vuelve** (editores de F4): el menú va dentro de `rememberSaveableStateHolder().SaveableStateProvider("menu")`; sin eso, `rememberSaveable` pierde nombres y personajes al volver (F4.1, D-39; M-061).
 - La interfaz no decide reglas: llama al motor con una acción y dibuja el estado y los eventos que devuelve. Si la interfaz necesita algo que el motor no da, primero va al motor con su prueba (regla 4).
 - Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 16, 40 y 48: extremos de D-09 y el Clásico; M-021).
-- Pantalla del Redmi: se mide con `adb shell wm size` y `wm density` en F0.4 y se anota en ESTADO; todo se ve en vertical, sin girar el teléfono.
+- Todo se ve en vertical, sin girar el teléfono.
 - **Textos nuevos en `strings.xml`:** prefijo propio de la pantalla, comprobado antes con `grep -c 'name="<prefijo>_' app/src/main/res/values/strings.xml` (los `rule_*` son del validador); un texto que explica una regla se escribe desde la línea **Regla:** de su ficha R-##, no de memoria ni solo del KDoc (M-063).
 - Un ViewModel por pantalla que guarda el estado del motor; el guardado de partidas y tableros (F3.6, F4.4) en archivos JSON de la app.
 - **Ícono de la app, letra o imagen de terceros:** `arte.md` §4.
 
-## 4. El hito (F4.5)
-
-Se prepara con el autor: qué tablero edita, cuántos juegan y cuánto dura (una partida corta con poco dinero inicial es válida si es una opción del editor). Lo aprueba él con AskUserQuestion; no se marca `[x]` sin eso. Nada de F5 antes.

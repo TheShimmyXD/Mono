@@ -29,6 +29,7 @@
 - Antes de programar una tarea, sus fichas en una tanda: `for r in 19 20 21; do awk -v id="### R-$r " 'index($0,id)==1{p=1;print;next} p&&/^##/{p=0} p' REGLAS.md; done`.
 - Antes del punto de control de una tarea del motor, cruza los R-## de sus fichas con `grep -rhoE 'fun `R-[0-9]+' engine/src/test | sort -u`; la que falte, su prueba (también la regla que solo vive en una opción del modelo).
 - `cierre_paso.py` corre `:engine:test` y `:app:assembleDebug`; el resumen dice cuántas pruebas pasaron (`engine/build/test-results`, sin abrir `build/` entero: `grep -h -o 'tests="[0-9]*"' engine/build/test-results/test/*.xml`).
+- **Pregunta de balance o duración** (dinero inicial, tamaño, jugadores): antes de preguntar al autor, mídela con `simulate` en una prueba temporal `engine/src/test/kotlin/com/jacck/mono/engine/TmpMedidaTest.kt` (40 semillas, `println` con un prefijo que se filtra con `grep`), creada y borrada en la misma orden, que termina con `git status --short` (excepción a los scripts en el scratchpad: tiene que compilar con el motor). Las cifras van a la pregunta y a su D-## (D-43, M-073).
 
 ## 5. Estilo
 

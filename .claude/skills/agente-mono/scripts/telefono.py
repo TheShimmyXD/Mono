@@ -125,8 +125,8 @@ def buffer_size(output: str) -> str | None:
 
 
 def logcat_command(adb: str, serial: str, tag: str) -> list[str]:
-    """Log ya escrito (-d), solo la etiqueta de la app y los errores fatales."""
-    return [adb, "-s", serial, "logcat", "-d", "-v", "brief", f"{tag}:V", "AndroidRuntime:E", "*:S"]
+    """Log ya escrito (-d) con la hora de cada línea, solo la etiqueta de la app y los errores fatales."""
+    return [adb, "-s", serial, "logcat", "-d", "-v", "time", f"{tag}:V", "AndroidRuntime:E", "*:S"]
 
 
 def adb_passthrough(adb: str, serial: str, rest: list[str]) -> list[str]:
