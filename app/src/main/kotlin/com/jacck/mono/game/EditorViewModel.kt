@@ -55,6 +55,8 @@ class EditorViewModel(start: GameConfig) : ViewModel() {
         errors = validate(next) - validate(config).toSet()
         if (errors.isEmpty()) {
             config = next
+            // La ficha queda como lo guardado («050» → «50», espacios fuera): «Guardar» se apaga.
+            draft = SquareDraft.of(square)
             Log.i(LOG_TAG, "editor: casilla $i guardada: $square")
         }
     }
