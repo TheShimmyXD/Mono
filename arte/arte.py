@@ -181,7 +181,123 @@ def chapinero():
     return s
 
 
-LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero}
+def vasija(cx, base, w, h):
+    """Cántaro de barro: boca estrecha, panza ancha, base angosta."""
+    y0, nw = base - h, w * 0.36
+    d = (f"M{f(cx - nw / 2)} {f(y0)}H{f(cx + nw / 2)}V{f(y0 + h * 0.12)}"
+         f"C{f(cx + w * 0.66)} {f(y0 + h * 0.25)} {f(cx + w * 0.6)} {f(base - h * 0.12)} {f(cx + w * 0.2)} {f(base)}"
+         f"H{f(cx - w * 0.2)}C{f(cx - w * 0.6)} {f(base - h * 0.12)} {f(cx - w * 0.66)} {f(y0 + h * 0.25)} "
+         f"{f(cx - nw / 2)} {f(y0 + h * 0.12)}Z")
+    return d, (cx - w / 2, y0, cx + w / 2, base)
+
+
+def roseta(cx, cy, r, n=9):
+    """Roseta de hojas (frailejón): n puntas alrededor de un centro."""
+    pts = []
+    for i in range(2 * n):
+        a = math.radians(-90 + i * 180 / n)
+        rr = r if i % 2 == 0 else r * 0.6
+        pts.append((cx + math.cos(a) * rr, cy + math.sin(a) * rr * 0.8))
+    return poly(pts)
+
+
+def frailejon(cx, base, h):
+    return [("fstem", poly([(cx - 4, base), (cx + 4, base), (cx + 3, base - h), (cx - 3, base - h)])),
+            ("ink", lines([(cx, base - h - 6, cx + 1, base - h - 15)])), ("ochre", circle(cx + 1, base - h - 16.5, 2.4)),
+            ("frailejon", roseta(cx, base - h, 13))]
+
+
+def tierra_plaza(s, y=98):
+    s.append(("ground", rect(0, y, W, H - y)))
+    s.append(("gline", lines([(0, y + 8, W, y + 8), (0, y + 20, W, y + 20),
+                              (50, y, 34, H), (100, y, 100, H), (150, y, 166, H)])))
+
+
+def topaga():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(30, 28, 11)),
+         ("far", poly([(0, 66), (30, 44), (58, 58), (96, 34), (132, 52), (166, 38), (200, 54), (200, 96), (0, 96)])),
+         ("near", poly([(0, 58), (26, 50), (58, 62), (90, 74), (130, 70), (170, 62), (200, 70), (200, 100), (0, 100)])),
+         # bocamina de carbón
+         ("coal", arch(14, 66, 26, 34)), ("trunk", rect(11, 64, 5, 36)), ("trunk", rect(38, 64, 5, 36)),
+         ("trunk", rect(8, 60, 38, 6))]
+    s.append(("ground", rect(0, 98, W, 42)))
+    s.append(("gline", lines([(0, 124, W, 124), (120, 98, 110, 140), (170, 98, 180, 140)])))
+    s.append(("ink", lines([(0, 117, 92, 117)] + [(x, 114, x, 120) for x in range(6, 92, 10)])))
+    # vagoneta
+    s += [("coal", circle(50, 98, 5)), ("coal", circle(59, 96, 6)), ("coal", circle(68, 98, 5)),
+          ("roof", poly([(42, 99), (76, 99), (72, 112), (46, 112)])), ("rshade", rect(46, 104, 26, 2.5)),
+          ("tire", circle(51, 113, 3.6)), ("tire", circle(67, 113, 3.6))]
+    # iglesia de San Judas Tadeo, con el diablo de Tópaga en el rosetón
+    s += [("wall", rect(126, 34, 16, 66)), ("wshade", rect(136, 34, 6, 66)),
+          ("roof", poly([(123, 36), (134, 14), (145, 36)])), ("door", arch(129.5, 40, 7, 11)),
+          ("window", arch(130, 62, 6, 10)),
+          ("wall", rect(82, 58, 44, 42)), ("wshade", rect(116, 58, 10, 42)),
+          ("wall", poly([(78, 60), (104, 42), (130, 60)])), ("wshade", rect(78, 59, 52, 2.6)),
+          ("roof", circle(104, 69, 6)),
+          ("roof", poly([(99, 66), (97, 58), (101.5, 63.5)])), ("roof", poly([(109, 66), (111, 58), (106.5, 63.5)])),
+          ("ink", lines([(101.5, 71, 106.5, 71)])),
+          ("door", arch(96, 80, 16, 20)), ("window", arch(86, 74, 6, 10)), ("window", arch(116, 74, 6, 10)),
+          ("wshade", rect(90, 99, 28, 2)), ("ink", lines([(134, 7, 134, 14), (131.5, 9.5, 136.5, 9.5)]))]
+    # casas
+    s += [("wall", rect(150, 74, 48, 26)), ("wshade", rect(150, 76, 48, 3)),
+          ("roof", poly([(146, 76), (155, 67), (194, 67), (200, 76)])),
+          ("window", rect(156, 82, 9, 9)), ("door", arch(172, 84, 10, 16)), ("window", rect(186, 82, 8, 9)),
+          ("trim", rect(154, 91, 13, 2.4))]
+    return s
+
+
+def mongua():
+    s = [("sky", rect(0, 0, W, H)),
+         ("cloud", poly([(14, 30), (20, 22), (30, 22), (36, 16), (48, 18), (54, 26), (62, 30)])),
+         ("cloud", poly([(140, 24), (146, 18), (156, 18), (162, 13), (172, 15), (178, 24)])),
+         ("far", poly([(0, 70), (24, 46), (50, 56), (80, 34), (112, 50), (140, 36), (172, 50), (200, 42), (200, 96), (0, 96)])),
+         ("moor", poly([(0, 78), (40, 70), (90, 76), (140, 70), (200, 76), (200, 104), (0, 104)])),
+         ("lake", poly([(8, 86), (20, 80), (46, 79), (68, 82), (74, 88), (60, 93), (30, 94), (12, 92)])),
+         ("wave", lines([(20, 85, 34, 85), (44, 89, 58, 89)]))]
+    # templo de piedra con su torre central
+    s += [("stone", rect(82, 62, 54, 40)), ("sshade", rect(124, 62, 12, 40)),
+          ("stone", poly([(78, 64), (109, 48), (140, 64)])), ("sshade", rect(78, 63, 62, 2.6)),
+          ("stone", rect(98, 22, 22, 34)), ("sshade", rect(113, 22, 7, 34)),
+          ("stone", rect(95, 20, 28, 4)), ("roof", poly([(97, 20), (109, 6), (121, 20)])),
+          ("door", arch(102, 27, 6, 10)), ("door", arch(110, 27, 6, 10)), ("window", circle(109, 46, 3.6)),
+          ("door", arch(100, 80, 18, 22)), ("door", arch(87, 84, 9, 14)), ("door", arch(122, 84, 9, 14)),
+          ("ink", lines([(109, 0.5, 109, 6), (106.5, 2.5, 111.5, 2.5)]))]
+    s += [("moor", rect(0, 100, W, 40)),
+          ("gline", lines([(0, 112, W, 112), (0, 124, W, 124)]))]
+    for cx, base, h in ((22, 122, 24), (52, 112, 14), (156, 114, 16), (182, 124, 26)):
+        s += frailejon(cx, base, h)
+    return s
+
+
+def raquira():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(166, 26, 11)),
+         ("near", poly([(0, 62), (36, 46), (70, 58), (110, 42), (150, 56), (200, 46), (200, 100), (0, 100)]))]
+    # casas pintadas a los lados
+    for x, w, alto, muro, borde in ((2, 26, 34, "paint", "ochre"), (28, 28, 28, "ochre", "trim"),
+                                    (146, 28, 30, "window", "ochre"), (174, 26, 36, "leaf", "paint")):
+        y = 100 - alto
+        s += [(muro, rect(x, y, w, alto)), (borde, rect(x, y, w, 4)),
+              ("door", arch(x + w / 2 - 4, 100 - 16, 8, 16)), ("wall", rect(x + 3, y + 8, 6, 7)),
+              ("wall", rect(x + w - 9, y + 8, 6, 7))]
+    tierra_plaza(s)
+    # cántaro gigante de la plaza
+    cx, base, w, h = 100, 108, 52, 72
+    s += [("clay", vasija(cx, base, w, h)),
+          ("clay", rect(cx - w * 0.24, base - h - 3, w * 0.48, 5)),
+          ("ochre", rect(cx - 21, base - h * 0.62, 42, 7)),
+          ("trim", poly([(cx - 21, base - h * 0.62 + 7), (cx - 14, base - h * 0.62 + 14), (cx - 7, base - h * 0.62 + 7),
+                         (cx, base - h * 0.62 + 14), (cx + 7, base - h * 0.62 + 7), (cx + 14, base - h * 0.62 + 14),
+                         (cx + 21, base - h * 0.62 + 7)])),
+          ("cshade", rect(cx - 17, base - 20, 34, 4))]
+    # vasijas pequeñas
+    for x, b, ww, hh, papel in ((40, 120, 18, 22, "clay"), (60, 126, 14, 16, "cshade"),
+                                (146, 124, 16, 20, "cshade"), (166, 120, 20, 24, "clay")):
+        s += [(papel, vasija(x, b, ww, hh)), ("ochre", rect(x - ww * 0.3, b - hh * 0.55, ww * 0.6, 2.5))]
+    return s
+
+
+LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
+           "topaga": topaga, "mongua": mongua, "raquira": raquira}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -325,6 +441,8 @@ PALETA = {
     "oshade": "#F4A700", "stone": "#F7D9A8", "sshade": "#E7B97A", "brick": "#E4572E", "bshade": "#B83E1C",
     "sea": "#1D7BEF", "trunk": "#8B5A2B", "leaf": "#2BB04A", "paint": "#E5007E", "slate": "#7B61D9",
     "pip": "#1B1B1B", "tire": "#1B1B1B", "bolt": "#FFC21A",
+    "coal": "#3A3340", "clay": "#D9622B", "cshade": "#A8441B", "lake": "#155FA8", "frailejon": "#BFE08F",
+    "fstem": "#7A6A55", "moor": "#C7C24E",
 }
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),

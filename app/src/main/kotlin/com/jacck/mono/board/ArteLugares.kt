@@ -7,5 +7,8 @@ import com.jacck.mono.R
 internal val ArteLugares: Map<String, Int> = mapOf(
     "cartagena" to R.drawable.arte_cartagena,
     "chapinero" to R.drawable.arte_chapinero,
+    "mongua" to R.drawable.arte_mongua,
+    "raquira" to R.drawable.arte_raquira,
+    "topaga" to R.drawable.arte_topaga,
     "villa_de_leyva" to R.drawable.arte_villa_de_leyva,
 )
