@@ -67,7 +67,9 @@ class MainActivity : ComponentActivity() {
                     } else {
                         var chosen by rememberSaveable { mutableStateOf(if (direct) preset to names else null) }
                         var resumed by rememberSaveable { mutableStateOf(false) }
-                        val saved = remember { if (direct) null else saveFile.read() }
+                        val saved = remember {
+                            (if (direct) null else saveFile.read()).also { Log.i(LOG_TAG, "guardada al abrir: ${it?.state?.turn?.let { t -> "turno $t" } ?: "ninguna"}") }
+                        }
                         val resume = saved.takeIf { resumed }
                         val game = chosen
                         if (game == null && resume == null) {
@@ -76,7 +78,10 @@ class MainActivity : ComponentActivity() {
                                 chosen = p to n
                             }
                         } else {
-                            val keep: (GameConfig, GameState) -> Unit = if (direct) { _, _ -> } else { c, s -> saveFile.write(SavedGame(c, s)) }
+                            val keep: (GameConfig, GameState) -> Unit = if (direct) { _, _ -> } else { c, s ->
+                                saveFile.write(SavedGame(c, s))
+                                Log.i(LOG_TAG, "guardada: turno ${s.turn}, ${s.phase::class.simpleName}")
+                            }
                             val vm = viewModel {
                                 if (resume != null) {
                                     Log.i(LOG_TAG, "sigue la partida guardada: turno ${resume.state.turn}, ${resume.state.players.map { it.name to it.money }}")
