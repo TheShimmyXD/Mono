@@ -1798,6 +1798,180 @@ def usaquen():
     return s
 
 
+def vagon(x, base, w, h, papel, techo="roof"):
+    """Vagón de pasajeros de lado: base es el nivel de los rieles; ruedas antes que la carrocería."""
+    top = base - 5 - h
+    s = [("tire", circle(x + 10, base - 5, 5)), ("tire", circle(x + w - 10, base - 5, 5)),
+         (papel, rect(x, top, w, h)), (techo, rect(x - 2, top - 3, w + 4, 4)), ("trim", rect(x, top + h - 5, w, 2.5))]
+    n = max(1, int((w - 6) // 12))
+    paso = (w - 8) / n
+    s += [("window", rect(x + 5 + i * paso, top + 3, paso - 4, 6)) for i in range(n)]
+    return s
+
+
+def locomotora(x, base, w, papel):
+    """Locomotora diésel de lado, mirando a la derecha: base es el nivel de los rieles."""
+    top = base - 23
+    s = [("tire", circle(x + c, base - 5, 5)) for c in (10, 22, w - 22, w - 10)]
+    s += [(papel, poly([(x, base - 5), (x, top), (x + w - 10, top), (x + w, top + 8), (x + w, base - 5)])),
+          ("coal", rect(x + 2, top - 3, w - 16, 3)), ("ochre", rect(x, base - 12, w, 3)),
+          ("window", poly([(x + w - 20, top + 3), (x + w - 11, top + 3), (x + w - 4, top + 9), (x + w - 20, top + 9)])),
+          ("dash", lines([(x + 6 + 5 * i, top + 4, x + 6 + 5 * i, top + 10) for i in range(5)]))]
+    return s
+
+
+def rieles(s, y):
+    """Balasto, traviesas y dos rieles; y es el riel de arriba."""
+    s += [("dash", lines([(x, y, x + 6, y + 6) for x in range(0, W, 10)])), ("bar", lines([(0, y, W, y), (0, y + 5, W, y + 5)]))]
+
+
+def estacion_de_la_sabana():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(140, 24), (146, 17), (156, 17), (162, 11), (174, 13), (180, 20), (188, 24)])),
+         ("far", poly([(0, 62), (40, 48), (80, 58), (120, 44), (160, 54), (200, 46), (200, 96), (0, 96)]))]
+    # alas laterales
+    for x in (12, 150):
+        s += [("granite", rect(x, 54, 38, 38)), ("gshade", rect(x, 54, 38, 3)), ("wall", rect(x - 2, 51, 42, 4)),
+              ("door", arch(x + 14, 78, 10, 14))]
+        s += [("window", arch(x + 6 + 11 * i, 60, 6, 12)) for i in range(3)]
+    # cuerpo neoclásico: columnas, frontón con reloj y bandera
+    s += [("granite", rect(50, 44, 100, 48))]
+    s += [("door", arch(60.5 + 17 * i, 60, 7, 26)) for i in range(5)]
+    for i in range(6):
+        cx = 52 + 17 * i
+        s += [("wall", rect(cx, 46, 7, 40)), ("wall", rect(cx - 1.5, 46, 10, 3)), ("wall", rect(cx - 1.5, 84, 10, 3))]
+    s += [("wall", rect(46, 38, 108, 8)), ("wshade", rect(46, 44, 108, 2)),
+          ("wall", poly([(46, 38), (100, 22), (154, 38)])), ("wshade", poly([(62, 36), (100, 26), (138, 36)])),
+          ("ochre", circle(100, 32, 4.5)), ("ink", lines([(100, 32, 100, 29), (100, 32, 102.5, 33)])),
+          ("ink", lines([(100, 22, 100, 10)])), ("ochre", rect(100, 10, 14, 4)), ("window", rect(100, 14, 14, 2)), ("roof", rect(100, 16, 14, 2))]
+    # andén, rieles y el tren de vapor de la Sabana
+    s += [("ground", rect(0, 100, W, 40)), ("stone", rect(0, 92, W, 8)), ("sshade", rect(0, 98, W, 2))]
+    rieles(s, 124)
+    s += [("cloud", circle(34, 70, 6)), ("cloud", circle(26, 60, 8)), ("cloud", circle(14, 48, 9)),
+          ("roof", circle(30, 117, 7)), ("roof", circle(48, 117, 7)), ("roof", circle(64, 118, 6)),
+          ("coal", rect(20, 98, 46, 15)), ("roof", rect(20, 96, 46, 3)),
+          ("coal", rect(28, 82, 8, 16)), ("coal", poly([(24, 77), (40, 77), (36, 83), (28, 83)])),
+          ("roof", rect(58, 86, 22, 27)), ("window", rect(62, 90, 10, 8)), ("coal", rect(56, 82, 26, 5)),
+          ("ochre", circle(17, 103, 4)), ("trim", poly([(10, 123), (20, 109), (20, 123)])),
+          ("tire", circle(30, 117, 2)), ("tire", circle(48, 117, 2)), ("tire", circle(64, 118, 2)),
+          ("bar", lines([(30, 117, 64, 118)]))]
+    s += vagon(88, 124, 52, 16, "ochre") + vagon(146, 124, 50, 16, "leaf")
+    return s
+
+
+def eucalipto(cx, base, h):
+    """Eucalipto de la Sabana: tronco alto y copa angosta por capas."""
+    return [("trunk", poly([(cx - 2.5, base), (cx + 2.5, base), (cx + 1.5, base - h), (cx - 1.5, base - h)])),
+            ("coffee", circle(cx + h * 0.1, base - h * 0.62, h * 0.16)), ("leaf", circle(cx - h * 0.1, base - h * 0.78, h * 0.17)),
+            ("coffee", circle(cx + h * 0.06, base - h * 0.95, h * 0.15)), ("leaf", circle(cx - h * 0.04, base - h * 1.08, h * 0.11))]
+
+
+def estacion_del_norte():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(176, 22, 8)),
+         ("far", poly([(0, 64), (50, 52), (100, 60), (150, 48), (200, 58), (200, 90), (0, 90)])),
+         ("near", rect(0, 84, W, 30))]
+    # estación de pueblo: muro amarillo, teja y letrero
+    s += [("ochre", rect(60, 60, 70, 28)), ("oshade", rect(124, 60, 6, 28)), ("trim", rect(60, 64, 70, 3)),
+          ("roof", poly([(52, 62), (95, 42), (138, 62)])), ("rshade", rect(52, 60, 86, 3)),
+          ("wall", rect(82, 50, 26, 8)), ("ink", lines([(86, 54, 104, 54)])),
+          ("door", rect(68, 70, 10, 18)), ("door", rect(112, 70, 10, 18)),
+          ("window", rect(85, 70, 8, 10)), ("window", rect(97, 70, 8, 10))]
+    s += eucalipto(16, 94, 60) + eucalipto(36, 92, 46) + eucalipto(146, 90, 52)
+    s += vaca(178, 100) + vaca(40, 106)
+    # el tren de la Sabana hacia el norte
+    s += [("stone", rect(0, 112, W, 28)), ("sshade", rect(0, 112, W, 2))]
+    rieles(s, 124)
+    s += vagon(8, 124, 50, 14, "wall") + vagon(64, 124, 50, 14, "wall") + locomotora(120, 124, 64, "roof")
+    return s
+
+
+def estacion_del_sur():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(14, 26), (20, 19), (30, 19), (36, 13), (48, 15), (54, 22), (62, 26)])),
+         # el cañón del Salto del Tequendama
+         ("far", poly([(0, 30), (40, 26), (80, 30), (80, 110), (0, 110)])),
+         ("far", poly([(120, 30), (200, 30), (200, 110), (120, 110)])),
+         ("canyon2", poly([(62, 44), (80, 34), (80, 110), (68, 110)])), ("canyon2", poly([(120, 34), (138, 44), (132, 110), (120, 110)])),
+         ("coffee", poly([(0, 70), (40, 62), (70, 74), (76, 106), (0, 106)])),
+         ("coffee", poly([(124, 78), (160, 66), (200, 72), (200, 106), (128, 106)]))]
+    # la cascada y su neblina
+    s += [("sea", poly([(78, 28), (122, 28), (121, 34), (79, 34)])), ("cloud", poly([(80, 33), (120, 33), (126, 100), (74, 100)])),
+          ("fall", lines([(87, 38, 84, 92), (96, 36, 95, 94), (104, 36, 105, 94), (113, 38, 116, 92)])),
+          ("cloud", circle(78, 86, 10)), ("cloud", circle(122, 86, 10)), ("cloud", circle(100, 82, 11))]
+    # la Casa del Salto al borde del abismo
+    s += [("wall", rect(148, 18, 34, 12)), ("slate", poly([(145, 18), (151, 10), (179, 10), (185, 18)])),
+          ("window", rect(152, 21, 6, 5)), ("window", rect(172, 21, 6, 5)), ("door", arch(161, 21, 8, 9))]
+    # viaducto de piedra con el tren
+    s += [("stone", rect(0, 112, W, 19)), ("sshade", rect(0, 112, W, 3))]
+    s += [("sea", arch(x, 118, 26, 13)) for x in (6, 46, 86, 126, 166)]
+    s += [("wave", lines([(x + 5, 127, x + 21, 127) for x in (6, 46, 86, 126, 166)])),
+          ("roof", rect(0, 107, W, 5)), ("bar", lines([(0, 107, W, 107)]))]
+    s += vagon(12, 107, 48, 12, "ochre") + vagon(66, 107, 48, 12, "ochre") + locomotora(120, 107, 62, "slate")
+    return s
+
+
+def estacion_del_oriente():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(30, 24, 8)),
+         ("far", poly([(0, 108), (0, 84), (50, 64), (100, 40), (124, 32), (162, 32), (200, 46), (200, 108)])),
+         ("coffee", poly([(0, 108), (0, 96), (40, 84), (80, 76), (120, 70), (160, 64), (200, 70), (200, 108)]))]
+    # santuario de Monserrate en la cima
+    s += [("wall", rect(126, 22, 34, 10)), ("roof", poly([(124, 22), (143, 16), (162, 22)])),
+          ("wall", rect(139, 14, 9, 18)), ("wshade", rect(145, 14, 3, 18)), ("roof", poly([(137.5, 14), (143.5, 9.5), (149.5, 14)])),
+          ("door", arch(140.5, 24, 6, 8)), ("window", arch(130, 25, 4, 5)), ("window", arch(153, 25, 4, 5))]
+    # carril del funicular subiendo el cerro
+    x0, y0, x1, y1 = 24, 108, 128, 34
+    largo = math.hypot(x1 - x0, y1 - y0)
+    nx, ny = (y0 - y1) / largo, (x1 - x0) / largo  # normal hacia abajo a la derecha
+    def en(t, d=0):
+        return x0 + (x1 - x0) * t + nx * d, y0 + (y1 - y0) * t + ny * d
+    s += [("stone", poly([en(0, -4), en(1, -4), en(1, 4), en(0, 4)])),
+          ("dash", lines([(*en(t / 20, -4), *en(t / 20, 4)) for t in range(21)])),
+          ("bar", lines([(*en(0, -2.5), *en(1, -2.5)), (*en(0, 2.5), *en(1, 2.5))]))]
+    # dos vagones escalonados que se cruzan
+    for t, papel in ((0.42, "roof"), (0.8, "window")):
+        (ax, ay), (bx, by) = en(t - 0.1, -3), en(t + 0.1, -3)
+        s += [(papel, poly([(ax, ay), (bx, by), (bx, by - 13), (ax, ay - 13)])),
+              ("ochre", poly([(ax, ay - 13), (bx, by - 13), (bx, by - 10.5), (ax, ay - 10.5)]))]
+        dx, dy = (bx - ax) / 3, (by - ay) / 3
+        for i in range(3):
+            px, py = ax + dx * i + 1.5, ay + dy * i
+            s.append(("wall" if papel == "window" else "window",
+                      poly([(px, py - 9), (px + dx - 3, py + dy - 9), (px + dx - 3, py + dy - 4), (px, py - 4)])))
+    # estación de abajo y las casas de La Candelaria
+    s += [("wall", rect(4, 88, 46, 20)), ("roof", poly([(0, 90), (27, 78), (54, 90)])), ("rshade", rect(0, 88, 54, 3)),
+          ("door", arch(20, 94, 14, 14)), ("window", rect(8, 94, 8, 8)), ("window", rect(38, 94, 8, 8))]
+    tierra_plaza(s, 108)
+    s += casa_colonial(100, 110, 44, 26, "ochre", "oshade") + casa_colonial(150, 110, 46, 30)
+    s += sombrilla(66, 112, 14, "wall", "roof", 16)
+    return s
+
+
+def zona_t():
+    s = [("night", rect(0, 0, W, H)), ("cloud", circle(28, 24, 9)), ("night", circle(33, 21, 8)),
+         ("ochre", star(70, 18, 5, 2.2)), ("ochre", star(118, 26, 4.5, 2)), ("ochre", star(172, 15, 5, 2.2))]
+    # torres de vidrio con ventanas encendidas
+    for x, w, top in ((0, 34, 30), (40, 26, 42), (136, 26, 38), (166, 34, 26)):
+        s += [("door", rect(x, top, w, 90 - top))]
+        for j, y in enumerate(range(top + 5, 56, 8)):
+            s += [("ochre" if (i + j) % 3 else "window", rect(x + 4 + i * 8, y, 5, 4)) for i in range(int((w - 6) // 8))]
+    # restaurantes y bares al fondo de la T, con avisos de neón
+    for i, papel in enumerate(("trim", "turq", "ochre", "dolphin", "clay")):
+        x = 40 * i
+        s += [(papel, rect(x, 58, 40, 32)), ("night", rrect(x + 6, 62, 28, 8, 3)),
+              ("glyph", polyline([(x + 10 + 3 * k, 66 + (1.5 if k % 2 else -1.5)) for k in range(7)])),
+              ("roof" if i % 2 else "leaf", rect(x, 72, 40, 4)), ("ochre", rect(x + 5, 78, 20, 12)), ("door", rect(x + 28, 78, 8, 12))]
+    # la T peatonal
+    s += [("stone", rect(0, 90, W, 50)), ("sand", rect(0, 92, W, 10)), ("sand", poly([(86, 102), (114, 102), (142, H), (58, H)])),
+          ("gline", lines([(0, 97, W, 97), (100, 102, 100, H), (82, 112, 118, 112), (76, 124, 124, 124)]))]
+    # luces colgantes entre dos postes
+    s += [("ink", lines([(30, 60, 30, 120), (170, 60, 170, 120)])),
+          ("rope", polyline([(x, 62 + 10 * math.sin(math.pi * (x - 30) / 140)) for x in range(30, 171, 7)]))]
+    s += [("ochre", circle(x, 64 + 10 * math.sin(math.pi * (x - 30) / 140), 2.2)) for x in range(37, 170, 14)]
+    # materas con árboles a los lados
+    for cx in (16, 184):
+        s += [("trunk", rect(cx - 2, 100, 4, 14)), ("leaf", circle(cx, 98, 10)), ("coffee", circle(cx + 5, 103, 6)),
+              ("wood", rect(cx - 12, 112, 24, 12)), ("cshade", rect(cx - 12, 112, 24, 3))]
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
@@ -1815,7 +1989,9 @@ LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero"
            "galerias": galerias, "la_soledad": la_soledad, "palermo": palermo, "park_way": park_way,
            "calle_19": calle_19, "avenida_jimenez": avenida_jimenez, "carrera_septima": carrera_septima, "niza": niza,
            "pasadena": pasadena, "cedritos": cedritos, "santa_barbara": santa_barbara, "rosales": rosales,
-           "el_chico": el_chico, "usaquen": usaquen}
+           "el_chico": el_chico, "usaquen": usaquen,
+           "estacion_de_la_sabana": estacion_de_la_sabana, "estacion_del_norte": estacion_del_norte,
+           "estacion_del_sur": estacion_del_sur, "estacion_del_oriente": estacion_del_oriente, "zona_t": zona_t}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -1963,10 +2139,12 @@ PALETA = {
     "fstem": "#7A6A55", "moor": "#C7C24E", "sand": "#EDB35C", "sandshade": "#C98536", "moss": "#C9D3C2",
     "canyon": "#D99A5B", "canyon2": "#B5673A", "coffee": "#1E8A3C", "palm": "#E4DCC8", "bamboo": "#9BC53D",
     "wood": "#D49A5A", "granite": "#C3C6D6", "gshade": "#9599B2", "dolphin": "#F497B6", "turq": "#2EC4B6", "shallow": "#8EE8D8",
+    "night": "#2B2466",
 }
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),
-          "dash": ("#1B1B1B", 0.9), "rope": ("#8B5A2B", 1.0), "shine": ("#FFFFFF", 1.3)}
+          "dash": ("#1B1B1B", 0.9), "rope": ("#8B5A2B", 1.0), "shine": ("#FFFFFF", 1.3),
+          "fall": ("#7FD3F0", 1.8)}
 FRANJA = ["#E63946", "#FFC21A", "#1D7BEF", "#2BB04A", "#E5007E"]
 
 

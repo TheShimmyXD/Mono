@@ -20,6 +20,10 @@ internal val ArteLugares: Map<String, Int> = mapOf(
     "chapinero" to R.drawable.arte_chapinero,
     "cienaga" to R.drawable.arte_cienaga,
     "el_chico" to R.drawable.arte_el_chico,
+    "estacion_de_la_sabana" to R.drawable.arte_estacion_de_la_sabana,
+    "estacion_del_norte" to R.drawable.arte_estacion_del_norte,
+    "estacion_del_oriente" to R.drawable.arte_estacion_del_oriente,
+    "estacion_del_sur" to R.drawable.arte_estacion_del_sur,
     "estacion_santa_fe" to R.drawable.arte_estacion_santa_fe,
     "filandia" to R.drawable.arte_filandia,
     "galerias" to R.drawable.arte_galerias,
@@ -66,4 +70,5 @@ internal val ArteLugares: Map<String, Int> = mapOf(
     "villavicencio" to R.drawable.arte_villavicencio,
     "yopal" to R.drawable.arte_yopal,
     "zapatoca" to R.drawable.arte_zapatoca,
+    "zona_t" to R.drawable.arte_zona_t,
 )
