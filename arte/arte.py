@@ -5,7 +5,8 @@ de cada papel. Sale la fuente SVG (`arte/svg/<id>.svg`) y el VectorDrawable de l
 (`app/src/main/res/drawable/arte_<id>.xml`). Lienzo 200 x 140 (10:7).
 Íconos (FA.2): lienzo 24 x 24 sin franjas; salen como `arte/svg/ic_<id>.svg` y `ic_<id>.xml`.
 Personajes (FB.3): lienzo 48 x 48 sin fondo; salen como `arte/svg/pj_<id>.svg` y `pj_<id>.xml`.
-El mapa lugar -> arte de la app (`board/ArteLugares.kt`) también sale de aquí (FA.3).
+El mapa lugar -> arte de la app (`board/ArteLugares.kt`) también sale de aquí (FA.3), y la lista de
+personajes (`board/Personajes.kt`, FB.4).
 
 Uso, desde la raíz del proyecto: `python3 arte/arte.py` (escribe todo) o `--revisar` (solo
 comprueba que lo escrito está al día; sale 1 si no).
@@ -20,6 +21,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 SVG_DIR = RAIZ / "arte" / "svg"
 VD_DIR = RAIZ / "app" / "src" / "main" / "res" / "drawable"
 KT_ARTE = RAIZ / "app" / "src" / "main" / "kotlin" / "com" / "jacck" / "mono" / "board" / "ArteLugares.kt"
+KT_PJ = KT_ARTE.with_name("Personajes.kt")
 
 
 # ---------- formas ----------
@@ -2605,8 +2607,19 @@ def kotlin_arte():
             f"{filas}\n)\n")
 
 
+def kotlin_personajes():
+    filas = "\n".join(f'    "{n}" to R.drawable.pj_{n},' for n in PERSONAJES)
+    return ("// Generado por arte/arte.py: no editar a mano.\n"
+            "package com.jacck.mono.board\n\n"
+            "import com.jacck.mono.R\n\n"
+            "/** Los personajes en orden (FB.3, D-35): id que se guarda con la partida -> dibujo. */\n"
+            "internal val Personajes: List<Pair<String, Int>> = listOf(\n"
+            f"{filas}\n)\n")
+
+
 def salidas():
     yield KT_ARTE, kotlin_arte()
+    yield KT_PJ, kotlin_personajes()
     for nombre, fn in LUGARES.items():
         t = trazos(fn())
         yield SVG_DIR / f"{nombre}.svg", svg(t)
@@ -2632,7 +2645,7 @@ def main(argv):
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(txt)
     n = len(LUGARES) + len(ICONOS) + len(PERSONAJES)
-    print(f"arte: {len(LUGARES)} lugares, {len(ICONOS)} íconos y {len(PERSONAJES)} personajes -> {n * 2 + 1} archivos"
+    print(f"arte: {len(LUGARES)} lugares, {len(ICONOS)} íconos y {len(PERSONAJES)} personajes -> {n * 2 + 2} archivos"
           f" ({len(viejos)} cambiados)")
     return 0
 

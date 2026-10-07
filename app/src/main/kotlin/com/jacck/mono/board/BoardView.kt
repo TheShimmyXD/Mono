@@ -1,5 +1,6 @@
 package com.jacck.mono.board
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -22,7 +23,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -125,6 +128,17 @@ private fun Buildings(holding: Holding, text: androidx.compose.ui.unit.TextUnit)
 @Composable
 fun Token(color: Color, size: Dp) {
     Box(Modifier.padding(horizontal = 1.dp).size(size).background(color, CircleShape).border(1.dp, Color.Black, CircleShape))
+}
+
+/** Medallón de un personaje (FB.3, D-35, opción C): disco blanco con aro del color del jugador. */
+@Composable
+fun Medallon(pj: Int, color: Color, size: Dp, modifier: Modifier = Modifier) {
+    Box(
+        modifier.size(size).clip(CircleShape).background(Color.White)
+            .border(size / 10, color, CircleShape).border(size / 35, Chiva.Tinta, CircleShape),
+    ) {
+        Image(painterResource(pj), null, Modifier.size(size).padding(size / 8))
+    }
 }
 
 /** Jugadores con su ficha y su dinero; el de turno, marcado. Va dentro del panel del centro (D-33). */
