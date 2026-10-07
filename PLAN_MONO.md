@@ -178,7 +178,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 - [x] **F4.1** Editor de casillas: nombre, precio, grupo y alquileres. *Terminado:* una casilla editada se ve en el tablero y en el cobro del alquiler.
 - [x] **F4.2** Editor de reglas (las opciones de F1.3). *Terminado:* cambiar el salario cambia lo que se cobra al pasar por la salida.
-- [ ] **F4.3** Tamaño del mapa: añadir y quitar casillas, con el validador de F2.7. *Terminado:* un tablero de 24 casillas jugable; uno inválido muestra su error.
+- [x] **F4.3** Tamaño del mapa: añadir y quitar casillas, con el validador de F2.7. *Terminado:* un tablero de 24 casillas jugable; uno inválido muestra su error.
 - [ ] **F4.4** Guardar, duplicar y elegir tableros propios. *Terminado:* un tablero propio sobrevive a cerrar la app.
 - [ ] **F4.5** **Hito «Primera quiebra»** en el Redmi (sección 1). *Terminado:* el autor lo aprueba. Nada de F5 antes.
 
