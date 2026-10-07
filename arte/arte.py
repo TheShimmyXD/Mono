@@ -5,6 +5,8 @@ de cada papel. Sale la fuente SVG (`arte/svg/<id>.svg`) y el VectorDrawable de l
 (`app/src/main/res/drawable/arte_<id>.xml`). Lienzo 200 x 140 (10:7).
 Íconos (FA.2): lienzo 24 x 24 sin franjas; salen como `arte/svg/ic_<id>.svg` y `ic_<id>.xml`.
 Personajes (FB.3): lienzo 48 x 48 sin fondo; salen como `arte/svg/pj_<id>.svg` y `pj_<id>.xml`.
+Logos (FB.5): lienzo 108 x 108 del ícono adaptativo, en dos capas: fondo (llena todo) y frente (cabe en
+el círculo central de 66); salen como `logo_<id>_fondo.xml` y `logo_<id>_frente.xml`, y el SVG con las dos.
 El mapa lugar -> arte de la app (`board/ArteLugares.kt`) también sale de aquí (FA.3), y la lista de
 personajes (`board/Personajes.kt`, FB.4).
 
@@ -12,6 +14,7 @@ Uso, desde la raíz del proyecto: `python3 arte/arte.py` (escribe todo) o `--rev
 comprueba que lo escrito está al día; sale 1 si no).
 """
 import math
+import re
 import sys
 from pathlib import Path
 from xml.sax.saxutils import quoteattr
@@ -2508,6 +2511,88 @@ PERSONAJES = {"mono": pj_mono, "chiva": pj_chiva, "sombrero": pj_sombrero, "coli
               "perro": pj_perro, "arepa": pj_arepa, "tinto": pj_tinto, "guacamaya": pj_guacamaya}
 PJ_ANCHO = 1.4
 
+# ---------- logos (FB.5): ícono adaptativo, 108 x 108 ----------
+LW = 108
+LOGO_ANCHO, LOGO_LINEAS = 2.4, 1.8  # contorno y grosor de las líneas, a escala del lienzo
+
+
+def escalar(formas, k, dx, dy):
+    """Las formas de otro lienzo, escaladas por k y movidas (dx, dy); solo comandos absolutos."""
+    out = []
+    for papel, (d, caja) in formas:
+        toks = re.findall(r"[A-Za-z]|-?\d*\.?\d+", d)
+        res, i, cmd, arg = [], 0, None, 0
+        while i < len(toks):
+            t = toks[i]
+            if t.isalpha():
+                cmd, arg = t, 0
+                res.append(t)
+                i += 1
+                continue
+            v = float(t)
+            if cmd == "H":
+                v = v * k + dx
+            elif cmd == "V":
+                v = v * k + dy
+            elif cmd == "A":
+                j = arg % 7
+                v = v * k if j < 2 else v if j < 5 else v * k + (dx if j == 5 else dy)
+            else:
+                v = v * k + (dx if arg % 2 == 0 else dy)
+            res.append(f(v))
+            arg += 1
+            i += 1
+        d2 = re.sub(r" ?([A-Za-z]) ?", r"\1", " ".join(res))
+        caja2 = caja and (caja[0] * k + dx, caja[1] * k + dy, caja[2] * k + dx, caja[3] * k + dy)
+        out.append((papel, (d2, caja2)))
+    return out
+
+
+def sol_de_rayos(cx, cy, n, papeles):
+    """Abanico de n cuñas desde el centro que se salen del lienzo, alternando papeles."""
+    r = LW
+    out = []
+    for i in range(n):
+        a0, a1 = (2 * math.pi * i / n, 2 * math.pi * (i + 1) / n)
+        out.append((papeles[i % len(papeles)], poly([(cx, cy), (cx + r * math.cos(a0), cy + r * math.sin(a0)),
+                                                      (cx + r * math.cos(a1), cy + r * math.sin(a1))])))
+    return out
+
+
+# En los logos el amarillo es `sunray` o `bolt`: con `sun`, `trazos` le pone rayos a la forma.
+def logo_mono():
+    """A: la cara del mono sobre un sol de chiva."""
+    fondo = [("sky", rect(0, 0, LW, LW))] + sol_de_rayos(54, 54, 16, ("sunray", "sky"))
+    k = 1.45
+    frente = [("ochre", circle(54, 54, 31))] + escalar(PERSONAJES["mono"](), k, 54 - 24 * k, 55 - 22 * k)
+    return fondo, frente
+
+
+def logo_chiva():
+    """B: la chiva de frente sobre los rombos de su carrocería."""
+    fondo = [("leaf", rect(0, 0, LW, LW))]
+    for fila, y in enumerate(range(0, LW + 18, 18)):
+        for x in range(-9 if fila % 2 else 0, LW + 18, 18):
+            fondo.append((("ochre", "roof", "cloud")[(x // 18 + fila) % 3], poly([(x, y - 7), (x + 7, y), (x, y + 7), (x - 7, y)])))
+    k = 1.4
+    frente = escalar(PERSONAJES["chiva"](), k, 54 - 24 * k, 55 - 24.25 * k)
+    return fondo, frente
+
+
+def logo_dado():
+    """C: un dado con los cinco puntos en los colores de la franja, sobre franjas diagonales."""
+    fondo = []
+    for i in range(-6, 8):
+        x = i * 18
+        fondo.append((("roof", "bolt", "window", "leaf", "trim")[i % 5], poly([(x, 0), (x + 18, 0), (x + 18 + LW, LW), (x + LW, LW)])))
+    frente = [("coal", rrect(29, 32, 52, 52, 11)), ("cloud", rrect(26, 26, 52, 52, 11))]
+    for (x, y), papel in zip(((39, 39), (65, 39), (52, 52), (39, 65), (65, 65)), ("roof", "window", "bolt", "leaf", "trim")):
+        frente.append((papel, circle(x, y, 6)))
+    return fondo, frente
+
+
+LOGOS = {"mono": logo_mono, "chiva": logo_chiva, "dado": logo_dado}
+
 # ---------- estilo C: arte de chiva ----------
 CONTORNO, ANCHO = "#1B1B1B", 1.5
 PALETA = {
@@ -2553,8 +2638,10 @@ def franjas():
     return out
 
 
-def trazos(escena, ancho_contorno=ANCHO, con_franjas=True):
-    """(relleno, contorno, ancho, d) en orden de dibujo; el sol lleva rayos detrás."""
+def trazos(escena, ancho_contorno=ANCHO, con_franjas=True, ancho_lineas=None):
+    """(relleno, contorno, ancho, d) en orden de dibujo; el sol lleva rayos detrás.
+
+    `ancho_lineas`, si se da, reemplaza el grosor de los papeles de `LINEAS` (logos, a otra escala)."""
     for papel, (d, caja) in list(escena):
         if papel == "sun":
             x0, y0, x1, _ = caja
@@ -2564,7 +2651,7 @@ def trazos(escena, ancho_contorno=ANCHO, con_franjas=True):
     for papel, (d, _) in escena:
         if papel in LINEAS:
             color, ancho = LINEAS[papel]
-            out.append((None, color, ancho, d))
+            out.append((None, color, ancho_lineas or ancho, d))
         else:
             out.append((PALETA[papel], CONTORNO, ancho_contorno, d))
     return out + franjas() if con_franjas else out
@@ -2632,6 +2719,13 @@ def salidas():
         t = trazos(fn(), PJ_ANCHO, con_franjas=False)
         yield SVG_DIR / f"pj_{nombre}.svg", svg(t, PW, PW, 10)
         yield VD_DIR / f"pj_{nombre}.xml", vector_drawable(t, PW, PW)
+    for nombre, fn in LOGOS.items():
+        fondo, frente = fn()
+        tf = trazos(fondo, LOGO_ANCHO, con_franjas=False)
+        tt = trazos(frente, LOGO_ANCHO, con_franjas=False, ancho_lineas=LOGO_LINEAS)
+        yield SVG_DIR / f"logo_{nombre}.svg", svg(tf + tt, LW, LW, 4)
+        yield VD_DIR / f"logo_{nombre}_fondo.xml", vector_drawable(tf, LW, LW)
+        yield VD_DIR / f"logo_{nombre}_frente.xml", vector_drawable(tt, LW, LW)
 
 
 def main(argv):
@@ -2645,7 +2739,8 @@ def main(argv):
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(txt)
     n = len(LUGARES) + len(ICONOS) + len(PERSONAJES)
-    print(f"arte: {len(LUGARES)} lugares, {len(ICONOS)} íconos y {len(PERSONAJES)} personajes -> {n * 2 + 2} archivos"
+    print(f"arte: {len(LUGARES)} lugares, {len(ICONOS)} íconos, {len(PERSONAJES)} personajes y {len(LOGOS)} logos"
+          f" -> {n * 2 + len(LOGOS) * 3 + 2} archivos"
           f" ({len(viejos)} cambiados)")
     return 0
 
