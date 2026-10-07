@@ -11,6 +11,8 @@ Desde la raiz del proyecto:
   python3 .claude/skills/agente-mono/scripts/telefono.py log [-n 60]
   python3 .claude/skills/agente-mono/scripts/telefono.py emulador       (arranca el AVD aparte)
   python3 .claude/skills/agente-mono/scripts/telefono.py adb -- shell wm size   (cualquier orden de adb, M-007)
+  python3 .claude/skills/agente-mono/scripts/telefono.py cartas 1 3 6 8 --salida capturas/FA.5f_cartas.png [--tio-rico]
+      (instala, abre la carta de cada casilla, captura y une con hoja_arte.py; M-037)
 Con varios dispositivos se prefiere el fisico (el Redmi); --serie elige uno.
 """
 
@@ -21,10 +23,13 @@ import datetime as dt
 import os
 import subprocess
 import sys
+import time
 import tomllib
 from pathlib import Path
 
 DEFAULT_LOG_LINES = 60
+# Espera tras abrir una carta: el arranque en frio tarda (FA.3: una captura salio en blanco).
+CARTA_ESPERA_S = 5
 # Lineas de salida de gradle que se muestran si la instalacion falla.
 TAIL_LINES = 15
 # Estados de `adb devices` que no son 'device', con la pista para arreglarlos (Mono M-004).
@@ -130,6 +135,13 @@ def launch_target(conf: dict) -> str | None:
     return f"{package}/{activity}" if package else None
 
 
+def carta_command(adb: str, serial: str, target: str, casilla: int, tio_rico: bool) -> list[str]:
+    """Reabre la app (-S) en una partida de prueba con la carta de `casilla` abierta (extra de FA.3)."""
+    argv = [adb, "-s", serial, "shell", "am", "start", "-S", "-n", target,
+            "--ei", "jugadores", "2", "--el", "semilla", "7", "--ei", "casilla", str(casilla)]
+    return argv + (["--ez", "tio_rico", "true"] if tio_rico else [])
+
+
 def gradle_env(conf: dict) -> dict:
     """Entorno de gradle: el de [cierre] entorno (JAVA_HOME del JBR de Android Studio)."""
     env = dict(os.environ)
@@ -145,16 +157,40 @@ def run(argv: list[str], **kwargs) -> subprocess.CompletedProcess:
 def build_parser() -> argparse.ArgumentParser:
     """Opciones propias; lo que va tras `--` lo separa `split_passthrough` antes."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="adb: telefono.py adb -- <argumentos>")
-    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb"])
+    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas"])
+    parser.add_argument("casillas", nargs="*", type=int, help="cartas: indices de las casillas")
+    parser.add_argument("--tio-rico", action="store_true", help="cartas: preset Tio Rico (si no, el Clasico)")
     parser.add_argument("--serie")
     parser.add_argument("--salida", type=Path)
     parser.add_argument("-n", type=int, default=DEFAULT_LOG_LINES)
     return parser
 
 
+def cartas(args, root: Path, adb: str, serial: str, target: str | None) -> int:
+    """Captura la carta de cada casilla y las une en --salida (hoja_arte.py --unir, con el venv del arte)."""
+    if not args.casillas or args.salida is None or target is None:
+        print("Uso: telefono.py cartas <casilla>... --salida capturas/<paso>_cartas.png [--tio-rico]")
+        return 1
+    carpeta = root / "capturas" / "tmp" / f"cartas_{dt.datetime.now():%H%M%S}"
+    carpeta.mkdir(parents=True)
+    for k, casilla in enumerate(args.casillas):
+        run(carta_command(adb, serial, target, casilla, args.tio_rico))
+        time.sleep(CARTA_ESPERA_S)
+        if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
+            print("Pantalla apagada: pide al autor que desbloquee el Redmi. Capturas a medias en " + str(carpeta))
+            return 1
+        with (carpeta / f"{k:02d}_casilla_{casilla}.png").open("wb") as handle:
+            subprocess.run([adb, "-s", serial, "exec-out", "screencap", "-p"], stdout=handle)
+    hoja = Path(__file__).with_name("hoja_arte.py")
+    venv = Path("~/.cache/mono-arte/bin/python").expanduser()
+    done = run([str(venv), str(hoja), "--unir", str(carpeta), "--salida", str(args.salida)], cwd=root)
+    print(f"Instalada en {serial}; {len(args.casillas)} cartas. " + (done.stdout + done.stderr).strip())
+    return done.returncode
+
+
 def main() -> int:
     own, rest = split_passthrough(sys.argv[1:])
-    args = build_parser().parse_args(own)
+    args = build_parser().parse_intermixed_args(own)
     args.resto = rest
 
     cfg = find_config(Path.cwd())
@@ -196,7 +232,7 @@ def main() -> int:
         print((done.stdout + done.stderr).rstrip())
         return done.returncode
 
-    if args.orden == "instalar":
+    if args.orden in ("instalar", "cartas"):
         env = gradle_env(conf) | {"ANDROID_SERIAL": serial}
         done = run(["./gradlew", "--console=plain", "-q", ":app:installDebug"], cwd=root, env=env)
         if done.returncode != 0:
@@ -208,10 +244,12 @@ def main() -> int:
                 print("installDebug: FALLA\n" + "\n".join(output.splitlines()[-TAIL_LINES:]))
             return 1
         target = launch_target(conf)
-        if target:
-            run([adb, "-s", serial, "shell", "am", "start", "-n", target])
-        print(f"Instalada en {serial}" + (f" y abierta ({target})." if target else "."))
-        return 0
+        if args.orden == "instalar":
+            if target:
+                run([adb, "-s", serial, "shell", "am", "start", "-n", target])
+            print(f"Instalada en {serial}" + (f" y abierta ({target})." if target else "."))
+            return 0
+        return cartas(args, root, adb, serial, target)
 
     if args.orden == "captura":
         if args.salida is None:

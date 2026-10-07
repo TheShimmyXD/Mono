@@ -1,4 +1,4 @@
-"""Pruebas de pagina.py y telefono.py (solo biblioteca estandar; no llaman a pdftoppm ni a adb).
+"""Pruebas de pagina.py, telefono.py y hoja_arte.py (solo biblioteca estandar; no llaman a pdftoppm ni a adb).
 
 Uso: python3 -m unittest discover -s .claude/skills/agente-mono/tests
 """
@@ -12,6 +12,8 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import pagina  # noqa: E402
 import telefono  # noqa: E402
+import hoja_arte  # noqa: E402
+import tempfile  # noqa: E402
 
 
 class TestPagina(unittest.TestCase):
@@ -123,6 +125,37 @@ class TestTelefono(unittest.TestCase):
     def test_gradle_env_expands_home(self):
         env = telefono.gradle_env({"cierre": {"entorno": {"JAVA_HOME": "~/jbr"}}})
         self.assertEqual(env["JAVA_HOME"], str(Path.home() / "jbr"))
+
+
+
+class TestCartasYHoja(unittest.TestCase):
+    """M-037: cartas del Redmi y hoja de contacto como scripts de la skill."""
+
+    def test_carta_command_clasico_y_tio_rico(self):
+        argv = telefono.carta_command("adb", "S1", "com.jacck.mono/.MainActivity", 9, False)
+        self.assertEqual(argv[:8], ["adb", "-s", "S1", "shell", "am", "start", "-S", "-n"])
+        self.assertIn("9", argv)
+        self.assertNotIn("tio_rico", argv)
+        self.assertEqual(telefono.carta_command("adb", "S1", "p/.A", 3, True)[-3:], ["--ez", "tio_rico", "true"])
+
+    def test_cartas_opciones_mezcladas(self):
+        own, _ = telefono.split_passthrough(["cartas", "--salida", "x.png", "1", "3", "--tio-rico"])
+        args = telefono.build_parser().parse_intermixed_args(own)
+        self.assertEqual((args.orden, args.casillas, args.tio_rico), ("cartas", [1, 3], True))
+        self.assertEqual(telefono.build_parser().parse_intermixed_args(["captura", "--salida", "/x"]).casillas, [])
+
+    def test_hoja_no_pasa_de_1600(self):
+        self.assertLessEqual(3 * hoja_arte.celda() + 4 * hoja_arte.SEP, hoja_arte.ANCHO_MAX)
+        self.assertEqual((hoja_arte.filas(4), hoja_arte.filas(3), hoja_arte.filas(7)), (2, 1, 3))
+        tamanos = [(1220, 2712)] * 4
+        alto = hoja_arte.alto_comun(tamanos)
+        self.assertLessEqual(sum(round(w * alto / h) for w, h in tamanos) + 3 * hoja_arte.SEP, hoja_arte.ANCHO_MAX + 4)
+        self.assertEqual(hoja_arte.alto_comun([(1220, 2712)]), hoja_arte.ALTO_CAPTURA)
+
+    def test_faltantes(self):
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "niza.svg").write_text("<svg/>")
+            self.assertEqual(hoja_arte.faltantes(["niza", "zona_t"], Path(d)), ["zona_t"])
 
 
 if __name__ == "__main__":
