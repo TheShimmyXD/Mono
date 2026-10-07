@@ -6,7 +6,8 @@ Con el venv de cairosvg y Pillow (arte.md §2), desde la raiz del proyecto:
       corre arte/arte.py (se detiene si falla) y une los SVG de esos ids, con su nombre debajo.
   ~/.cache/mono-arte/bin/python .claude/skills/agente-mono/scripts/hoja_arte.py --unir <carpeta> --salida <png>
       une las capturas PNG de la carpeta de izquierda a derecha y borra la carpeta (lo llama `telefono.py cartas`).
-Mono M-037: antes se reescribia en el scratchpad en cada sesion.
+Mono M-037: antes se reescribia en el scratchpad en cada sesion. Fondo blanco: lo transparente
+(personajes sin fondo) salia negro (M-053).
 """
 
 from __future__ import annotations
@@ -63,7 +64,7 @@ def hoja_svg(raiz: Path, ids: list[str], salida: Path) -> int:
         print("Sin SVG (¿registrado en LUGARES?): " + ", ".join(sin_svg))
         return 1
     ancho = celda()
-    dibujos = [(i, Image.open(io.BytesIO(cairosvg.svg2png(url=str(carpeta / f"{i}.svg"), output_width=ancho))).convert("RGB"))
+    dibujos = [(i, Image.open(io.BytesIO(cairosvg.svg2png(url=str(carpeta / f"{i}.svg"), output_width=ancho, background_color="white"))).convert("RGB"))
                for i in ids]
     alto = dibujos[0][1].height + 16
     columnas = min(COLUMNAS, len(ids))

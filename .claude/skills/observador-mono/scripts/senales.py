@@ -354,6 +354,24 @@ RX_IMPURE = re.compile(
 )
 
 
+# K17 (M-051): mensajes al autor en otro idioma. Palabras de función, sin las que comparten (no, a).
+ENGLISH = re.compile(r"\b(the|and|is|are|this|that|with|now|next|before|after|which|it's|I'm|I'll|I've|so|then|what|there)\b", re.I)
+SPANISH = re.compile(r"\b(el|la|los|las|que|y|es|en|con|para|por|una|un|del|ahora|lo|se|ya)\b", re.I)
+
+
+def foreign_messages(events: list[dict]) -> list[int]:
+    """Mensajes del asistente en inglés: al menos 3 palabras de función inglesas y el doble que españolas."""
+    hits = []
+    for e in events:
+        if e.get("tipo") != "CLAUDE":
+            continue
+        text = re.sub(r"`[^`]*`", "", e.get("texto", ""))
+        en, es = len(ENGLISH.findall(text)), len(SPANISH.findall(text))
+        if en >= 3 and en > 2 * es:
+            hits.append(e["n"])
+    return hits
+
+
 def kotlin_files(folder: Path) -> list[Path]:
     return sorted(folder.rglob("*.kt")) if folder.is_dir() else []
 
@@ -390,6 +408,7 @@ def project_signals(root: Path, conf: dict, data: dict) -> list[tuple[str, str, 
     K13 motor impuro: Android, azar sin semilla, hora o archivos (D-02, D-03).
     K14 R-## del motor sin ninguna prueba que la cite (regla 5).
     K15 escritura en la interfaz sin `telefono.py captura` después (regla 7).
+    K17 mensajes al autor en otro idioma que el español (M-051).
     """
     observer = conf["observador"]
     x = observer.get("prefijo", "X")
@@ -414,6 +433,9 @@ def project_signals(root: Path, conf: dict, data: dict) -> list[tuple[str, str, 
         after = commands_after(events, last_ui)
         if not any("telefono.py" in c and "captura" in c for c in after):
             found.append((f"{x}15", "Media", f"Interfaz cambiada (#{last_ui}) sin captura después"))
+    foreign = foreign_messages(events)
+    if foreign:
+        found.append((f"{x}17", "Alta", f"{len(foreign)} mensajes al autor en inglés: #{foreign[:12]}"))
     return found
 
 

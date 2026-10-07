@@ -129,6 +129,13 @@ class TestTelefono(unittest.TestCase):
 
 
 class TestCartasYHoja(unittest.TestCase):
+    def test_am_warning(self):
+        # M-054: en dfceab09 #26 la primera captura salio del menu y la salida de am start se perdia.
+        ok = "Stopping: com.jacck.mono\nStarting: Intent { cmp=com.jacck.mono/.MainActivity (has extras) }\n"
+        self.assertIsNone(telefono.am_warning(ok))
+        mal = ok + "Warning: Activity not started, its current task has been brought to the front\n"
+        self.assertTrue(telefono.am_warning(mal).startswith("Warning: Activity not started"))
+
     """M-037: cartas del Redmi y hoja de contacto como scripts de la skill."""
 
     def test_carta_command_clasico_y_tio_rico(self):

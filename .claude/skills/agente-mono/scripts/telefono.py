@@ -179,6 +179,11 @@ def extras_args(item: str) -> list[str]:
     return argv
 
 
+def am_warning(output: str) -> str | None:
+    """Primera linea de `am start` con Error o Warning (p. ej. la actividad no arranco), o None (M-054)."""
+    return next((l.strip() for l in output.splitlines() if "Error" in l or "Warning" in l), None)
+
+
 def pantalla_command(adb: str, serial: str, target: str, item: str) -> list[str]:
     """Reabre la app (-S) con los extras de `item` (M-048)."""
     return [adb, "-s", serial, "shell", "am", "start", "-S", "-n", target, *extras_args(item)]
@@ -201,7 +206,10 @@ def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]],
     carpeta = root / "capturas" / "tmp" / f"serie_{dt.datetime.now():%H%M%S}"
     carpeta.mkdir(parents=True)
     for k, (label, argv) in enumerate(shots):
-        run(argv)
+        started = run(argv)
+        warning = am_warning(started.stdout + started.stderr)
+        if warning:
+            print(f"{label or '-'}: {warning}")
         time.sleep(wait)
         if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
             print("Pantalla apagada: pide al autor que desbloquee el Redmi. Capturas a medias en " + str(carpeta))

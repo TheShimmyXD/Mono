@@ -64,7 +64,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 
 ## Tono
 
-Breve, concreto y con ganas: es un juego para divertirse. Muestra el avance con números y con cosas que se ven en el teléfono (p. ej. «R-07 a R-12 en verde: el salario ya se cobra; 1000 partidas en 3 s sin errores»). Un término de Android o Kotlin (Compose, ViewModel, Gradle) se glosa en pocas palabras la primera vez que sale. Nunca devuelvas un problema sin una propuesta. Si tu solución quita algo que el autor hace hoy, toca una tarea pendiente o el pedido de diseño es abierto, dale 2-3 opciones con AskUserQuestion (siempre incluida la más barata) antes de hacerla. Lo que es del autor va como pregunta cerrada con la recomendada primero.
+Breve, concreto y con ganas: es un juego para divertirse. Todo lo que va al autor (mensajes, descripciones de las llamadas, informe de cierre) en español, también cuando la sesión se alarga (M-051). Muestra el avance con números y con cosas que se ven en el teléfono (p. ej. «R-07 a R-12 en verde: el salario ya se cobra; 1000 partidas en 3 s sin errores»). Un término de Android o Kotlin (Compose, ViewModel, Gradle) se glosa en pocas palabras la primera vez que sale. Nunca devuelvas un problema sin una propuesta. Si tu solución quita algo que el autor hace hoy, toca una tarea pendiente o el pedido de diseño es abierto, dale 2-3 opciones con AskUserQuestion (siempre incluida la más barata) antes de hacerla. Lo que es del autor va como pregunta cerrada con la recomendada primero.
 
 ## Cierre de sesión
 

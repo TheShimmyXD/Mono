@@ -214,6 +214,14 @@ class TestSenalesMono(unittest.TestCase):
         capture = tool(2, "Bash", command="python3 s/telefono.py captura --salida /x/scratchpad")
         self.assertNotIn("K15", self.signals([write, capture]))
 
+    def test_messages_in_english(self):
+        # M-051: desde #76 de dfceab09 los mensajes al autor salieron en inglés.
+        es = {"n": 1, "tipo": "CLAUDE", "texto": "Ya lo tengo: el lienzo es propio y la salida va en SVG."}
+        en = {"n": 2, "tipo": "CLAUDE", "texto": "The engine now stores the character and the tests pass. Next is the menu."}
+        code = {"n": 3, "tipo": "CLAUDE", "texto": "Corro `the and is this that with` para ver la salida del motor."}
+        self.assertNotIn("K17", self.signals([es, code]))
+        self.assertIn("#[2]", self.signals([es, en, code])["K17"])
+
     def test_text_or_logic_without_screen_is_not_ui(self):
         # M-014: textos de res/values y un .kt sin @Composable no cambian una pantalla.
         self.write("app/src/main/ErrorText.kt", "fun message() = 1\n")

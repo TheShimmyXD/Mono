@@ -8,6 +8,8 @@ Un pedido de diseño abierto (tablero, panel, editor) se resuelve con 2-3 opcion
 
 Las maquetas van siempre en `app/src/main/kotlin/com/jacck/mono/demo/Maquetas.kt` (`@Composable fun Maqueta(letra: String)`, extra `maqueta` de `MainActivity`), con su commit: la pantalla siguiente sobrescribe ese archivo con Write y, tras la elección, queda el esqueleto vacío. Así no hay archivos que el autor tenga que borrar (M-029).
 
+La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><opción>` (p. ej. `FB.4c`) pone esa opción arriba y salen juntas con `pantallas maqueta=FB.4 maqueta=FB.4c`. Datos falsos con índices válidos: un −1 cierra la app y gasta una instalación (M-055).
+
 ## 2. Después de cambiar una pantalla: captura
 
 - `python3 .claude/skills/agente-mono/scripts/telefono.py instalar` y después `telefono.py captura --salida <scratchpad>`; se lee la captura antes de decir que algo se ve bien.
@@ -27,6 +29,7 @@ Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arreg
 - **adb no puede tocar la pantalla:** `input tap` da `INJECT_EVENTS` (haría falta «Depuración USB (ajustes de seguridad)»). Las partidas de prueba las juega el autor; tú instalas, le dices hasta dónde jugar y capturas (D-23, M-023). Antes de automatizar algo por adb, prueba un solo paso a mano y lee su stderr.
 - **Estado avanzado sin tocar:** para capturar una pantalla que necesita media partida, un extra de prueba en `MainActivity` que prepara el estado o abre la pantalla (`propiedades`, `hoja`; D-24), anotado en su KDoc y en ESTADO (M-028).
 - **`instalar` cierra la partida abierta** (la de un APK anterior no vuelve): la prueba del autor se hace en lo recién instalado, y se le dice. La pregunta del resultado trae los fallos probables como opciones («no salió X», «se cerró», «salió distinto»; M-033). Si no cuadra, antes de buscar el fallo: la hora de su respuesta (¿alcanzó a hacerlo?) y el log desde `MainActivity creada`; `--------- beginning of main` lo imprime logcat siempre, no es rotación (M-031).
+- **Un *Terminado* con prueba del autor:** antes, el comando que la comprueba va a ESTADO (p. ej. `telefono.py adb -- shell run-as com.jacck.mono cat files/partida.json | grep token`). La primera pregunta es «¿Ya la jugaste?» (Ya / Después), no la aprobación; con «Ya», se corre ese comando y solo entonces Aprobar / Con un cambio / Todavía no. Sin evidencia, sin `[x]` (M-052).
 - **Sin `svc power stayon`** (el autor, 2026-10-06): pide el desbloqueo justo antes y agrupa `instalar` + capturas en la misma llamada.
 
 ## 3. Reglas de la interfaz
