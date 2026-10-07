@@ -179,3 +179,14 @@
 - **Por qué:** sin arte ni nombres de terceros (riesgo de marcas del plan); 32 títulos solo caben con N = 44 (múltiplo de 4, D-09).
 - **Cómo se revierte:** cambiar el JSON; `PresetTest` dice qué deja de cumplir.
 - **Estado:** vigente.
+
+### D-19 · Simulador de partidas (F2.9)
+
+- **Pregunta:** cómo jugar 1000 partidas sin interfaz y qué se comprueba.
+- **Opciones:** bot que conoce las reglas · bot que prueba acciones al azar y el motor dice cuál vale (esta) · solo tiradas y fin de turno.
+- **Elección (del agente):** `engine/src/test/…/Simulator.kt`: en cada fase el bot prueba acciones al azar y toma la primera que no lanza `IllegalActionException`; cualquier otra excepción es un fallo. Compra 7 de cada 10, puja al azar, construye o levanta hipotecas hasta 3 veces por turno, en la deuda vende o hipoteca y si no alcanza quiebra. `ringBoard` saca de cada preset tableros de N = 16..48 (quita casillas al azar, nunca la salida ni la Cárcel, o añade descansos; quita las cartas que se quedan sin destino). Invariantes en cada acción: el saldo de cada jugador cambia lo que dicen los eventos (en una quiebra, sin cifra en su evento, se audita a los demás y el quebrado queda en $0); fuera de una deuda nadie en juego tiene saldo negativo; casas y hoteles del Banco + los del tablero = existencias (R-28). Tope: 1000 turnos. Sin negocios: `Trade` aún no está en el motor.
+- **Medido (2026-10-06):** 1000 partidas en 32 s, 1 398 476 acciones, 0 excepciones; 598 terminan y 402 llegan al tope; Clásico 352/500 (203 turnos de media), Tío Rico 246/500 (440).
+- **Por qué:** sin duplicar las reglas en el bot; el motor no cambia; la prueba corre con `:engine:test` (+32 s al cierre) para que una regresión salga en cada paso.
+- **Cómo se revierte:** borrar `Simulator.kt` y `SimulatorTest.kt`.
+- **Estado:** vigente.
+
