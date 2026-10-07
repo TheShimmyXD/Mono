@@ -23,3 +23,8 @@
 - En una casilla del tablero (~36 dp) la escena no se lee: ahí va lo que decida FA.3 (recorte o color del grupo).
 - Íconos (FA.2): lienzo propio de 24 × 24, sin franjas, mismo contorno; salen como `ic_<id>.xml`.
 - FA.4 y FA.5: un grupo de 4 lugares por sub-paso, con hoja de contacto, captura y commit.
+
+## 4. Ícono de la app y material de terceros
+
+- **Ícono o nombre de la app:** `telefono.py adb -- shell am start -a android.intent.action.MAIN -c android.intent.category.HOME` y `captura`; la pantalla de inicio es del autor: a `capturas/` va solo el recorte del ícono (M-059).
+- **Letra o imagen de terceros:** solo con licencia libre (OFL, CC0, Apache); se baja a una carpeta propia del scratchpad junto con su licencia, se comprueba que tenga tildes, ñ, ¿ y ¡ (`~/.cache/mono-arte/bin/python -I -c` con `ImageFont.truetype(ttf, 40)`: un glifo que falta da los mismos `bytes(f.getmask(ch))` que `'\uE000'`; no hay `fontTools`), la licencia queda en `arte/<tipo>/` y se cita en su D-## (D-33, M-047).

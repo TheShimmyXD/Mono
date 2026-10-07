@@ -19,7 +19,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `Agente_Mono/ESTADO.md` | **Fuente de verdad**: fase, qué ya funciona (con su comando), siguiente paso exacto, pendientes. ≤ 5000 car.; lo cerrado va a `ESTADO_historial.md`. |
 | `Agente_Mono/SESIONES.md` | Una entrada por sesión (≤ 5 líneas), con el id. Solo se añade al final. |
 | `Agente_Mono/DECISIONES.md` | Fichas D-##. Se leen por encabezado (`sed -n '/^### D-03 /,/^### D-04 /p'`). |
-| `references/` | `mandato.md` (primera sesión o duda de alcance) · `reglas.md` (F1 o regla sin ficha: escaneos y formato R-##) · `motor.md` (F0, F2) · `interfaz.md` (F0.4, F3, FA, F4) · `redmi.md` (si el teléfono no responde) · `arte.md` (FA) · `enlace.md` (F5, después del hito). |
+| `references/` | `mandato.md` (primera sesión o duda de alcance) · `reglas.md` (F1 o regla sin ficha: escaneos y formato R-##) · `motor.md` (F0, F2) · `interfaz.md` (F0.4, F3, FA, F4) · `redmi.md` (si el teléfono no responde) · `arte.md` (FA; ícono, letra o imagen de terceros) · `enlace.md` (F5, después del hito). |
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
 | `scripts/cierre_paso.py` | Pruebas del motor y la app, compilación, arte, tope de ESTADO y fichas R-## en una orden; sale 1 si algo falla. |
 | `scripts/pagina.py` | Una página o un recorte de un reglamento a PNG (`--info`, `--rejilla 2x3`, `--recorte x,y,an,al`). Nunca el PDF entero. |
@@ -47,7 +47,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 - **Interfaz:** 2-3 opciones con captura antes de una pantalla nueva, y `telefono.py instalar` + `captura` después de cambiarla, antes de mostrarla (`interfaz.md`).
 - **Tarea grande** (más de ~6 R-##): pártela en sub-pasos (a, b, c), cada uno con `cierre_paso.py` y su commit; la casilla se marca con el último; ESTADO dice solo qué sub-pasos faltan (hashes y capturas, a SESIONES). Entre llamadas el árbol compila: el modelo nuevo va en la misma tanda que el código que lo usa.
 - **Cierre de cada paso:** `python3 .claude/skills/agente-mono/scripts/cierre_paso.py` (pruebas del motor y de la app, `assembleDebug`, tope de ESTADO; su salida se lee entera, sin `| tail`, que tapa los AVISO y el código de salida) y un commit local, antes del punto de control (ESTADO, SESIONES, trazas, `capturas/` y `fuentes/` están fuera de Git a propósito: el commit lleva el plan, el código, `REGLAS.md` y `DECISIONES.md`). Una dependencia nueva va a `gradle/libs.versions.toml` en el mismo commit y a ESTADO con su versión.
-- **Cada cifra se mide.** Lo que se afirma lleva el número real de una corrida o una fuente; lo que juzga el autor (calidad, estética) no lo declaras tú.
+- **Cada cifra se mide.** Lo que se afirma (también un recuento en una D-## o en el chat) lleva el número real de una corrida, un `grep -c` o una fuente; lo que juzga el autor (calidad, estética) no lo declaras tú.
 - **Decisiones:** toda elección no trivial va como ficha D-## en el mismo paso. Un cambio de pila o de enfoque se consulta antes.
 - **Lo visible primero:** cuando algo nuevo se puede correr o ver, deja el comando en ESTADO («Qué ya funciona») y muéstralo en una línea con números.
 - **Borrar archivos** del proyecto: pídeselo al autor con `! git rm <rutas>` y sigue.

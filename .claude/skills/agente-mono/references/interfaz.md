@@ -16,7 +16,6 @@ La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><o
 - Lo que juzga el autor (si se ve bien, si se entiende) no lo declaras tú: le muestras la captura (SendUserFile si está disponible) y preguntas.
 - **Lo que va al autor sale del APK instalado:** si cambias algo visible después de capturar (un texto, un color), reinstala y recaptura esa pantalla antes de enviarla; el pie de SendUserFile dice solo lo que se ve en la imagen (M-049).
 - **Abrir con un extra** (maqueta o prueba): `telefono.py adb -- shell am start -S -n com.jacck.mono/.MainActivity --es maqueta A` (`-S` cierra antes la app; `--ez`/`--ei` para booleanos o enteros). Varias pantallas en una orden: `telefono.py pantallas - maqueta=A fase=compra propiedades=true,hoja=true --salida capturas/<paso>.png` instala, abre cada una (`-` = sin extras, el menú), espera 6 s (con menos, un diálogo sale a medio aparecer), captura y las une; se lee esa sola imagen y va al autor con SendUserFile (M-035, M-048). No se escribe código de Pillow para unir capturas. Los extras de partida abren con el aviso «Lo que pasó» encima del tablero (M-046).
-- **Ícono o nombre de la app:** `telefono.py adb -- shell am start -a android.intent.action.MAIN -c android.intent.category.HOME` y `captura`; la pantalla de inicio es del autor: a `capturas/` va solo el recorte del ícono (M-059).
 - Si algo falla en el teléfono: `telefono.py log -n 60` (solo la etiqueta `Mono` y los errores fatales), nunca el logcat completo.
 
 ### Pruebas en el Redmi
@@ -37,9 +36,10 @@ Si el teléfono no responde (`dispositivos`, `instalar`, `captura`): `redmi.md`.
 - **Pantalla que sale del menú y vuelve** (editores de F4): el menú va dentro de `rememberSaveableStateHolder().SaveableStateProvider("menu")`; sin eso, `rememberSaveable` pierde nombres y personajes al volver (F4.1, D-39; M-061).
 - La interfaz no decide reglas: llama al motor con una acción y dibuja el estado y los eventos que devuelve. Si la interfaz necesita algo que el motor no da, primero va al motor con su prueba (regla 4).
 - Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 16, 40 y 48: extremos de D-09 y el Clásico; M-021).
-- Pantalla del Redmi: se mide con `adb shell wm size` y `wm density` en F0.4 y se anota en ESTADO; todo se ve en vertical, sin girar el teléfono. Textos en `strings.xml`.
+- Pantalla del Redmi: se mide con `adb shell wm size` y `wm density` en F0.4 y se anota en ESTADO; todo se ve en vertical, sin girar el teléfono.
+- **Textos nuevos en `strings.xml`:** prefijo propio de la pantalla, comprobado antes con `grep -c 'name="<prefijo>_' app/src/main/res/values/strings.xml` (los `rule_*` son del validador); un texto que explica una regla se escribe desde la línea **Regla:** de su ficha R-##, no de memoria ni solo del KDoc (M-063).
 - Un ViewModel por pantalla que guarda el estado del motor; el guardado de partidas y tableros (F3.6, F4.4) en archivos JSON de la app.
-- **Letra o imagen de terceros:** solo con licencia libre (OFL, CC0, Apache); se baja a una carpeta propia del scratchpad junto con su licencia, se comprueba que tenga tildes, ñ, ¿ y ¡ (`~/.cache/mono-arte/bin/python -I -c` con `ImageFont.truetype(ttf, 40)`: un glifo que falta da los mismos `bytes(f.getmask(ch))` que `'\uE000'`; no hay `fontTools`), la licencia queda en `arte/<tipo>/` y se cita en su D-## (D-33, M-047).
+- **Ícono de la app, letra o imagen de terceros:** `arte.md` §4.
 
 ## 4. El hito (F4.5)
 
