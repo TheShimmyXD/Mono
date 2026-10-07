@@ -24,6 +24,7 @@ Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arreg
 - `INSTALL_FAILED_USER_RESTRICTED`: HyperOS pide «Instalar vía USB» en Opciones de desarrollador y tocar Instalar en el teléfono a tiempo.
 - **adb no puede tocar la pantalla:** `input tap` da `INJECT_EVENTS` (haría falta «Depuración USB (ajustes de seguridad)»). Las partidas de prueba las juega el autor; tú instalas, le dices hasta dónde jugar y capturas (D-23, M-023). Antes de automatizar algo por adb, prueba un solo paso a mano y lee su stderr.
 - **Estado avanzado sin tocar:** para capturar una pantalla que necesita media partida, un extra de prueba en `MainActivity` que prepara el estado o abre la pantalla (`propiedades`, `hoja`; D-24), anotado en su KDoc y en ESTADO (M-028).
+- **`instalar` cierra la partida abierta** (la de un APK anterior no vuelve): la prueba del autor se hace en lo recién instalado, y se le dice. La pregunta del resultado trae los fallos probables como opciones («no salió X», «se cerró», «salió distinto»; M-033). Si no cuadra, antes de buscar el fallo: la hora de su respuesta (¿alcanzó a hacerlo?) y el log desde `MainActivity creada`; `--------- beginning of main` lo imprime logcat siempre, no es rotación (M-031).
 - **Sin `svc power stayon`** (el autor, 2026-10-06): pide el desbloqueo justo antes y agrupa `instalar` + capturas en la misma llamada.
 
 ## 3. Reglas de la interfaz
@@ -32,6 +33,7 @@ Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arreg
 - Código de la app en `app/src/main/kotlin/com/jacck/mono/` (`board/`, `game/`, `demo/`), pruebas en `app/src/test/kotlin/…`; no hay `java/` (M-030).
 - **Qué acción vale y cuánto cuesta:** `Engine.tryApply(config, state, action)` (null si no vale) y la cifra de su evento, como `propertyMoves` (D-24); para habilitar botones no se leen los cuerpos de las reglas del motor (M-027).
 - **Botones con dinero:** verbo + cifra con el signo del dinero (− pagas, + recibes): `Construir −$50`, `Vender +$25`; nunca el signo pegado a un ícono («+🏠 $50» se leyó como cobrar; el autor, 2026-10-06; M-026).
+- **Lo que la app escribe fuera de pantalla** (archivos; después Bluetooth) deja un `Log.i` desde el primer commit, y antes de pedir la prueba se comprueba: `telefono.py adb -- shell run-as com.jacck.mono ls -la files` (M-032).
 - La interfaz no decide reglas: llama al motor con una acción y dibuja el estado y los eventos que devuelve. Si la interfaz necesita algo que el motor no da, primero va al motor con su prueba (regla 4).
 - Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 16, 40 y 48: extremos de D-09 y el Clásico; M-021).
 - Pantalla del Redmi: se mide con `adb shell wm size` y `wm density` en F0.4 y se anota en ESTADO; todo se ve en vertical, sin girar el teléfono. Textos en `strings.xml`.
