@@ -1709,6 +1709,95 @@ def cedritos():
     return s
 
 
+def santa_barbara():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(28, 22, 8)),
+         ("far", poly([(0, 56), (40, 40), (80, 50), (120, 34), (160, 46), (200, 38), (200, 104), (0, 104)]))]
+    # el centro comercial moderno detrás
+    s += [("granite", rect(110, 22, 70, 42)), ("window", rect(114, 26, 62, 34)),
+          ("shine", lines([(x, 26, x, 60) for x in range(124, 176, 10)] + [(114, 43, 176, 43)])),
+          ("granite", rect(36, 36, 46, 28)), ("gshade", rect(76, 36, 6, 28))]
+    s += [("window", rect(x, 42, 8, 6)) for x in (42, 54, 66)] + [("window", rect(x, 53, 8, 6)) for x in (42, 54, 66)]
+    # la casa de la hacienda con su corredor de arcos
+    s += [("roof", poly([(10, 68), (30, 54), (170, 54), (190, 68)])), ("rshade", rect(10, 66, 180, 3)),
+          ("wall", rect(18, 68, 164, 34)), ("wshade", rect(18, 68, 164, 3))]
+    s += [("door", arch(x, 76, 11, 26)) for x in range(25, 176, 16)]
+    s += palma_cera(14, 110, 62) + palma_cera(186, 110, 62)
+    tierra_plaza(s, 102)
+    return s
+
+
+def rosa(cx, cy, r, papel, sombra):
+    """Rosa vista de frente: dos hojas y pétalos en capas."""
+    return [("leaf", poly([(cx, cy), (cx - r * 1.8, cy + r * 0.6), (cx - r * 0.6, cy + r * 1.2)])),
+            ("leaf", poly([(cx, cy), (cx + r * 1.8, cy + r * 0.4), (cx + r * 0.8, cy + r * 1.2)])),
+            *[(papel, circle(cx + r * 0.5 * math.cos(math.radians(a)), cy + r * 0.5 * math.sin(math.radians(a)), r * 0.52))
+              for a in range(-90, 270, 72)],
+            (sombra, circle(cx, cy, r * 0.45)), (papel, circle(cx + r * 0.08, cy - r * 0.05, r * 0.22))]
+
+
+def rosales():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(20, 26), (26, 19), (36, 19), (42, 13), (54, 15), (60, 22), (68, 26)])),
+         ("far", poly([(0, 44), (50, 30), (100, 22), (150, 14), (200, 10), (200, 104), (0, 104)])),
+         ("near", poly([(0, 96), (60, 84), (120, 66), (200, 50), (200, 116), (0, 116)]))]
+    # edificios de ladrillo escalonados, subiendo el cerro
+    for x0, base in ((20, 104), (108, 92)):
+        for i in range(4):
+            x, top = x0 + 18 * i, base - 14 * (i + 1)
+            s += [("brick", rect(x, top, 18, base - top)), ("leaf", rect(x, top - 3, 18, 3))]
+            s += [("window", rect(x + 3, y, 12, 6)) for y in range(int(top) + 4, int(base) - 6, 9)]
+    # rosales
+    s += [("coffee", poly([(0, 140), (0, 112), (20, 106), (60, 110), (100, 104), (140, 110), (180, 104), (200, 108), (200, 140)]))]
+    for i, (cx, cy) in enumerate(((16, 114), (44, 124), (72, 112), (100, 124), (128, 112), (156, 124), (184, 114))):
+        s += rosa(cx, cy, 10, *(("roof", "rshade"), ("dolphin", "trim"), ("ochre", "oshade"), ("roof", "rshade"))[i % 4])
+    return s
+
+
+def el_chico():
+    s = [("sky", rect(0, 0, W, H)),
+         ("far", poly([(0, 50), (40, 34), (80, 42), (120, 28), (160, 38), (200, 30), (200, 100), (0, 100)]))]
+    # torres de vidrio alrededor del parque
+    for x, w, top in ((0, 40, 18), (40, 28, 40), (136, 30, 34), (166, 34, 14)):
+        s += [("granite", rect(x, top, w, 100 - top)), ("window", rect(x + 3, top + 4, w - 6, 92 - top)),
+              ("shine", lines([(x + 3, y, x + w - 3, y) for y in range(int(top) + 12, 92, 8)]))]
+    # terrazas de restaurantes con parasoles y luces colgantes
+    s += [("wall", rect(68, 70, 68, 30)), ("wshade", rect(68, 70, 68, 3)), ("trim", rect(68, 74, 68, 5))]
+    s += [("door", rect(x, 84, 10, 16)) for x in (74, 92, 110)] + [("window", rect(124, 84, 8, 10))]
+    s += [("rope", polyline([(x, 40 + 6 * math.sin(math.pi * (x - 40) / 60)) for x in range(40, 161, 6)]))]
+    s += [("ochre", circle(x, 40 + 6 * math.sin(math.pi * (x - 40) / 60) + 2, 2)) for x in range(46, 160, 12)]
+    s += [("near", rect(0, 100, W, 40)), ("stone", poly([(80, 100), (120, 100), (140, H), (60, H)]))]
+    s += sombrilla(30, 106, 16, "wall", "roof", 14) + sombrilla(170, 106, 16, "wall", "window", 14)
+    s += [("wood", rect(20, 118, 20, 4)), ("wood", rect(160, 118, 20, 4)),
+          ("trunk", rect(98, 104, 4, 16)), ("leaf", circle(100, 98, 10)), ("coffee", circle(105, 103, 6))]
+    return s
+
+
+def carpa(x, base, w, techo, cosas):
+    """Carpa del mercado de pulgas: techo de lona, patas y mesa con cosas."""
+    s = [("ink", lines([(x, base - 18, x, base), (x + w, base - 18, x + w, base)])),
+         ("wood", rect(x, base - 8, w, 4))]
+    s += [(p, rect(x + 3 + i * (w - 6) / len(cosas), base - 13, (w - 6) / len(cosas) - 2, 5)) for i, p in enumerate(cosas)]
+    s += [(techo, poly([(x - 3, base - 18), (x + w / 2, base - 28), (x + w + 3, base - 18)])),
+          (techo, rect(x - 3, base - 19, w + 6, 4)), ("roof", rect(x - 3, base - 16, w + 6, 2))]
+    return s
+
+
+def usaquen():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(172, 22, 8)),
+         ("far", poly([(0, 40), (40, 24), (80, 34), (120, 18), (160, 30), (200, 22), (200, 100), (0, 100)])),
+         ("near", poly([(0, 74), (50, 64), (100, 68), (150, 58), (200, 66), (200, 100), (0, 100)]))]
+    # iglesia de Santa Bárbara de Usaquén: fachada blanca y torre con reloj
+    s += [("wall", rect(112, 26, 18, 66)), ("wshade", rect(125, 26, 5, 66)), ("ochre", circle(121, 40, 5)),
+          ("ink", lines([(121, 40, 121, 37), (121, 40, 123.5, 41)])), ("door", arch(117, 50, 8, 11)),
+          ("roof", poly([(110, 26), (121, 14), (132, 26)])), ("ink", lines([(121, 14, 121, 8), (118.5, 10.5, 123.5, 10.5)])),
+          ("wall", poly([(66, 52), (89, 36), (112, 52)])), ("wall", rect(68, 50, 44, 42)), ("wshade", rect(66, 50, 46, 3)),
+          ("window", circle(89, 46, 3)), ("door", arch(81, 66, 16, 26)), ("window", arch(72, 64, 5, 9)), ("window", arch(101, 64, 5, 9))]
+    s += casa_colonial(4, 96, 44, 28, "ochre", "oshade") + casa_colonial(150, 96, 46, 30)
+    tierra_plaza(s, 96)
+    s += carpa(12, 128, 34, "wall", ("roof", "window", "ochre")) + carpa(84, 126, 34, "dolphin", ("leaf", "clay"))
+    s += carpa(154, 128, 34, "wall", ("trim", "ochre", "window"))
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
@@ -1725,7 +1814,8 @@ LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero"
            "la_perseverancia": la_perseverancia, "barrio_egipto": barrio_egipto, "teusaquillo": teusaquillo,
            "galerias": galerias, "la_soledad": la_soledad, "palermo": palermo, "park_way": park_way,
            "calle_19": calle_19, "avenida_jimenez": avenida_jimenez, "carrera_septima": carrera_septima, "niza": niza,
-           "pasadena": pasadena, "cedritos": cedritos}
+           "pasadena": pasadena, "cedritos": cedritos, "santa_barbara": santa_barbara, "rosales": rosales,
+           "el_chico": el_chico, "usaquen": usaquen}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
