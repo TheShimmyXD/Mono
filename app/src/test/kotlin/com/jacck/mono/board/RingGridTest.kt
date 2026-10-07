@@ -66,7 +66,14 @@ class RingGridTest {
     @Test
     fun `fuera del anillo o con N imposible falla`() {
         assertThrows(IllegalArgumentException::class.java) { RingGrid(7, 15).cellOf(40) }
-        assertThrows(IllegalArgumentException::class.java) { RingGrid.fit(41, 393f, 840f) }
         assertThrows(IllegalArgumentException::class.java) { RingGrid.fit(10, 393f, 840f) }
+    }
+
+    @Test
+    fun `con N impar el anillo es de N + 1 y queda vacia la celda de antes de la salida`() {
+        val g = RingGrid.fit(39, 393f, 840f)
+        assertEquals(40, g.size)
+        assertEquals(39, (0 until 39).map { g.cellOf(it) }.toSet().size)
+        assertEquals(GridCell(g.cols - 1, g.rows - 2), g.cellOf(39))
     }
 }

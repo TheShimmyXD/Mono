@@ -420,3 +420,13 @@
 - **Captura:** `capturas/F4.2_editor.png`.
 - **Cómo se revierte:** quitar la fila «Casillas | Reglas» de `EditorScreen` y `RulesPane`; `withRules` no estorba.
 - **Estado:** vigente.
+
+### D-41 · Tamaño del mapa: quitar y añadir desde la ficha (F4.3)
+
+- **Pregunta:** cómo se añaden y quitan casillas en el editor, y qué pasa con lo que depende de su posición.
+- **Del autor:** maqueta **A**, «Quitar esta casilla» y «Añadir después» (con su tipo) en la ficha de la casilla tocada; el error de tamaño en rojo (`capturas/F4.3_maquetas.png`; descartadas B, pestaña «Tamaño» de 4 en 4, y C, lista con ✕; las tres en `4fca620`). Pidió además que el texto de las celdas no se vea «tan espichado».
+- **Del agente:**
+  - *Motor:* `withSquareAdded(i, casilla)` y `withSquareRemoved(i)` (`engine/Editor.kt`), puros y sin validar. Las cartas «Avance hasta…» siguen a su casilla; la que lleva a una casilla quitada sale del mazo (su texto la nombra); un grupo que queda sin propiedades se borra. La salida (0) no se quita ni se inserta antes de ella. `EditorTest` +5: el Clásico sin las 4 últimas de cada lado (24 casillas) es válido, cobra el salario (R-10) y de 40 partidas simuladas de 1500 turnos terminan en quiebra 13 (con 6000, 14): sin tratos entre jugadores casi nadie junta un grupo.
+  - *Anillo impar:* al quitar de una en una se pasa por 39; `RingGrid.fit` dibuja n + 1 y deja vacía la celda de antes de la salida (antes cerraba la app).
+- **Cómo se revierte:** quitar los botones de la ficha; `withSquareAdded`/`withSquareRemoved` no estorban.
+- **Estado:** vigente.

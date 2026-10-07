@@ -38,12 +38,14 @@ data class RingGrid(val cols: Int, val rows: Int) {
 
         /**
          * El anillo de [n] casillas cuyas casillas son las más cuadradas en un espacio de [width] × [height]
-         * (en cualquier unidad, la misma para los dos). [n] es par (D-09 lo pide múltiplo de 4).
+         * (en cualquier unidad, la misma para los dos). D-09 pide [n] múltiplo de 4, pero el editor pasa
+         * por tamaños impares al quitar o añadir (F4.3, D-41): entonces el anillo es de n + 1 y la última
+         * celda, la de antes de la salida, queda vacía.
          */
         fun fit(n: Int, width: Float, height: Float): RingGrid {
-            require(n % 2 == 0 && n >= 2 * (MIN_COLS + MIN_ROWS) - 4) { "no hay anillo de $n casillas" }
+            require(n >= 2 * (MIN_COLS + MIN_ROWS) - 4) { "no hay anillo de $n casillas" }
             require(width > 0f && height > 0f) { "espacio vacío" }
-            val half = (n + 4) / 2 // cols + rows
+            val half = (n + n % 2 + 4) / 2 // cols + rows
             return (MIN_COLS..half - MIN_ROWS)
                 .map { RingGrid(it, half - it) }
                 .minBy { abs(ln((width / it.cols) / (height / it.rows))) }
