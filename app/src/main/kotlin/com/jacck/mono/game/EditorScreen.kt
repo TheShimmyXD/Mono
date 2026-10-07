@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,12 +53,16 @@ import com.jacck.mono.engine.model.Utility
 import com.jacck.mono.message
 
 /**
- * El editor (F4.1, F4.2; D-39, D-40), con dos pestañas: «Casillas», el tablero en anillo arriba (se
- * toca la casilla) y su ficha debajo, y «Reglas» (`RulesPane`). «Listo» (o atrás) vuelve al menú
+ * El editor (F4.1..F4.3; D-39..D-41), con dos pestañas: «Casillas», el tablero en anillo arriba (se
+ * toca la casilla), los errores del tablero en rojo y la ficha debajo, con «Quitar» y «Añadir
+ * después»; y «Reglas» (`RulesPane`). «Listo» (o atrás) vuelve al menú
  * con lo guardado; lo no guardado se pierde.
  */
 @Composable
-fun EditorScreen(vm: EditorViewModel, onDone: () -> Unit) {
+fun EditorScreen(vm: EditorViewModel, toBottom: Boolean = false, onDone: () -> Unit) {
+    val scroll = rememberScrollState()
+    // Extra de prueba `abajo`: abre al final, para capturar la ficha sin deslizar (adb no desliza, D-23).
+    if (toBottom) LaunchedEffect(scroll.maxValue) { scroll.scrollTo(scroll.maxValue) }
     BackHandler(onBack = onDone)
     val config = vm.config
     // El tablero pide una partida para dibujarse; sin fichas, solo marca la casilla elegida.
@@ -73,25 +78,29 @@ fun EditorScreen(vm: EditorViewModel, onDone: () -> Unit) {
             OpcionChiva(stringResource(R.string.editor_tab_rules), vm.showRules, { vm.showRules = true }, Modifier.weight(1f))
         }
         if (vm.showRules) RulesPane(vm, Modifier.weight(1f)) else Column(
-            Modifier.weight(1f).imePadding().verticalScroll(rememberScrollState()).padding(bottom = 10.dp),
+            Modifier.weight(1f).imePadding().verticalScroll(scroll).padding(bottom = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             Board(
-                config, state, Modifier.fillMaxWidth().aspectRatio(1f).padding(horizontal = 6.dp),
+                // Más alto que ancho: con 40 casillas, 10 × 12 celdas de 38 dp en vez de 11 × 11 de 35 dp.
+                config, state, Modifier.fillMaxWidth().aspectRatio(0.8f).padding(horizontal = 4.dp),
                 onSquare = vm::select, highlight = vm.selected, showTokens = false,
             ) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        vm.selected?.let { stringResource(R.string.editor_selected, it + 1, config.squares[it].name) }
-                            ?: stringResource(R.string.editor_hint),
+                        stringResource(R.string.editor_count, config.squares.size) + "\n\n" +
+                            (vm.selected?.let { stringResource(R.string.editor_selected, it + 1, config.squares[it].name) }
+                                ?: stringResource(R.string.editor_hint)),
                         fontSize = 16.sp, textAlign = TextAlign.Center,
                     )
                 }
             }
+            vm.boardErrors.forEach { Text(it.message(res, config), color = Chiva.Techo, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 16.dp)) }
             val i = vm.selected
             val draft = vm.draft
             if (i != null && draft != null) {
                 Ficha(config, i, draft, vm::edit)
+                Tamano(vm, i)
                 val problems = vm.errors.map { it.message(res, config) } +
                     listOfNotNull(stringResource(R.string.editor_blank).takeIf { vm.blank })
                 problems.forEach { Text(it, color = Chiva.Techo, fontSize = 15.sp, modifier = Modifier.padding(horizontal = 16.dp)) }
@@ -146,6 +155,24 @@ private fun Ficha(config: GameConfig, i: Int, draft: SquareDraft, onEdit: (Squar
                     }
                 }
             }
+        }
+    }
+}
+
+/** Quitar la casilla [i] o añadir otra después, del tipo elegido (F4.3, maqueta A, D-41). */
+@Composable
+private fun Tamano(vm: EditorViewModel, i: Int) {
+    val config = vm.config
+    val newName = stringResource(R.string.editor_new_name)
+    val kinds = stringArrayResource(R.array.editor_kinds)
+    Calcomania(Modifier.fillMaxWidth().padding(start = 12.dp, end = 16.dp)) {
+        Column(Modifier.padding(10.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            BotonChiva(stringResource(R.string.editor_remove), vm::remove, principal = false, enabled = removable(config, i))
+            Text(stringResource(R.string.editor_add_label), fontSize = 15.sp)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                NewKind.entries.forEach { k -> OpcionChiva(kinds[k.ordinal], k == vm.newKind, { vm.newKind = k }, Modifier.weight(1f)) }
+            }
+            BotonChiva(stringResource(R.string.editor_add), { vm.add(newName) }, enabled = newSquare(config, vm.newKind, i, newName) != null)
         }
     }
 }

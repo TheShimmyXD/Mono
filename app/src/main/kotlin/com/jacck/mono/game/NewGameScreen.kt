@@ -47,11 +47,12 @@ import com.jacck.mono.engine.model.GameState
  * no se puede empezar. `rememberSaveable` guarda lo elegido si Android recrea la pantalla.
  * Con una partida guardada (`saved`), arriba va «Seguir la partida» (F3.6, D-26). Estilo chiva (FB.2c, D-33).
  * Bajo cada nombre, los 8 personajes (FB.4, D-36): el suyo grande con su color, los de otros atenuados.
+ * Un juego editado con errores (`broken`, F4.3) no se puede empezar y lo dice en rojo.
  */
 @Composable
 fun NewGameScreen(
     saved: GameState?, onResume: () -> Unit, edited: Set<Preset> = emptySet(), onEdit: (Preset) -> Unit = {},
-    onStart: (Preset, List<String>, List<String>) -> Unit,
+    broken: Set<Preset> = emptySet(), onStart: (Preset, List<String>, List<String>) -> Unit,
 ) {
     val defaults = stringArrayResource(R.array.default_names).toList()
     var preset by rememberSaveable { mutableStateOf(Preset.CLASSIC) }
@@ -100,6 +101,7 @@ fun NewGameScreen(
                     Box(Modifier.padding(end = 3.dp)) {
                         BotonChiva(stringResource(if (preset in edited) R.string.menu_edited else R.string.menu_edit), { onEdit(preset) }, principal = false)
                     }
+                    if (preset in broken) Text(stringResource(R.string.menu_broken), color = Chiva.Techo, fontSize = 15.sp)
                 }
             }
             Calcomania {
@@ -136,7 +138,7 @@ fun NewGameScreen(
             }
         }
         Box(Modifier.padding(start = 16.dp, end = 19.dp, bottom = 14.dp, top = 4.dp)) {
-            BotonChiva(stringResource(R.string.menu_start), { onStart(preset, names, tokens.map { Personajes[it].first }) }, enabled = repeated.isEmpty())
+            BotonChiva(stringResource(R.string.menu_start), { onStart(preset, names, tokens.map { Personajes[it].first }) }, enabled = repeated.isEmpty() && preset !in broken)
         }
     }
 }

@@ -428,5 +428,9 @@
 - **Del agente:**
   - *Motor:* `withSquareAdded(i, casilla)` y `withSquareRemoved(i)` (`engine/Editor.kt`), puros y sin validar. Las cartas «Avance hasta…» siguen a su casilla; la que lleva a una casilla quitada sale del mazo (su texto la nombra); un grupo que queda sin propiedades se borra. La salida (0) no se quita ni se inserta antes de ella. `EditorTest` +5: el Clásico sin las 4 últimas de cada lado (24 casillas) es válido, cobra el salario (R-10) y de 40 partidas simuladas de 1500 turnos terminan en quiebra 13 (con 6000, 14): sin tratos entre jugadores casi nadie junta un grupo.
   - *Anillo impar:* al quitar de una en una se pasa por 39; `RingGrid.fit` dibuja n + 1 y deja vacía la celda de antes de la salida (antes cerraba la app).
+  - *Interfaz* (`game/NewSquare.kt`, `EditorScreen.Tamano`): quitar y añadir se aplican al instante, aunque el tablero quede inválido; sus errores salen en rojo sobre la ficha y el menú no deja «Empezar» ese juego (`menu_broken`). Tipos para añadir: Propiedad, Tren, Carta e Impuesto; la nueva copia la más cercana de su tipo hacia atrás (cifras, grupo, mazo) y propiedad o tren se llaman «Casilla nueva». La Cárcel tampoco se quita (no se repone). Un quinto tren lo marca el validador (falta su alquiler; ningún reglamento lo da).
+  - *Celdas* (lo pedido por el autor): la letra del nombre baja de medio en medio punto, hasta 5.5 sp, hasta que cada palabra quepa entera en dos líneas (`NombreCasilla`), y el tablero del editor es 0.8 de alto por ancho (40 casillas: 10 × 12 de 38 dp, antes 11 × 11 de 35 dp). «Perseverancia» con 38 casillas aún sale con «…».
+  - *Extras de prueba:* `--es quitar 13+14` (casillas ya quitadas) y `--ez abajo true` (abre desplazado hasta la ficha).
+- **Captura:** `capturas/F4.3_editor.png`, `capturas/F4.3_ficha.png`.
 - **Cómo se revierte:** quitar los botones de la ficha; `withSquareAdded`/`withSquareRemoved` no estorban.
 - **Estado:** vigente.

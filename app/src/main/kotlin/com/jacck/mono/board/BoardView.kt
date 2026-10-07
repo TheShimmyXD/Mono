@@ -20,6 +20,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,10 +105,7 @@ private fun SquareCell(
                 if (icon != null) {
                     IconImage(icon, minOf(width * 0.5f, 32.dp))
                 } else {
-                    Text(
-                        square.name, fontSize = text, lineHeight = text * 1.1f, maxLines = 2,
-                        overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
-                    )
+                    NombreCasilla(square.name, text)
                 }
                 if (square is OwnableSquare && holding == null) {
                     Text(stringResource(R.string.money, square.price), fontSize = text, fontWeight = FontWeight.Bold)
@@ -114,6 +115,33 @@ private fun SquareCell(
             holding?.let { Box(Modifier.fillMaxWidth().height(4.dp).background(PlayerColors[it.owner])) }
         }
         if (tokens.isNotEmpty()) Medallones(state, tokens, width, Modifier.align(Alignment.BottomStart).padding(bottom = 6.dp))
+    }
+}
+
+/**
+ * El nombre de la casilla con la letra más grande, de [max] a 5.5 sp, en la que cada palabra cabe
+ * entera y el nombre en dos líneas: sin esto, «Teusaquillo» salía partido en celdas de 35 dp (F4.3).
+ */
+@Composable
+private fun NombreCasilla(name: String, max: TextUnit) {
+    val measurer = rememberTextMeasurer()
+    val base = LocalTextStyle.current
+    BoxWithConstraints(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+        val width = constraints.maxWidth
+        val size = remember(name, width, max) {
+            var sp = max.value
+            while (sp > 5.5f) {
+                val style = base.copy(fontSize = sp.sp, lineHeight = (sp * 1.1f).sp)
+                val words = name.split(' ').all { measurer.measure(it, style, softWrap = false, maxLines = 1).size.width <= width }
+                if (words && !measurer.measure(name, style, maxLines = 2, constraints = Constraints(maxWidth = width)).hasVisualOverflow) break
+                sp -= 0.5f
+            }
+            sp.sp
+        }
+        Text(
+            name, fontSize = size, lineHeight = size * 1.1f, maxLines = 2,
+            overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center,
+        )
     }
 }
 

@@ -180,6 +180,7 @@
 
     <!-- Editor de casillas (F4.1, D-39) -->
     <string name="menu_edit">Editar casillas y reglas</string>
+    <string name="menu_broken">El tablero editado tiene errores: arréglalo en el editor para poder empezar.</string>
     <string name="menu_edited">Editar casillas y reglas · editado</string>
     <string name="editor_title">Editar · %1$s</string>
     <string name="editor_hint">Toca una casilla\npara editarla</string>
@@ -208,6 +209,17 @@
     <string name="editor_done">Listo</string>
     <!-- Editor de reglas (F4.2, D-40): pestaña «Reglas» del editor. -->
     <string name="editor_tab_squares">Casillas</string>
+    <string name="editor_count">%1$d casillas</string>
+    <string name="editor_remove">Quitar esta casilla</string>
+    <string name="editor_add_label">Añadir una casilla después de esta:</string>
+    <string name="editor_add">Añadir después</string>
+    <string name="editor_new_name">Casilla nueva</string>
+    <string-array name="editor_kinds">
+        <item>Propiedad</item>
+        <item>Tren</item>
+        <item>Carta</item>
+        <item>Impuesto</item>
+    </string-array>
     <string name="editor_tab_rules">Reglas</string>
     <string name="rules_save">Guardar reglas</string>
     <string name="rules_before">antes %1$s</string>
@@ -226,7 +238,7 @@
     <string name="rules_salary">Salario en la Salida</string>
     <string name="rules_salary_help">Lo que cobra al caer o pasar por la Salida.</string>
     <string name="rules_auction">Subasta</string>
-    <string name="rules_auction_help">Si nadie compra la casilla, se subasta: desde cualquier precio o desde su precio menos un descuento.</string>
+    <string name="rules_auction_help">Si quien cae no la compra, el Banco la subasta: desde cualquier precio o desde su precio menos un descuento.</string>
     <string name="rules_auction_any">Cualquier precio</string>
     <string name="rules_auction_discount">Precio −</string>
     <string name="rules_doubles_again">Los dobles dan otra tirada</string>

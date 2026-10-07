@@ -184,6 +184,9 @@ fun OpcionChiva(texto: String, elegida: Boolean, onClick: () -> Unit, modifier: 
             .clickable(role = Role.RadioButton, onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
         contentAlignment = Alignment.Center,
     ) {
-        Text(texto, color = if (elegida) Color.White else Chiva.Tinta, fontSize = 16.sp, maxLines = 1)
+        Text(
+            texto, color = if (elegida) Color.White else Chiva.Tinta, maxLines = 1, softWrap = false,
+            autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 16.sp),
+        )
     }
 }
