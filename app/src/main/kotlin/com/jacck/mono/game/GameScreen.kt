@@ -36,6 +36,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -43,6 +44,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jacck.mono.R
 import com.jacck.mono.board.Board
+import com.jacck.mono.board.BuildingIcons
+import com.jacck.mono.board.Icon
+import com.jacck.mono.board.IconImage
 import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.board.PlayersPanel
 import com.jacck.mono.board.Token
@@ -107,7 +111,11 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
             Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
         }
         if (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn) {
-            OutlinedButton(onClick = onProperties, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.my_properties)) }
+            OutlinedButton(onClick = onProperties, modifier = Modifier.fillMaxWidth()) {
+                IconImage(Icon.CASA, 20.dp)
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.my_properties))
+            }
         }
         when {
             state.phase == TurnPhase.Roll && player.jailTurns == null ->
@@ -120,10 +128,12 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
 
 @Composable
 private fun DiceRow(dice: Dice) {
-    val faces = "⚀⚁⚂⚃⚄⚅"
-    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-        Text("${faces[dice.first - 1]} ${faces[dice.second - 1]}", fontSize = 48.sp)
-        Spacer(Modifier.padding(4.dp))
+    Row(
+        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        IconImage(Icon.dado(dice.first), 52.dp)
+        IconImage(Icon.dado(dice.second), 52.dp)
         Text("= ${dice.total}", fontSize = 22.sp, fontWeight = FontWeight.Bold)
     }
 }
@@ -166,8 +176,7 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
         ?.let { Color(android.graphics.Color.parseColor(it.color)) } ?: Color.LightGray
     val status = when {
         holding.mortgaged -> stringResource(R.string.mortgaged_short)
-        holding.hotel -> "🏨"
-        holding.houses > 0 -> "🏠".repeat(holding.houses)
+        holding.hotel || holding.houses > 0 -> null
         sq is Property -> stringResource(R.string.no_houses)
         else -> null
     }
@@ -177,6 +186,7 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
         Column(Modifier.weight(1f)) {
             Text(sq.name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
             status?.let { Text(it, fontSize = 12.sp) }
+            if (!holding.mortgaged) BuildingIcons(holding, 16.dp)
         }
         propertyMoves(vm.config, vm.state, square).forEach { move ->
             val amount = money(move.amount)
@@ -352,7 +362,7 @@ private fun Deed(config: GameConfig, state: GameState, square: Int) {
                     is Property -> {
                         Text(stringResource(R.string.deed_rent, money(sq.rents[0])))
                         sq.rents.drop(1).dropLast(1).forEachIndexed { k, r ->
-                            Text(stringResource(R.string.deed_rent_houses, k + 1, money(r)), fontSize = 13.sp)
+                            Text(pluralStringResource(R.plurals.deed_rent_houses, k + 1, k + 1, money(r)), fontSize = 13.sp)
                         }
                         if (sq.rents.size > 1) Text(stringResource(R.string.deed_rent_hotel, money(sq.rents.last())), fontSize = 13.sp)
                         val house = sq.housePrice ?: config.rules.housePrice

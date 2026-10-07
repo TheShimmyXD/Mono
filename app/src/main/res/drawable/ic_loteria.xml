@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generado por arte/arte.py: no editar a mano. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M1.5 6H22.5V18H1.5Z" android:fillColor="#FFD60A" android:strokeColor="#1B1B1B" android:strokeWidth="1.1" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    <path android:pathData="M8.5 7.5L9.62 10.46L12.78 10.61L10.31 12.59L11.15 15.64L8.5 13.9L5.85 15.64L6.69 12.59L4.22 10.61L7.38 10.46Z" android:fillColor="#E63946" android:strokeColor="#1B1B1B" android:strokeWidth="1.1" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    <path android:pathData="M16 7.3L16 8.7M16 10.3L16 11.7M16 13.3L16 14.7M16 16.3L16 17.2" android:strokeColor="#1B1B1B" android:strokeWidth="0.9" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    <path android:pathData="M17.6 12A1.6 1.6 0 1 1 20.8 12A1.6 1.6 0 1 1 17.6 12Z" android:fillColor="#E5007E" android:strokeColor="#1B1B1B" android:strokeWidth="1.1" android:strokeLineCap="round" android:strokeLineJoin="round" />
+</vector>

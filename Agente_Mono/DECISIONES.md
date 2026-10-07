@@ -278,3 +278,12 @@
   - *Flujo:* `arte/arte.py` guarda cada lugar como formas con un papel (cielo, muro, techo…) y escribe `arte/svg/<id>.svg` (fuente que se ve en cualquier visor) y `app/src/main/res/drawable/arte_<id>.xml` (VectorDrawable: vectorial, nítido a cualquier tamaño). No se editan a mano: se cambia `arte.py` y se regenera. `[cierre]` corre `arte.py --revisar` (sale 1 si algo no está al día).
 - **Cómo se revierte:** cambiar `PALETA`, `CONTORNO` y `franjas()` en `arte.py` y regenerar; los estilos A y B siguen en el commit `270656e` (`demo/Maquetas.kt`).
 - **Estado:** vigente.
+
+### D-29 · Íconos propios en vez de emojis (FA.2)
+
+- **Pregunta:** cómo se dibujan y se eligen los íconos de casillas, edificios, dados y turno.
+- **Del agente:** 23 íconos en `arte/arte.py` (lienzo 24 × 24, sin franjas, contorno 1,1, paleta de D-28): casa, hotel, 6 caras del dado, salida, cárcel, «váyase» (patrulla verde y blanca), estación, energía, acueducto, impuesto, Casualidad, Arca Comunal, Lotería, Sorpresa, Parada Libre, Mirador, Hamaca y flecha de turno. Salen como `ic_<id>.xml` y se pintan con `Image` (respeta sus colores; `Icon` de Material los teñiría de un color).
+  - *Qué ícono:* por tipo de casilla (`board/Icons.kt`, `Square.icon()`); servicios, mazos y descansos se distinguen por el nombre (sin tildes ni mayúsculas), y un nombre que no se reconoce cae en el ícono general del tipo: el editor (F4) puede renombrar sin romper nada. `IconTest`: los dos presets y los nombres desconocidos.
+  - *Tamaños:* en el tablero, la mitad del ancho de la casilla (≤ 32 dp); casas y hotel, 1,3 × la letra; dados, 52 dp. En la escritura, «Con 2 casas» y «Con hotel» en texto (plurales de Android).
+- **Cómo se revierte:** `git revert` del commit de FA.2; los emojis vuelven con él.
+- **Estado:** vigente.

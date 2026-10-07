@@ -31,21 +31,12 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jacck.mono.R
-import com.jacck.mono.engine.model.CardSquare
-import com.jacck.mono.engine.model.Deck
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
-import com.jacck.mono.engine.model.GoToJail
 import com.jacck.mono.engine.model.Holding
-import com.jacck.mono.engine.model.Jail
 import com.jacck.mono.engine.model.OwnableSquare
 import com.jacck.mono.engine.model.Property
-import com.jacck.mono.engine.model.Rest
 import com.jacck.mono.engine.model.Square
-import com.jacck.mono.engine.model.Start
-import com.jacck.mono.engine.model.Station
-import com.jacck.mono.engine.model.Tax
-import com.jacck.mono.engine.model.Utility
 
 /** Color de la ficha de cada jugador (2-6, D-05). */
 val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E24AA, 0xFF00ACC1).map { Color(it) }
@@ -101,7 +92,7 @@ private fun SquareCell(
         ) {
             val icon = square.icon()
             if (icon != null) {
-                Text(icon, fontSize = text * 2)
+                IconImage(icon, minOf(width * 0.5f, 32.dp))
             } else {
                 Text(
                     square.name, fontSize = text, lineHeight = text * 1.1f, maxLines = 2,
@@ -125,13 +116,8 @@ private fun SquareCell(
 /** Casas, hotel o hipoteca de una casilla con dueño (R-25, R-27, R-31). */
 @Composable
 private fun Buildings(holding: Holding, text: androidx.compose.ui.unit.TextUnit) {
-    val label = when {
-        holding.mortgaged -> stringResource(R.string.mortgaged_short)
-        holding.hotel -> "🏨"
-        holding.houses > 0 -> "🏠".repeat(holding.houses)
-        else -> null
-    }
-    label?.let { Text(it, fontSize = text, maxLines = 1) }
+    if (holding.mortgaged) Text(stringResource(R.string.mortgaged_short), fontSize = text, maxLines = 1)
+    else BuildingIcons(holding, (text.value * 1.3f).dp)
 }
 
 @Composable
@@ -148,8 +134,9 @@ fun PlayersPanel(state: GameState, modifier: Modifier = Modifier) {
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.alpha(if (p.bankrupt) 0.4f else 1f)) {
                     Token(PlayerColors[k], 12.dp)
                     Spacer(Modifier.width(6.dp))
+                    if (k == state.current) IconImage(Icon.TURNO, 12.dp, Modifier.padding(end = 3.dp))
                     Text(
-                        if (k == state.current) "▶ ${p.name}" else p.name,
+                        p.name,
                         fontWeight = if (k == state.current) FontWeight.Bold else FontWeight.Normal,
                         modifier = Modifier.weight(1f), fontSize = 14.sp,
                     )
@@ -163,16 +150,3 @@ fun PlayersPanel(state: GameState, modifier: Modifier = Modifier) {
 private fun groupColor(config: GameConfig, square: Square): Color? =
     (square as? Property)?.let { p -> config.groups.firstOrNull { it.id == p.group } }
         ?.let { Color(android.graphics.Color.parseColor(it.color)) }
-
-/** Ícono de las casillas que no son propiedades: su nombre no cabe y el ícono se reconoce de lejos. */
-private fun Square.icon(): String? = when (this) {
-    is Start -> "🏁"
-    is Station -> "🚉"
-    is Utility -> "💡"
-    is Tax -> "💰"
-    is CardSquare -> if (deck == Deck.A) "❓" else "🎁"
-    is Jail -> "🔒"
-    is GoToJail -> "🚓"
-    is Rest -> "🅿️"
-    is Property -> null
-}
