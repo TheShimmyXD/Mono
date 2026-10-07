@@ -119,8 +119,6 @@
     <string name="menu_start">Empezar</string>
     <string name="menu_resume">Seguir la partida</string>
     <string name="menu_resume_detail">%1$s · turno %2$d</string>
-    <string name="preset_classic">Clásico</string>
-    <string name="preset_tio_rico">Tío Rico</string>
     <string name="what_happened">Lo que pasó</string>
     <string name="rejected">El motor no lo permite: %1$s</string>
     <string name="deed_price">Precio: %1$s</string>
@@ -179,9 +177,17 @@
     <string name="card_tax_hotel">y %1$s por cada hotel</string>
 
     <!-- Editor de casillas (F4.1, D-39) -->
-    <string name="menu_edit">Editar casillas y reglas</string>
+    <string name="menu_edit">Editar</string>
     <string name="menu_broken">El tablero editado tiene errores: arréglalo en el editor para poder empezar.</string>
-    <string name="menu_edited">Editar casillas y reglas · editado</string>
+    <string name="menu_board">%1$s · %2$d casillas</string>
+    <string name="menu_board_own">★ %1$s · %2$d casillas</string>
+    <string name="menu_board_name">Nombre</string>
+    <string name="menu_duplicate">Duplicar</string>
+    <string name="menu_delete">Borrar</string>
+    <string name="menu_copy_note">Editar el Clásico o Tío Rico guarda una copia ★: los originales no cambian.</string>
+    <string name="menu_delete_title">¿Borrar %1$s?</string>
+    <string name="menu_delete_body">El tablero se borra del teléfono y no se puede recuperar. Una partida guardada con él sigue igual.</string>
+    <string name="menu_delete_keep">Dejarlo</string>
     <string name="editor_title">Editar · %1$s</string>
     <string name="editor_hint">Toca una casilla\npara editarla</string>
     <string name="editor_selected">Casilla %1$d\n%2$s</string>

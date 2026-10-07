@@ -32,13 +32,13 @@ import androidx.compose.ui.unit.sp
 import com.jacck.mono.BotonChiva
 import com.jacck.mono.Calcomania
 import com.jacck.mono.Chiva
+import com.jacck.mono.DialogoChiva
 import com.jacck.mono.OpcionChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.board.Medallon
 import com.jacck.mono.board.Personajes
-import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.GameState
 
 /**
@@ -48,14 +48,20 @@ import com.jacck.mono.engine.model.GameState
  * Con una partida guardada (`saved`), arriba va «Seguir la partida» (F3.6, D-26). Estilo chiva (FB.2c, D-33).
  * Bajo cada nombre, los 8 personajes (FB.4, D-36): el suyo grande con su color, los de otros atenuados.
  * Un juego editado con errores (`broken`, F4.3) no se puede empezar y lo dice en rojo.
+ * Tableros (F4.4, maqueta A, D-42): la lista de `boards` (originales y propios ★); con uno propio
+ * elegido, su nombre se cambia ahí mismo (`onRename`) y se puede borrar (con aviso); todos se editan
+ * y se duplican. Lo elegido (`selected`) lo guarda quien llama, porque duplicar elige la copia.
  */
 @Composable
 fun NewGameScreen(
-    saved: GameState?, onResume: () -> Unit, edited: Set<Preset> = emptySet(), onEdit: (Preset) -> Unit = {},
-    broken: Set<Preset> = emptySet(), onStart: (Preset, List<String>, List<String>) -> Unit,
+    saved: GameState?, onResume: () -> Unit, boards: List<BoardChoice>, selected: String, onSelect: (String) -> Unit,
+    broken: Set<String>, onEdit: () -> Unit, onDuplicate: () -> Unit, onRename: (String) -> Unit, onDelete: () -> Unit,
+    onStart: (List<String>, List<String>) -> Unit,
 ) {
     val defaults = stringArrayResource(R.array.default_names).toList()
-    var preset by rememberSaveable { mutableStateOf(Preset.CLASSIC) }
+    val board = boards.firstOrNull { it.key == selected } ?: boards.first()
+    var nameText by rememberSaveable(board.key) { mutableStateOf(board.config.name) }
+    var asking by rememberSaveable { mutableStateOf(false) }
     var count by rememberSaveable { mutableStateOf(3) }
     var typed by rememberSaveable { mutableStateOf(List(defaults.size) { "" }) }
     var picks by rememberSaveable { mutableStateOf(List(defaults.size) { it }) }
@@ -94,14 +100,30 @@ fun NewGameScreen(
             Calcomania {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(stringResource(R.string.menu_game), fontSize = 18.sp)
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OpcionChiva(stringResource(R.string.preset_classic), preset == Preset.CLASSIC, { preset = Preset.CLASSIC }, Modifier.weight(1f))
-                        OpcionChiva(stringResource(R.string.preset_tio_rico), preset == Preset.TIO_RICO, { preset = Preset.TIO_RICO }, Modifier.weight(1f))
+                    boards.forEach { b ->
+                        OpcionChiva(
+                            stringResource(if (b.own) R.string.menu_board_own else R.string.menu_board, b.config.name, b.config.squares.size),
+                            b.key == board.key, { onSelect(b.key) }, Modifier.fillMaxWidth(),
+                        )
                     }
-                    Box(Modifier.padding(end = 3.dp)) {
-                        BotonChiva(stringResource(if (preset in edited) R.string.menu_edited else R.string.menu_edit), { onEdit(preset) }, principal = false)
+                    if (board.own) {
+                        OutlinedTextField(
+                            value = nameText,
+                            onValueChange = { v -> nameText = v.take(MAX_BOARD_NAME); onRename(nameText) },
+                            label = { Text(stringResource(R.string.menu_board_name)) },
+                            placeholder = { Text(board.config.name) },
+                            singleLine = true,
+                            colors = fieldColors,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
                     }
-                    if (preset in broken) Text(stringResource(R.string.menu_broken), color = Chiva.Techo, fontSize = 15.sp)
+                    Row(Modifier.padding(end = 3.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        BotonChiva(stringResource(R.string.menu_edit), onEdit, Modifier.weight(1f), principal = false)
+                        BotonChiva(stringResource(R.string.menu_duplicate), onDuplicate, Modifier.weight(1f), principal = false)
+                        if (board.own) BotonChiva(stringResource(R.string.menu_delete), { asking = true }, Modifier.weight(1f), principal = false)
+                    }
+                    if (!board.own) Text(stringResource(R.string.menu_copy_note), fontSize = 14.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
+                    if (board.key in broken) Text(stringResource(R.string.menu_broken), color = Chiva.Techo, fontSize = 15.sp)
                 }
             }
             Calcomania {
@@ -138,7 +160,15 @@ fun NewGameScreen(
             }
         }
         Box(Modifier.padding(start = 16.dp, end = 19.dp, bottom = 14.dp, top = 4.dp)) {
-            BotonChiva(stringResource(R.string.menu_start), { onStart(preset, names, tokens.map { Personajes[it].first }) }, enabled = repeated.isEmpty() && preset !in broken)
+            BotonChiva(stringResource(R.string.menu_start), { onStart(names, tokens.map { Personajes[it].first }) }, enabled = repeated.isEmpty() && board.key !in broken)
+        }
+    }
+    if (asking) {
+        DialogoChiva(stringResource(R.string.menu_delete_title, board.config.name), botones = {
+            BotonChiva(stringResource(R.string.menu_delete), { asking = false; onDelete() })
+            BotonChiva(stringResource(R.string.menu_delete_keep), { asking = false }, principal = false)
+        }) {
+            Text(stringResource(R.string.menu_delete_body), fontSize = 16.sp)
         }
     }
 }

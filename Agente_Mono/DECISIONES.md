@@ -434,3 +434,18 @@
 - **Captura:** `capturas/F4.3_editor.png`, `capturas/F4.3_ficha.png`.
 - **Cómo se revierte:** quitar los botones de la ficha; `withSquareAdded`/`withSquareRemoved` no estorban.
 - **Estado:** vigente.
+
+### D-42 · Tableros propios: lista en el menú y un JSON por tablero (F4.4)
+
+- **Pregunta:** dónde se eligen, nombran, duplican y borran los tableros editados, y cómo sobreviven a cerrar la app.
+- **Del autor:** maqueta **A**, la tarjeta «Juego» del menú lista los originales y los propios (★) con sus casillas; con uno propio elegido, su nombre se cambia ahí mismo y salen Editar / Duplicar / Borrar (`capturas/F4.4_maquetas.png`; descartadas B, pantalla «Mis tableros», y C, nombre en el editor; las tres en `7d8399d`).
+- **Del agente:**
+  - *Archivos* (`game/BoardShelf.kt`): un JSON por tablero en `files/tableros/t<n>.json`, con su nombre en `GameConfig.name`; se escribe a un temporal y se renombra, como `partida.json` (D-26). Uno dañado se salta. Ids `t1`, `t2`… en orden de creación. `BoardShelfTest` 6 pruebas.
+  - *Los originales no se tocan:* editar el Clásico o Tío Rico y volver con cambios guarda una copia «Clásico copia» (después «copia 2»…) que queda elegida; sin cambios no se guarda nada. Duplicar hace lo mismo con cualquiera. Nombre de hasta 20 letras; vacío, se queda el de antes; se guarda al escribir.
+  - *Borrar* pide confirmación (`DialogoChiva`, «Borrar» / «Dejarlo»); la partida guardada no depende del tablero (lleva su propia copia en `partida.json`).
+  - Un tablero propio con errores se guarda igual, sale en rojo y no deja «Empezar» (como F4.3).
+  - El editor se abre cada vez desde lo guardado (clave `editor-<tablero>-<veces>`); antes reusaba el ViewModel de la vez anterior.
+  - *Extra de prueba:* `--es tablero t1` abre el menú con ese tablero elegido.
+- **Captura:** `capturas/F4.4_menu.png`, `capturas/F4.4_propio.png`.
+- **Cómo se revierte:** volver a las dos fichas Clásico / Tío Rico; los archivos de `tableros/` no estorban.
+- **Estado:** vigente.
