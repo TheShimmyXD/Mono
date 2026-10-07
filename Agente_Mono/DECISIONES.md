@@ -486,3 +486,12 @@
 - **Medido (`LinkTest`, 5 pruebas):** 1000 partidas (Clásico y Tío Rico, 16-48 casillas, 2-6 jugadores, tope 150 turnos) por un transporte falso que pierde 5 %, duplica 3 % y adelanta 10 %: las 1000 acaban con el mismo estado y resumen en los dos lados, 0 resúmenes distintos; 453 215 acciones, 1 237 749 mensajes, 62 055 perdidos, 28 851 pedidos de reenvío; 66 s.
 - **Cómo se revierte:** el protocolo no toca el motor; se cambia en `link/` subiendo `PROTOCOL_VERSION`.
 - **Estado:** vigente (aprobada por el autor, 2026-10-07).
+
+### D-47 · Crear y unirse a una partida por Bluetooth: cada jugador elige «Aquí» u «Otro teléfono»; unirse, a un emparejado
+
+- **Pregunta (F5.3):** cómo se arma en la app una partida entre dos teléfonos y cómo encuentra el invitado al anfitrión.
+- **Opciones vistas en el Redmi** (`capturas/F5.3_maquetas.png`, commit `2d2005a`): A sala de espera (el amigo toma siempre el último jugador), B en «Jugadores» cada uno marca «Aquí» u «📶 Otro teléfono», C unirse buscando teléfonos cercanos sin emparejar (un permiso más, `BLUETOOTH_SCAN`).
+- **Del autor (2026-10-07):** B para crear y, para unirse, solo los teléfonos ya emparejados (sin C).
+- **Decisión:** con alguno en «Otro teléfono», «Empezar» pasa a «Esperar al otro teléfono» y abre la sala (`enlace/HostScreen.kt`): crea la partida con `Engine.newGame`, la pone en un `Host` con esos asientos (D-46) y la atiende por RFCOMM (`RfcommServer`, `hostLoop`). Hace falta al menos uno «Aquí». La sala no deja apagar la pantalla (`keepScreenOn`): HyperOS corta el Bluetooth en segundo plano. El permiso y el encendido del Bluetooth van en `BluetoothGate`, que comparte con la prueba del eco. Para probar sin tocar la pantalla: `--es enlace sala` (Clásico, el último de `jugadores` allá). En el PC, `pc/invitado.py` hace de invitado (`hello`, y cada 10 s `resync` con la partida entera para medir).
+- **Cómo se revierte:** quitar el interruptor del menú; la sala y el bucle no tocan el motor.
+- **Estado:** propuesta (F5.3 sin aprobar).

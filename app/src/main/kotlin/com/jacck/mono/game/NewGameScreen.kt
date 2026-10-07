@@ -56,7 +56,7 @@ import com.jacck.mono.engine.model.GameState
 fun NewGameScreen(
     saved: GameState?, onResume: () -> Unit, boards: List<BoardChoice>, selected: String, onSelect: (String) -> Unit,
     broken: Set<String>, onEdit: () -> Unit, onDuplicate: () -> Unit, onRename: (String) -> Unit, onDelete: () -> Unit,
-    onStart: (List<String>, List<String>) -> Unit,
+    onStart: (List<String>, List<String>, Set<Int>) -> Unit,
 ) {
     val defaults = stringArrayResource(R.array.default_names).toList()
     val board = boards.firstOrNull { it.key == selected } ?: boards.first()
@@ -65,6 +65,9 @@ fun NewGameScreen(
     var count by rememberSaveable { mutableStateOf(3) }
     var typed by rememberSaveable { mutableStateOf(List(defaults.size) { "" }) }
     var picks by rememberSaveable { mutableStateOf(List(defaults.size) { it }) }
+    // Quién juega en el otro teléfono por Bluetooth (F5.3, D-47); con alguno, «Empezar» abre la sala.
+    var remote by rememberSaveable { mutableStateOf(List(defaults.size) { false }) }
+    val seats = (0 until count).filter { remote[it] }.toSet()
     val tokens = playerTokens(picks, count, Personajes.size)
     val names = playerNames(typed, defaults, count)
     val repeated = repeatedNames(names)
@@ -154,13 +157,20 @@ fun NewGameScreen(
                                     )
                                 }
                             }
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OpcionChiva(stringResource(R.string.menu_here), !remote[i], { remote = remote.toMutableList().also { it[i] = false } }, Modifier.weight(1f))
+                                OpcionChiva(stringResource(R.string.menu_remote), remote[i], { remote = remote.toMutableList().also { it[i] = true } }, Modifier.weight(1.4f))
+                            }
                         }
                     }
                 }
             }
         }
         Box(Modifier.padding(start = 16.dp, end = 19.dp, bottom = 14.dp, top = 4.dp)) {
-            BotonChiva(stringResource(R.string.menu_start), { onStart(names, tokens.map { Personajes[it].first }) }, enabled = repeated.isEmpty() && board.key !in broken)
+            BotonChiva(
+                stringResource(if (seats.isEmpty()) R.string.menu_start else R.string.menu_wait), { onStart(names, tokens.map { Personajes[it].first }, seats) },
+                enabled = repeated.isEmpty() && board.key !in broken && seats.size < count, // alguien juega aquí
+            )
         }
     }
     if (asking) {

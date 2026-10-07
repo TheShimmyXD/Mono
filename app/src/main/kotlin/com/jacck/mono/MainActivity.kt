@@ -19,6 +19,7 @@ import com.jacck.mono.demo.Maqueta
 import com.jacck.mono.demo.withSampleProperties
 import com.jacck.mono.demo.withPhase
 import com.jacck.mono.enlace.EcoScreen
+import com.jacck.mono.enlace.HostScreen
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
@@ -48,7 +49,7 @@ const val LOG_TAG = "Mono"
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
  * `deuda`, `fin`) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
- * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`eco`) se abre la prueba de Bluetooth de F5.1 (`enlace/EcoScreen.kt`, D-45). La partida del menú se guarda tras cada jugada
+ * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`eco`) se abre la prueba de Bluetooth de F5.1 (`enlace/EcoScreen.kt`, D-45); con `sala`, la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
@@ -78,6 +79,8 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     if (link == "eco") {
                         EcoScreen()
+                    } else if (link == "sala") {
+                        HostScreen(Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), seed) { finish() }
                     } else if (mockup != null) {
                         Maqueta(mockup)
                     } else if (demo != null) {
@@ -85,6 +88,8 @@ class MainActivity : ComponentActivity() {
                     } else {
                         var chosen by rememberSaveable { mutableStateOf(if (direct) Triple(preset.name, names, emptyList<String>()) else null) }
                         var resumed by rememberSaveable { mutableStateOf(false) }
+                        // Jugadores del otro teléfono (F5.3, D-47): con alguno, la partida espera en la sala.
+                        var seats by rememberSaveable { mutableStateOf(emptyList<Int>()) }
                         // Tableros (F4.4, D-42): los originales y los propios de `files/tableros`; `selected` y
                         // `editing` son su clave (nombre del preset o id). `opened` cuenta las veces que se abre
                         // el editor, para que cada vez empiece de lo guardado y no del ViewModel anterior.
@@ -140,10 +145,18 @@ class MainActivity : ComponentActivity() {
                                         own = shelf.list()
                                         selected = Preset.CLASSIC.name
                                     },
-                                ) { n, t ->
-                                    Log.i(LOG_TAG, "menú: ${board.key} ${board.config.name} (${board.config.squares.size} casillas) con ${n.size} jugadores, personajes $t")
+                                ) { n, t, s ->
+                                    Log.i(LOG_TAG, "menú: ${board.key} ${board.config.name} (${board.config.squares.size} casillas) con ${n.size} jugadores, personajes $t, otro teléfono $s")
+                                    seats = s.sorted()
                                     chosen = Triple(board.key, n, t)
                                 }
+                            }
+                        } else if (game != null && resume == null && seats.isNotEmpty()) {
+                            val config = boards.firstOrNull { it.key == game.first }?.config ?: Preset.CLASSIC.load()
+                            HostScreen(config, game.second, game.third, seats.toSet(), seed) {
+                                Log.i(LOG_TAG, "sala: vuelve al menú")
+                                chosen = null
+                                seats = emptyList()
                             }
                         } else {
                             val keep: (GameConfig, GameState) -> Unit = if (direct) { _, _ -> } else { c, s ->
