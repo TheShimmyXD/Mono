@@ -526,10 +526,116 @@ def manizales():
     return s
 
 
+def silla(x, base, papel):
+    return [(papel, rect(x, base - 16, 2.5, 16)), (papel, rect(x, base - 8, 10, 2.5)), (papel, rect(x + 8, base - 8, 2, 8))]
+
+
+def avion(cx, cy):
+    return [("window", poly([(cx + 10, cy), (cx + 22, cy - 6), (cx + 26, cy - 6), (cx + 18, cy)])),
+            ("wall", poly([(cx - 26, cy - 3), (cx + 16, cy - 3), (cx + 26, cy - 14), (cx + 30, cy - 14), (cx + 26, cy + 4),
+                           (cx - 22, cy + 4), (cx - 28, cy + 1)])),
+            ("window", poly([(cx - 4, cy + 1), (cx + 8, cy + 1), (cx - 6, cy + 14), (cx - 12, cy + 14)])),
+            ("trim", rect(cx - 20, cy, 40, 2)), ("door", rect(cx - 25, cy - 2, 4, 2.5))]
+
+
+def jerico():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(168, 24, 9)),
+         ("far", poly([(0, 60), (20, 40), (34, 34), (50, 42), (80, 56), (120, 44), (160, 54), (200, 46), (200, 96), (0, 96)])),
+         # Cristo Rey en el morro
+         ("wall", rect(32, 20, 4, 15)), ("wall", rect(26, 23, 16, 3)), ("wall", circle(34, 17, 2.8)),
+         ("near", poly([(0, 80), (40, 70), (90, 78), (140, 68), (200, 76), (200, 104), (0, 104)]))]
+    for x0, muro, borde in ((140, "window", "ochre"), (170, "paint", "leaf")):
+        s += [(muro, rect(x0, 70, 28, 32)), ("roof", poly([(x0 - 3, 72), (x0 + 4, 64), (x0 + 24, 64), (x0 + 31, 72)])),
+              (borde, rect(x0, 82, 28, 3)), ("dash", lines([(x, 85, x, 90) for x in range(x0 + 3, x0 + 28, 5)])),
+              (borde, rect(x0, 90, 28, 2)), ("wall", rect(x0 + 5, 74, 7, 7)), ("door", rect(x0 + 10, 93, 8, 9))]
+    # catedral de ladrillo con dos torres y cúpula
+    s += [("brick", rect(66, 34, 16, 68)), ("bshade", rect(77, 34, 5, 68)), ("brick", rect(118, 34, 16, 68)), ("bshade", rect(129, 34, 5, 68)),
+          ("window", arch(68, 22, 12, 13)), ("window", arch(120, 22, 12, 13)), ("brick", rect(64, 32, 20, 4)), ("brick", rect(116, 32, 20, 4)),
+          ("door", arch(71, 40, 6, 10)), ("door", arch(123, 40, 6, 10)),
+          ("window", arch(88, 28, 24, 24)), ("ochre", rect(98, 22, 4, 7)),
+          ("brick", rect(82, 50, 36, 52)), ("bshade", rect(82, 50, 36, 3)),
+          ("brick", poly([(80, 52), (100, 40), (120, 52)])), ("wall", circle(100, 62, 5)),
+          ("door", arch(90, 76, 20, 26)), ("wall", rect(64, 100, 72, 3))]
+    tierra_plaza(s, 102)
+    return s
+
+
+def jardin():
+    s = [("sky", rect(0, 0, W, H)),
+         ("cloud", poly([(14, 30), (20, 22), (30, 22), (36, 16), (48, 18), (54, 26), (62, 30)])),
+         ("far", poly([(0, 56), (30, 40), (64, 52), (100, 34), (136, 50), (170, 36), (200, 46), (200, 96), (0, 96)])),
+         ("near", poly([(0, 78), (40, 68), (100, 76), (160, 66), (200, 74), (200, 102), (0, 102)]))]
+    for x0, muro in ((4, "paint"), (164, "window")):
+        s += [(muro, rect(x0, 70, 32, 32)), ("roof", poly([(x0 - 3, 72), (x0 + 4, 64), (x0 + 28, 64), (x0 + 35, 72)])),
+              ("wall", rect(x0 + 5, 76, 8, 8)), ("wall", rect(x0 + 19, 76, 8, 8)), ("door", rect(x0 + 12, 90, 8, 12)),
+              ("ochre", rect(x0, 98, 32, 4))]
+    # basílica neogótica de piedra
+    s += [("granite", rect(64, 58, 72, 44)), ("gshade", rect(124, 58, 12, 44)),
+          ("granite", poly([(62, 60), (68, 40), (74, 60)])), ("granite", poly([(126, 60), (132, 40), (138, 60)])),
+          ("granite", poly([(76, 60), (100, 42), (124, 60)])),
+          ("granite", rect(90, 28, 20, 34)), ("gshade", rect(104, 28, 6, 34)),
+          ("granite", poly([(88, 30), (100, 12), (112, 30)])),
+          ("wshade", rect(62, 59, 76, 2.4)),
+          ("door", gothic(95, 32, 10, 16)), ("window", circle(100, 56, 4.4)),
+          ("door", gothic(92, 76, 16, 26)), ("door", gothic(72, 80, 10, 18)), ("door", gothic(118, 80, 10, 18)),
+          ("window", gothic(72, 64, 8, 12)), ("window", gothic(120, 64, 8, 12)),
+          ("ink", lines([(100, 12, 100, 6), (97.5, 8, 102.5, 8)]))]
+    tierra_plaza(s, 102)
+    for i, x in enumerate((8, 24, 40, 56, 132, 148, 164, 180)):
+        s += silla(x, 124 + (i % 2) * 8, ("roof", "ochre", "window", "leaf", "paint")[i % 5])
+    return s
+
+
+def guatape():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(30, 24, 9)),
+         ("cloud", poly([(150, 26), (156, 19), (166, 19), (172, 13), (184, 15), (190, 23), (198, 26)])),
+         ("far", poly([(0, 76), (40, 62), (80, 72), (120, 60), (160, 70), (200, 62), (200, 96), (0, 96)])),
+         # Piedra del Peñol
+         ("granite", poly([(60, 98), (60, 62), (66, 38), (80, 24), (100, 20), (120, 24), (134, 38), (140, 62), (140, 98)])),
+         ("gshade", poly([(126, 98), (128, 56), (122, 30), (134, 38), (140, 62), (140, 98)])),
+         ("gline", lines([(70, 40, 74, 80), (114, 34, 118, 70)])),
+         ("wall", rect(94, 14, 12, 8)), ("roof", poly([(92, 15), (100, 9), (108, 15)])),
+         ("ink", polyline([(104, 98), (96, 90), (106, 82), (96, 74), (106, 66), (96, 58), (106, 50), (96, 42), (106, 34), (100, 24)])),
+         ("shine", polyline([(104, 97), (96, 89), (106, 81), (96, 73), (106, 65), (96, 57), (106, 49), (96, 41), (106, 33), (100, 25)])),
+         # embalse con islas
+         ("sea", rect(0, 94, W, 46)), ("near", poly([(52, 100), (62, 94), (74, 100)])), ("near", poly([(130, 100), (142, 93), (154, 100)])),
+         ("wave", lines([(60, 108, 74, 108), (126, 112, 140, 112), (80, 124, 94, 124), (110, 128, 124, 128)])),
+         ("roof", poly([(92, 116), (112, 116), (108, 122), (96, 122)])), ("wall", poly([(102, 116), (102, 104), (110, 114)]))]
+    # zócalos de colores en la orilla
+    for x, muro, zocalo in ((0, "wall", "paint"), (24, "ochre", "window"), (152, "wall", "leaf"), (176, "window", "ochre")):
+        s += [(muro, rect(x, 104, 24, 28)), ("roof", poly([(x - 2, 106), (x + 4, 98), (x + 20, 98), (x + 26, 106)])),
+              (zocalo, rect(x, 120, 24, 12)), ("door", rect(x + 8, 118, 8, 14)), ("wall", rect(x + 8, 108, 8, 6))]
+    return s
+
+
+def rionegro():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(30, 26, 9)),
+         ("cloud", poly([(130, 66), (136, 59), (146, 59), (152, 53), (164, 55), (170, 63), (178, 66)])),
+         ("far", poly([(0, 72), (40, 58), (80, 68), (120, 56), (160, 66), (200, 58), (200, 96), (0, 96)]))]
+    s += avion(156, 32)
+    # catedral de San Nicolás
+    s += [("wall", rect(70, 64, 60, 36)), ("wshade", rect(118, 64, 12, 36)),
+          ("wall", poly([(66, 66), (100, 52), (134, 66)])), ("wall", rect(92, 38, 16, 26)), ("wshade", rect(103, 38, 5, 26)),
+          ("roof", arch(90, 26, 20, 14)), ("door", arch(96, 44, 8, 10)), ("ink", lines([(100, 26, 100, 20)])),
+          ("door", arch(92, 78, 16, 22)), ("window", arch(77, 74, 6, 10)), ("window", arch(117, 74, 6, 10))]
+    for x0 in (4, 150):
+        s += [("wall", rect(x0, 78, 46, 22)), ("roof", poly([(x0 - 3, 80), (x0 + 5, 72), (x0 + 41, 72), (x0 + 49, 80)])),
+              ("door", arch(x0 + 19, 86, 8, 14)), ("window", rect(x0 + 6, 84, 8, 7)), ("window", rect(x0 + 32, 84, 8, 7))]
+    # cultivos de flores
+    s.append(("coffee", rect(0, 100, W, 40)))
+    for i, y in enumerate((106, 116, 128)):
+        papel = ("roof", "ochre", "paint")[i]
+        s.append(("leaf", rect(0, y - 3, W, 6)))
+        for x in range(6 + (i % 2) * 6, 200, 12):
+            s.append((papel, circle(x, y - 1, 3)))
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
-           "marsella": marsella, "filandia": filandia, "salento": salento, "manizales": manizales}
+           "marsella": marsella, "filandia": filandia, "salento": salento, "manizales": manizales,
+           "jerico": jerico, "jardin": jardin, "guatape": guatape, "rionegro": rionegro}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -676,7 +782,7 @@ PALETA = {
     "coal": "#3A3340", "clay": "#D9622B", "cshade": "#A8441B", "lake": "#155FA8", "frailejon": "#BFE08F",
     "fstem": "#7A6A55", "moor": "#C7C24E", "sand": "#EDB35C", "sandshade": "#C98536", "moss": "#C9D3C2",
     "canyon": "#D99A5B", "canyon2": "#B5673A", "coffee": "#1E8A3C", "palm": "#E4DCC8", "bamboo": "#9BC53D",
-    "wood": "#D49A5A",
+    "wood": "#D49A5A", "granite": "#C3C6D6", "gshade": "#9599B2",
 }
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),
