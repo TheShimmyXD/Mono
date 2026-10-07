@@ -18,7 +18,8 @@ La pregunta al autor lleva qué cuesta cada una en tareas y qué ve él al conec
 
 ## 3. Android (F5.3-F5.5)
 
-- Android 12+: permisos `BLUETOOTH_CONNECT` y `BLUETOOTH_SCAN` (y `BLUETOOTH_ADVERTISE` si el teléfono se hace visible) pedidos en tiempo de ejecución, con un texto que diga para qué.
+- Android 12+: permisos `BLUETOOTH_CONNECT` y `BLUETOOTH_SCAN` (y `BLUETOOTH_ADVERTISE` si el teléfono se hace visible) pedidos en tiempo de ejecución, con un texto que diga para qué. El permiso exacto de cada método sale de las fuentes del SDK, no de la referencia web (que solo devuelve el menú, M-076): `grep -B4 'public .*listenUsingRfcommWithServiceRecord(' ~/Android/Sdk/sources/android-37.0/android/bluetooth/BluetoothAdapter.java` → `@RequiresPermission(...)`.
 - HyperOS (Xiaomi) cierra conexiones en segundo plano: la partida va en primer plano; si hace falta, guiar al autor a quitar el ahorro de batería para Mono, con capturas.
 - Reconexión: el invitado pide el estado desde el último número de acción recibido; si no cuadra, el anfitrión envía el estado completo.
-- Prueba real: el autor no tiene un segundo Android (P4). Las pruebas con dos teléfonos se agendan con el autor (el teléfono de un amigo con la app instalada por `adb` o un APK que el autor le pasa); mientras tanto, todo lo que se pueda se prueba en la JVM.
+- Prueba real (D-44): F5.3-F5.5 son Redmi ↔ PC; solo el hito F5.6 es con el teléfono de un amigo (app por `adb` o un APK que el autor le pasa). Lo demás, en la JVM (`LinkTest`).
+- **PC ↔ Redmi** (D-45, M-077): el Bluetooth del PC lo enciende el autor (`! rfkill unblock bluetooth && bluetoothctl power on`). El canal RFCOMM cambia al reabrir la app: se busca por SDP (`pc/eco.py` lo hace). `Connection refused` con el registro de Mono visible en `sdptool browse` = emparejado solo de un lado: si `telefono.py adb -- shell dumpsys bluetooth_manager | grep -c <MAC del PC>` da 0, el autor quita el Redmi en el PC (`bluetoothctl remove <MAC>`) y empareja desde el Redmi.

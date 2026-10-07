@@ -7,7 +7,7 @@ completo (regla 2): solo la etiqueta de la app y los errores de AndroidRuntime, 
 Desde la raiz del proyecto:
   python3 .claude/skills/agente-mono/scripts/telefono.py dispositivos
   python3 .claude/skills/agente-mono/scripts/telefono.py instalar        (installDebug + abrir)
-  python3 .claude/skills/agente-mono/scripts/telefono.py captura --salida <carpeta>  (crea captura_HHMMSS.png)
+  python3 .claude/skills/agente-mono/scripts/telefono.py captura --salida <carpeta o archivo .png>  (en una carpeta: captura_HHMMSS.png)
   python3 .claude/skills/agente-mono/scripts/telefono.py log [-n 60]
   python3 .claude/skills/agente-mono/scripts/telefono.py emulador       (arranca el AVD aparte)
   python3 .claude/skills/agente-mono/scripts/telefono.py adb -- shell wm size   (cualquier orden de adb, M-007)
@@ -218,6 +218,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def capture_path(salida: Path, now: dt.datetime) -> Path:
+    """Archivo de la captura: `salida` si termina en .png (como en `cartas` y `pantallas`, M-075); si no, captura_HHMMSS.png dentro."""
+    return salida if salida.suffix.lower() == ".png" else salida / f"captura_{now:%H%M%S}.png"
+
+
 def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]], wait: float, salida: Path) -> int:
     """Abre cada (etiqueta, orden), espera, captura y une en `salida` (hoja_arte.py --unir, venv del arte)."""
     carpeta = root / "capturas" / "tmp" / f"serie_{dt.datetime.now():%H%M%S}"
@@ -327,13 +332,13 @@ def main() -> int:
 
     if args.orden == "captura":
         if args.salida is None:
-            print("Falta --salida <carpeta> (el scratchpad, con su ruta literal).")
+            print("Falta --salida <carpeta o archivo .png> (el scratchpad, con su ruta literal).")
             return 1
         if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
             print("Pantalla apagada: pide al autor que desbloquee el Redmi (HyperOS no deja encenderla por adb). Sin captura.")
             return 1
-        args.salida.mkdir(parents=True, exist_ok=True)
-        out = args.salida / f"captura_{dt.datetime.now():%H%M%S}.png"
+        out = capture_path(args.salida, dt.datetime.now())
+        out.parent.mkdir(parents=True, exist_ok=True)
         with out.open("wb") as handle:
             subprocess.run([adb, "-s", serial, "exec-out", "screencap", "-p"], stdout=handle)
         print(f"{out} ({out.stat().st_size // 1024} KB, {serial})")

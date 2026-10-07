@@ -4,7 +4,7 @@
 
 ## 1. Antes de una pantalla nueva: 2-3 opciones
 
-Un pedido de diseño abierto (tablero, panel, editor) se resuelve con 2-3 opciones **vistas en el teléfono** (o en el emulador) antes de programar la definitiva: una maqueta mínima por opción (un `@Composable` con datos falsos), captura de cada una y AskUserQuestion con la más barata incluida. La elección va a una D-## (L11, L18).
+Un pedido de diseño abierto (tablero, panel, editor) se resuelve con 2-3 opciones **vistas en el teléfono** (o en el emulador) antes de programar la definitiva: una maqueta mínima por opción (un `@Composable` con datos falsos), captura de cada una y AskUserQuestion con la más barata incluida. La elección va a una D-## (L11, L18). Una pantalla de prueba que solo abre un extra (p. ej. `--es enlace eco`) no pide opciones, pero sí su captura (M-078).
 
 Las maquetas van siempre en `app/src/main/kotlin/com/jacck/mono/demo/Maquetas.kt` (`@Composable fun Maqueta(letra: String)`, extra `maqueta` de `MainActivity`), con su commit: la pantalla siguiente sobrescribe ese archivo con Write y, tras la elección, queda el esqueleto vacío. Así no hay archivos que el autor tenga que borrar (M-029).
 

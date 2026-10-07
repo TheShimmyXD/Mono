@@ -84,6 +84,12 @@ class TestTelefono(unittest.TestCase):
         self.assertIn("Instalar via USB", telefono.install_hint(out))
         self.assertIsNone(telefono.install_hint("BUILD FAILED"))
 
+    def test_capture_to_png_file_or_folder(self):
+        # M-075: en dde8fe6a #38 `--salida capturas/X.png` creo una carpeta con ese nombre.
+        now = telefono.dt.datetime(2026, 10, 7, 18, 15, 27)
+        self.assertEqual(Path("capturas/X.png"), telefono.capture_path(Path("capturas/X.png"), now))
+        self.assertEqual(Path("capturas/tmp/captura_181527.png"), telefono.capture_path(Path("capturas/tmp"), now))
+
     def test_options_after_the_order_and_adb_passthrough(self):
         # M-018: con REMAINDER, `captura --salida X` perdía --salida.
         own, rest = telefono.split_passthrough(["captura", "--salida", "/x"])
