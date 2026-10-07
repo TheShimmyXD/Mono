@@ -354,6 +354,6 @@
   - *Ojos con brillo* (`brillos`, un trazo blanco de largo casi cero) en mono, perro y arepa.
   - *Tres opciones en la maqueta* (extra `maqueta`, `demo/Maquetas.kt`), con 1 a 4 fichas en casillas de 54 × 66 dp: **A** en la fila de abajo como hoy, cada personaje sobre un disco de su color (18 dp, 12 dp con 4); **B** grandes (60 % del ancho) escalonados encima de la casilla, parados en una base de su color; **C** medallones blancos de 26 dp con aro de su color, encimados abajo.
 - **Captura:** `capturas/FB.3_personajes.png`.
-- **Elección:** pendiente del autor.
+- **Elección del autor:** C, medallones blancos con aro del color del jugador, encimados abajo (26 dp; FB.4 los lleva al tablero, el panel y los diálogos).
 - **Cómo se revierte:** quitar la sección «personajes» de `arte.py` y correrlo; `Maquetas.kt` vuelve a `dab05d0`.
-- **Estado:** propuesta.
+- **Estado:** vigente.
