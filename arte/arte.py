@@ -2098,6 +2098,152 @@ def impuesto_de_lujo():
     return s
 
 
+def chiva(x, base, papel):
+    """Chiva de lado, mirando a la derecha: carrocería pintada, bancas abiertas y parrilla con bultos."""
+    s = [("tire", circle(x + 22, base - 8, 8)), ("tire", circle(x + 110, base - 8, 8)),
+         ("granite", circle(x + 22, base - 8, 3)), ("granite", circle(x + 110, base - 8, 3)),
+         ("roof", poly([(x + 108, base - 36), (x + 126, base - 32), (x + 132, base - 12), (x + 108, base - 12)])),
+         ("granite", rect(x + 128, base - 28, 5, 14)), ("ochre", circle(x + 128, base - 32, 3.5)),
+         ("window", poly([(x + 110, base - 50), (x + 118, base - 50), (x + 124, base - 36), (x + 110, base - 36)])),
+         (papel, rect(x, base - 34, 112, 22)), ("roof", rect(x, base - 16, 112, 3)),
+         ("wood", rect(x, base - 56, 112, 22))]
+    s += [("coal", rect(x + 4 + 15 * i, base - 52, 10, 16)) for i in range(7)]
+    s += [(("trim", "window", "leaf")[i % 3], poly([(x + 4 + 12 * i, base - 20), (x + 10 + 12 * i, base - 31), (x + 16 + 12 * i, base - 20)]))
+          for i in range(9)]
+    s += [("roof", rect(x - 2, base - 60, 116, 5)), ("bar", lines([(x + 2, base - 66, x + 108, base - 66)] + [(x + 4 + 26 * i, base - 66, x + 4 + 26 * i, base - 60) for i in range(5)])),
+          ("ochre", rrect(x + 10, base - 74, 20, 12, 3)), ("clay", rrect(x + 36, base - 72, 16, 10, 3)), ("leaf", rrect(x + 58, base - 76, 24, 14, 3)),
+          ("window", rrect(x + 86, base - 72, 16, 10, 3))]
+    return s
+
+
+def salida_bogota():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(166, 54, 8)),
+         ("far", poly([(0, 62), (40, 48), (80, 56), (120, 44), (160, 54), (200, 46), (200, 100), (0, 100)])),
+         ("near", rect(0, 92, W, 10)), ("stone", rect(0, 100, W, 6)), ("granite", rect(0, 106, W, 34)),
+         ("glyph", lines([(x, 126, x + 14, 126) for x in range(4, W, 30)]))]
+    # pancarta de salida a cuadros entre dos postes
+    s += [("granite", rect(12, 22, 6, 84)), ("granite", rect(182, 22, 6, 84)), ("wall", rect(18, 22, 164, 14))]
+    s += [("coal", rect(18 + 8 * i, 22 + 7 * (i % 2), 8, 7)) for i in range(21)]
+    s += chiva(30, 126, "ochre")
+    return s
+
+
+def carcel_bogota():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(80, 22), (86, 15), (96, 15), (102, 9.5), (114, 11), (120, 18), (128, 22)])),
+         ("far", poly([(0, 56), (40, 40), (80, 50), (120, 36), (160, 46), (200, 38), (200, 98), (0, 98)]))]
+    # el Panóptico: muralla de piedra, almenas y torreones
+    s += [("stone", rect(10, 44, 180, 54)), ("sshade", rect(10, 44, 180, 3))]
+    s += [("stone", rect(x, 37, 7, 7)) for x in range(36, 160, 12)]
+    for x in (6, 166):
+        s += [("stone", rect(x, 32, 28, 66)), ("sshade", rect(x + 22, 32, 6, 66))]
+        s += [("stone", rect(x + i * 8, 25, 5, 7)) for i in range(4)]
+        s += [("coal", rect(x + 11, 46, 5, 12)), ("coal", rect(x + 11, 70, 5, 12))]
+    for x in (44, 64, 124, 144):
+        s += [("coal", rect(x, 56, 12, 16)), ("bar", lines([(x + 4, 56, x + 4, 72), (x + 8, 56, x + 8, 72)]))]
+    # el portón con el preso de rayas detrás de la reja
+    s += [("coal", arch(82, 58, 36, 40)), ("wall", rrect(88, 80, 24, 18, 4)),
+          ("ink", lines([(88, 85, 112, 85), (88, 90, 112, 90), (88, 95, 112, 95)])), ("skin", circle(100, 72, 8.5)),
+          ("ink", lines([(96.5, 70, 96.5, 71.5), (103.5, 70, 103.5, 71.5)])), ("ink", polyline([(96, 77), (100, 75.5), (104, 77)])),
+          ("skin", circle(90, 74, 3.5)), ("skin", circle(110, 74, 3.5)),
+          ("bar", lines([(x, 60, x, 98) for x in range(87, 116, 6)] + [(82, 78, 118, 78)]))]
+    tierra_plaza(s, 98)
+    return s
+
+
+def vayase_a_la_carcel():
+    s = [("sky", rect(0, 0, W, H)),
+         ("far", poly([(0, 60), (40, 46), (80, 54), (120, 40), (160, 50), (200, 30), (200, 100), (0, 100)]))]
+    # el Panóptico allá en el cerro y la flecha que lo señala
+    s += [("stone", rect(164, 44, 32, 16)), ("sshade", rect(164, 44, 32, 2))]
+    s += [("stone", rect(x, 40, 4, 4)) for x in range(165, 196, 7)]
+    s += [("coal", arch(176, 50, 8, 10)), ("bar", lines([(178.5, 51, 178.5, 60), (181.5, 51, 181.5, 60)])),
+          ("roof", poly([(104, 36), (138, 36), (138, 26), (158, 44), (138, 62), (138, 52), (104, 52)])), ("shine", lines([(110, 44, 132, 44)]))]
+    s += [("near", rect(0, 92, W, 10)), ("stone", rect(0, 100, W, 6)), ("granite", rect(0, 106, W, 34)),
+          ("glyph", lines([(x, 126, x + 14, 126) for x in range(70, W, 30)]))]
+    # la patrulla con su sirena
+    s += carro(120, 128, "wall") + [("leaf", rect(120, 118, 50, 4)), ("roof", rrect(138, 102, 7, 4, 1.5)), ("window", rrect(145, 102, 7, 4, 1.5)),
+                                    ("stamp", lines([(136, 100, 132, 96), (154, 100, 158, 96), (145, 98, 145, 94)]))]
+    # el policía pitando y señalando
+    cx, b = 52, 128
+    s += [("coal", rect(cx - 9, b - 24, 8, 24)), ("coal", rect(cx + 1, b - 24, 8, 24)),
+          ("leaf", poly([(cx - 10, b - 48), (cx - 18, b - 30), (cx - 13, b - 28), (cx - 6, b - 42)])),
+          ("leaf", rrect(cx - 12, b - 52, 24, 30, 5)), ("ochre", rect(cx - 12, b - 42, 24, 3.5)), ("coal", rect(cx - 12, b - 28, 24, 3)),
+          ("leaf", poly([(cx + 8, b - 50), (cx + 36, b - 62), (cx + 38, b - 56), (cx + 10, b - 42)])), ("skin", circle(cx + 38, b - 59, 4.5)),
+          ("skin", circle(cx, b - 61, 9)), ("leaf", poly([(cx - 10, b - 64), (cx - 8, b - 74), (cx + 8, b - 74), (cx + 10, b - 64)])),
+          ("coal", rect(cx - 11, b - 66, 24, 3)), ("ochre", circle(cx, b - 70, 2.4)),
+          ("ink", lines([(cx + 3, b - 62, cx + 3, b - 60.5)])), ("granite", rect(cx + 6, b - 58, 7, 3)),
+          ("ink", lines([(cx + 16, b - 64, cx + 21, b - 68), (cx + 17, b - 59, cx + 23, b - 59)]))]
+    return s
+
+
+def parada_libre_bogota():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(176, 22, 8)),
+         ("far", poly([(0, 56), (40, 42), (80, 50), (120, 38), (160, 48), (200, 40), (200, 90), (0, 90)])),
+         ("near", rect(0, 84, W, 56))]
+    s += cometa(124, 26, 9, "roof", "ochre")
+    # el lago con su bote
+    s += [("lake", poly([(60, 88), (150, 86), (172, 94), (146, 102), (74, 102), (50, 95)])),
+          ("wave", lines([(70, 96, 82, 96), (130, 92, 142, 92)])), ("roof", poly([(128, 91), (156, 91), (152, 97), (132, 97)]))]
+    # el letrero de la P
+    s += [("granite", rect(32, 56, 5, 50)), ("window", rrect(18, 26, 33, 32, 5)), ("bigglyph", raw("M29 51V33H36Q42.5 33 42.5 39.5Q42.5 46 36 46H29"))]
+    # banca bajo el árbol
+    s += saman(92, 118, 60, 46)
+    s += [("ink", lines([(72, 112, 72, 124), (108, 112, 108, 124), (74, 104, 72, 112), (106, 104, 108, 112)])),
+          ("wood", rect(70, 102, 40, 4)), ("wood", rect(68, 110, 44, 4))]
+    # carrito de helados con su sombrilla
+    s += sombrilla(156, 92, 18, "wall", "roof", 18)
+    s += [("tire", circle(144, 126, 5)), ("tire", circle(168, 126, 5)), ("wall", rrect(138, 108, 36, 16, 3)), ("dolphin", rect(138, 114, 36, 4))]
+    return s
+
+
+def arca_comunal():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(140, 22), (146, 15), (156, 15), (162, 9.5), (174, 11), (180, 18), (188, 22)])),
+         ("far", poly([(0, 50), (40, 36), (80, 44), (120, 32), (160, 42), (200, 36), (200, 96), (0, 96)]))]
+    # el salón comunal de fiesta
+    s += [("roof", poly([(10, 46), (22, 36), (178, 36), (190, 46)])), ("rshade", rect(10, 44, 180, 3)),
+          ("ochre", rect(16, 46, 168, 50)), ("oshade", rect(16, 46, 168, 3)),
+          ("door", rect(26, 62, 16, 34)), ("door", rect(158, 62, 16, 34)), ("window", rect(50, 60, 14, 14)), ("window", rect(136, 60, 14, 14))]
+    s += banderines(16, 184, 50, 10, 14)
+    tierra_plaza(s, 96)
+    # el cofre abierto rebosando monedas
+    s += [("wood", poly([(62, 98), (138, 98), (144, 66), (68, 66)])), ("trunk", poly([(68, 66), (144, 66), (143, 71), (67, 71)])),
+          ("leaf", poly([(74, 92), (96, 76), (100, 82), (80, 98)])), ("leaf", poly([(110, 80), (132, 90), (128, 97), (106, 88)])),
+          ("ochre", poly([(62, 100), (70, 88), (86, 82), (100, 80), (114, 82), (130, 88), (138, 100)]))]
+    for cx, cy in ((80, 92), (100, 86), (120, 92)):
+        s += [("ochre", circle(cx, cy, 8)), ("oshade", circle(cx, cy, 5.5)), ("dollar", signo_peso(cx, cy, 0.75))]
+    s += [("wood", rect(60, 98, 80, 30)), ("trunk", rect(60, 106, 80, 4)), ("trunk", rect(60, 120, 80, 4)),
+          ("oshade", rect(60, 98, 6, 30)), ("oshade", rect(134, 98, 6, 30)), ("ochre", rect(94, 100, 12, 12)), ("coal", rect(99, 104, 2, 5)),
+          ("cloud", star(146, 80, 7, 2.2)), ("cloud", star(56, 84, 6, 2))]
+    for cx, cy in ((40, 122), (162, 124)):
+        s += [("ochre", circle(cx, cy, 8)), ("oshade", circle(cx, cy, 5.5)), ("dollar", signo_peso(cx, cy, 0.75))]
+    return s
+
+
+def interrogacion(x, y, k):
+    """Signo de pregunta grueso con contorno: x, y es la esquina de arriba a la izquierda."""
+    d = (f"M{f(x)} {f(y + 12 * k)}Q{f(x)} {f(y)} {f(x + 13 * k)} {f(y)}Q{f(x + 26 * k)} {f(y)} {f(x + 26 * k)} {f(y + 12 * k)}"
+         f"Q{f(x + 26 * k)} {f(y + 20 * k)} {f(x + 14 * k)} {f(y + 25 * k)}V{f(y + 33 * k)}")
+    return [("qblack", raw(d)), ("qyellow", raw(d)), ("ochre", circle(x + 14 * k, y + 44 * k, 5.5 * k))]
+
+
+def casualidad_bogota():
+    s = [("sky", rect(0, 0, W, H)),
+         ("far", poly([(0, 54), (40, 40), (80, 48), (120, 34), (160, 44), (200, 38), (200, 100), (0, 100)]))]
+    s += carpa(146, 104, 44, "trim", ("ochre", "window")) + carpa(10, 104, 40, "turq", ("roof", "leaf"))
+    tierra_plaza(s, 104)
+    # la ruleta de feria
+    cx, cy, r = 104, 64, 38
+    s += [("wood", poly([(92, 98), (116, 98), (128, 128), (80, 128)])), ("coal", circle(cx, cy, r + 4))]
+    papeles = ("roof", "ochre", "window", "leaf", "trim", "turq")
+    for i in range(12):
+        a0, a1 = math.radians(30 * i - 90), math.radians(30 * i - 60)
+        arco = [(cx + r * math.cos(a0 + (a1 - a0) * k / 4), cy + r * math.sin(a0 + (a1 - a0) * k / 4)) for k in range(5)]
+        s.append((papeles[i % 6], poly([(cx, cy)] + arco)))
+    s += [("ochre", circle(cx, cy, 6)), ("roof", poly([(98, 17), (110, 17), (104, 29)]))]
+    s += interrogacion(18, 18, 1.1) + interrogacion(160, 30, 0.8)
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
@@ -2119,7 +2265,9 @@ LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero"
            "estacion_de_la_sabana": estacion_de_la_sabana, "estacion_del_norte": estacion_del_norte,
            "estacion_del_sur": estacion_del_sur, "estacion_del_oriente": estacion_del_oriente, "zona_t": zona_t,
            "empresa_de_energia": energia_bogota, "acueducto": acueducto_bogota, "contribuciones": contribuciones,
-           "impuesto_de_lujo": impuesto_de_lujo}
+           "impuesto_de_lujo": impuesto_de_lujo, "salida": salida_bogota, "carcel": carcel_bogota,
+           "vayase_a_la_carcel": vayase_a_la_carcel, "parada_libre": parada_libre_bogota, "arca_comunal": arca_comunal,
+           "casualidad": casualidad_bogota}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -2267,13 +2415,13 @@ PALETA = {
     "fstem": "#7A6A55", "moor": "#C7C24E", "sand": "#EDB35C", "sandshade": "#C98536", "moss": "#C9D3C2",
     "canyon": "#D99A5B", "canyon2": "#B5673A", "coffee": "#1E8A3C", "palm": "#E4DCC8", "bamboo": "#9BC53D",
     "wood": "#D49A5A", "granite": "#C3C6D6", "gshade": "#9599B2", "dolphin": "#F497B6", "turq": "#2EC4B6", "shallow": "#8EE8D8",
-    "night": "#2B2466",
+    "night": "#2B2466", "skin": "#F2B98A",
 }
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),
           "dash": ("#1B1B1B", 0.9), "rope": ("#8B5A2B", 1.0), "shine": ("#FFFFFF", 1.3),
           "fall": ("#7FD3F0", 1.8),
-          "stamp": ("#E63946", 2.0)}
+          "stamp": ("#E63946", 2.0), "bigglyph": ("#FFFFFF", 4.2), "qblack": ("#1B1B1B", 10), "qyellow": ("#FFC21A", 6)}
 FRANJA = ["#E63946", "#FFC21A", "#1D7BEF", "#2BB04A", "#E5007E"]
 
 
