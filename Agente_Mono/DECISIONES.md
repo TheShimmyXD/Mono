@@ -330,3 +330,16 @@
   - *Cómo:* un `ChivaTheme` (colores de Material 3 + `Typography` con Lilita) en `MainActivity` y piezas comunes (`FranjaChiva`, `Calcomania`, `BotonChiva`) en un archivo propio de la app; las pantallas usan esas piezas, no colores sueltos.
 - **Cómo se revierte:** volver a `MaterialTheme` sin parámetros en `MainActivity` y a los componentes de Material; las opciones B y C siguen en `b91f161`.
 - **Estado:** vigente.
+
+### D-34 · Diálogos de turno como cartas de chiva (FB.2b)
+
+- **Pregunta:** cómo aplicar D-33 a los 7 diálogos de turno (avisos, compra, subasta, Cárcel, impuesto, deuda y quiebra, fin) y cómo capturarlos sin jugar.
+- **Del agente:**
+  - *Una pieza:* `DialogoChiva` en `Chiva.kt`: `Calcomania` (contorno 3 dp, esquinas 16 dp, sombra 5 dp), franja de 8 dp arriba y abajo (la de la carta, `SquareCard.kt`), título blanco en una banda de color, cuerpo con scroll y botones `BotonChiva` debajo. No se cierra tocando fuera: el motor espera una decisión. La escritura de la compra deja la `Card` de Material por un contorno de tinta de 2 dp.
+  - *Botones apilados, no lado a lado* (cambia lo dicho en D-33): a media anchura no caben «Pagar el 10 % de lo que tiene» ni «Hipotecar La Perseverancia (+$50)»; apilados, el principal (rojo) va primero salvo en la deuda, donde la quiebra va al final.
+  - *Color de la banda por tipo:* techo rojo para decidir (compra, impuesto, deuda), azul para «Lo que pasó», magenta la subasta, tinta la Cárcel y verde el fin (colores de la franja, `Chiva.Azul`, `Magenta`, `Verde`).
+  - *Texto de botón:* sigue en una línea; si no cabe, `autoSize` baja la letra de 16 a 11 sp («Vender un edificio de Calle del Embudo» se cortaba). «Comprar $60» pasa a «Comprar −$60» (M-026).
+  - *Extra de prueba `fase`* (`compra`, `subasta`, `carcel`, `impuesto`, `deuda`, `fin`; `demo/SamplePhases.kt`, prueba `SamplePhasesTest` en los dos presets): abre la partida en ese diálogo sin el aviso inicial; la subasta sale del motor (rechazar y pujar el mínimo). Como `propiedades` y `hoja` (D-24), no guarda la partida.
+- **Capturas:** `capturas/FB.2b_dialogos.png`.
+- **Cómo se revierte:** los diálogos vuelven a `AlertDialog` de Material desde `2eb9a48`.
+- **Estado:** vigente.

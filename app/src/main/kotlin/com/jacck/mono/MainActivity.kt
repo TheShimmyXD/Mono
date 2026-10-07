@@ -16,6 +16,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.jacck.mono.demo.DemoBoardScreen
 import com.jacck.mono.demo.Maqueta
 import com.jacck.mono.demo.withSampleProperties
+import com.jacck.mono.demo.withPhase
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
@@ -34,12 +35,13 @@ const val LOG_TAG = "Mono"
  * (repite una partida).
  * Con `n` (16..48) se abre en cambio el tablero de muestra de F3.2. Para probar F3.4 sin jugar media
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
- * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3). Con `maqueta` (letra) se abre la maqueta de la pantalla
+ * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
+ * `deuda`, `fin`) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
  * que se está diseñando (`demo/Maquetas.kt`, M-029). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
-private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "casilla")
+private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "casilla", "fase")
 
 class MainActivity : ComponentActivity() {
 
@@ -53,6 +55,7 @@ class MainActivity : ComponentActivity() {
         val sheet = intent.getBooleanExtra("hoja", false)
         val square = if (intent.hasExtra("casilla")) intent.getIntExtra("casilla", 0) else null
         val mockup = intent.getStringExtra("maqueta")
+        val phase = intent.getStringExtra("fase")
         val direct = GAME_EXTRAS.any(intent::hasExtra)
         val saveFile = SaveFile(filesDir)
         val names = resources.getStringArray(R.array.default_names).take(players)
@@ -88,7 +91,13 @@ class MainActivity : ComponentActivity() {
                                     GameViewModel(resume.config, resume.state.players.map { it.name }, seed, resumed = resume.state, onState = keep)
                                 } else {
                                     val (p, n) = requireNotNull(game)
-                                    GameViewModel(p.load(), n, seed, prepare = if (sample) ::withSampleProperties else { s -> s }, onState = keep)
+                                    val config = p.load()
+                                    val prepare: (GameState) -> GameState = when {
+                                        phase != null -> withPhase(config, phase)
+                                        sample -> ::withSampleProperties
+                                        else -> { s -> s }
+                                    }
+                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep).also { if (phase != null) it.dismissNotices() }
                                 }
                             }
                             GameScreen(vm, openProperties = sheet, openSquare = square) { System.currentTimeMillis() }

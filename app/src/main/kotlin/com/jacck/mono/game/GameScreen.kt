@@ -1,6 +1,8 @@
 package com.jacck.mono.game
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,23 +12,19 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -35,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -44,6 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jacck.mono.BotonChiva
 import com.jacck.mono.Calcomania
+import com.jacck.mono.Chiva
+import com.jacck.mono.DialogoChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import com.jacck.mono.board.Board
@@ -222,41 +223,35 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
     }
 }
 
-/** Diálogo que solo tiene botones dentro del cuerpo: subasta, Cárcel, deuda. */
+/** Motivo del último rechazo del motor, en rojo, dentro de un diálogo. */
 @Composable
-private fun ChoiceDialog(title: String, body: @Composable () -> Unit) {
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text(title) },
-        text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(6.dp)) { body() } },
-        confirmButton = {},
-    )
+private fun Rejected(vm: GameViewModel) {
+    vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
 }
 
 @Composable
 private fun NoticesDialog(lines: List<String>, onDone: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text(stringResource(R.string.what_happened)) },
-        text = {
-            Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                lines.forEach { Text("• $it") }
-            }
-        },
-        confirmButton = { Button(onClick = onDone) { Text(stringResource(R.string.next)) } },
-    )
+    DialogoChiva(
+        stringResource(R.string.what_happened), color = Chiva.Azul,
+        botones = { BotonChiva(stringResource(R.string.next), onDone) },
+    ) {
+        lines.forEach { Text("• $it", fontSize = 16.sp) }
+    }
 }
 
 @Composable
 private fun BuyDialog(vm: GameViewModel, square: Int) {
     val sq = vm.config.squares[square] as OwnableSquare
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text(stringResource(R.string.buy_title, vm.state.players[vm.state.current].name, sq.name)) },
-        text = { Deed(vm.config, vm.state, square) },
-        confirmButton = { Button(onClick = { vm.act(Action.Buy) }) { Text(stringResource(R.string.buy, money(sq.price))) } },
-        dismissButton = { TextButton(onClick = { vm.act(Action.Decline) }) { Text(stringResource(R.string.decline)) } },
-    )
+    DialogoChiva(
+        stringResource(R.string.buy_title, vm.state.players[vm.state.current].name, sq.name),
+        botones = {
+            BotonChiva(stringResource(R.string.buy, money(sq.price)), { vm.act(Action.Buy) })
+            BotonChiva(stringResource(R.string.decline), { vm.act(Action.Decline) }, principal = false)
+        },
+    ) {
+        Deed(vm.config, vm.state, square)
+        Rejected(vm)
+    }
 }
 
 @Composable
@@ -264,40 +259,41 @@ private fun AuctionDialog(vm: GameViewModel, auction: TurnPhase.Auction) {
     val players = vm.state.players
     val bidder = nextBidder(auction)
     val base = minimumBid(vm.config, auction.square)
-    ChoiceDialog(stringResource(R.string.auction_title, vm.config.squares[auction.square].name)) {
-        val leader = auction.highestBidder
+    val leader = auction.highestBidder
+    val offers = if (leader == null) listOf(base, base + 10, base + 50) else listOf(10, 50, 100).map { auction.highestBid + it }
+    DialogoChiva(
+        stringResource(R.string.auction_title, vm.config.squares[auction.square].name), color = Chiva.Magenta,
+        botones = {
+            offers.filter { it <= players[bidder].money }.forEach { amount ->
+                BotonChiva(stringResource(R.string.bid, money(amount)), { vm.act(Action.Bid(bidder, amount)) })
+            }
+            BotonChiva(stringResource(R.string.pass_bid), { vm.act(Action.PassBid(bidder)) }, principal = false)
+        },
+    ) {
         Text(
             if (leader == null) stringResource(R.string.auction_none, money(base))
             else stringResource(R.string.auction_leader, players[leader].name, money(auction.highestBid)),
+            fontSize = 16.sp,
         )
-        Text(stringResource(R.string.auction_turn, players[bidder].name, money(players[bidder].money)), fontWeight = FontWeight.Bold)
-        val offers = if (leader == null) listOf(base, base + 10, base + 50) else listOf(10, 50, 100).map { auction.highestBid + it }
-        offers.filter { it <= players[bidder].money }.forEach { amount ->
-            Button(onClick = { vm.act(Action.Bid(bidder, amount)) }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.bid, money(amount)))
-            }
-        }
-        OutlinedButton(onClick = { vm.act(Action.PassBid(bidder)) }, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.pass_bid))
-        }
-        vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+        Text(stringResource(R.string.auction_turn, players[bidder].name, money(players[bidder].money)), fontSize = 18.sp)
+        Rejected(vm)
     }
 }
 
 @Composable
 private fun TaxDialog(vm: GameViewModel, square: Int) {
     val tax = vm.config.squares[square] as Tax
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text(stringResource(R.string.tax_title, vm.state.players[vm.state.current].name, tax.name)) },
-        text = null,
-        confirmButton = { Button(onClick = { vm.act(Action.PayTax(percent = false)) }) { Text(stringResource(R.string.tax_fixed, money(tax.fixed))) } },
-        dismissButton = {
+    DialogoChiva(
+        stringResource(R.string.tax_title, vm.state.players[vm.state.current].name, tax.name),
+        botones = {
+            BotonChiva(stringResource(R.string.tax_fixed, money(tax.fixed)), { vm.act(Action.PayTax(percent = false)) })
             if (tax.percent > 0) {
-                TextButton(onClick = { vm.act(Action.PayTax(percent = true)) }) { Text(stringResource(R.string.tax_percent, tax.percent)) }
+                BotonChiva(stringResource(R.string.tax_percent, tax.percent), { vm.act(Action.PayTax(percent = true)) }, principal = false)
             }
         },
-    )
+    ) {
+        Rejected(vm)
+    }
 }
 
 @Composable
@@ -305,20 +301,20 @@ private fun JailDialog(vm: GameViewModel) {
     val player = vm.state.players[vm.state.current]
     val rules = vm.config.rules
     val turns = player.jailTurns ?: 0
-    ChoiceDialog(stringResource(R.string.jail_title, player.name, turns + 1, rules.jailMaxTurns)) {
-        Button(onClick = { vm.act(Action.Roll) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.jail_roll)) }
-        // El motor dice si se puede (R-22): aquí solo se ocultan los botones que seguro no valen.
-        if (turns < rules.jailMaxTurns - 1 && player.money >= rules.jailFine) {
-            OutlinedButton(onClick = { vm.act(Action.PayJailFine) }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.jail_fine, money(rules.jailFine)))
+    DialogoChiva(
+        stringResource(R.string.jail_title, player.name, turns + 1, rules.jailMaxTurns), color = Chiva.Tinta,
+        botones = {
+            BotonChiva(stringResource(R.string.jail_roll), { vm.act(Action.Roll) })
+            // El motor dice si se puede (R-22): aquí solo se ocultan los botones que seguro no valen.
+            if (turns < rules.jailMaxTurns - 1 && player.money >= rules.jailFine) {
+                BotonChiva(stringResource(R.string.jail_fine, money(rules.jailFine)), { vm.act(Action.PayJailFine) }, principal = false)
             }
-        }
-        if (player.jailCards.isNotEmpty()) {
-            OutlinedButton(onClick = { vm.act(Action.UseJailCard) }, modifier = Modifier.fillMaxWidth()) {
-                Text(stringResource(R.string.jail_card))
+            if (player.jailCards.isNotEmpty()) {
+                BotonChiva(stringResource(R.string.jail_card), { vm.act(Action.UseJailCard) }, principal = false)
             }
-        }
-        vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+        },
+    ) {
+        Rejected(vm)
     }
 }
 
@@ -327,35 +323,39 @@ private fun DebtDialog(vm: GameViewModel, debt: TurnPhase.Debt) {
     val state = vm.state
     val debtor = debt.debts.first().debtor
     val player = state.players[debtor]
-    ChoiceDialog(stringResource(R.string.debt_title, player.name, money(player.money))) {
-        Text(stringResource(R.string.debt_text))
-        state.holdings.filter { it.value.owner == debtor }.toSortedMap().forEach { (square, h) ->
-            val name = vm.config.squares[square].name
-            if (h.houses > 0 || h.hotel) {
-                OutlinedButton(onClick = { vm.act(Action.SellBuilding(square)) }, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.debt_sell, name))
-                }
-            } else if (!h.mortgaged) {
-                OutlinedButton(onClick = { vm.act(Action.Mortgage(square)) }, modifier = Modifier.fillMaxWidth()) {
-                    Text(stringResource(R.string.debt_mortgage, name, money(mortgageValue(vm.config, state, square))))
+    DialogoChiva(
+        stringResource(R.string.debt_title, player.name, money(player.money)),
+        botones = {
+            state.holdings.filter { it.value.owner == debtor }.toSortedMap().forEach { (square, h) ->
+                val name = vm.config.squares[square].name
+                if (h.houses > 0 || h.hotel) {
+                    BotonChiva(stringResource(R.string.debt_sell, name), { vm.act(Action.SellBuilding(square)) }, principal = false)
+                } else if (!h.mortgaged) {
+                    BotonChiva(
+                        stringResource(R.string.debt_mortgage, name, money(mortgageValue(vm.config, state, square))),
+                        { vm.act(Action.Mortgage(square)) }, principal = false,
+                    )
                 }
             }
-        }
-        Button(onClick = { vm.act(Action.DeclareBankruptcy) }, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.bankruptcy))
-        }
-        vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+            BotonChiva(stringResource(R.string.bankruptcy), { vm.act(Action.DeclareBankruptcy) })
+        },
+    ) {
+        Text(stringResource(R.string.debt_text), fontSize = 16.sp)
+        Rejected(vm)
     }
 }
 
 @Composable
 private fun OverDialog(vm: GameViewModel, winners: List<Int>, onRestart: () -> Unit) {
-    AlertDialog(
-        onDismissRequest = {},
-        title = { Text(stringResource(R.string.game_over)) },
-        text = { Text(stringResource(R.string.winners, winners.joinToString(" y ") { vm.state.players[it].name })) },
-        confirmButton = { Button(onClick = onRestart) { Text(stringResource(R.string.new_game)) } },
-    )
+    DialogoChiva(
+        stringResource(R.string.game_over), color = Chiva.Verde,
+        botones = { BotonChiva(stringResource(R.string.new_game), onRestart) },
+    ) {
+        Text(
+            stringResource(R.string.winners, winners.joinToString(" y ") { vm.state.players[it].name }), fontSize = 20.sp,
+            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+        )
+    }
 }
 
 /** Escritura de una casilla con dueño posible: franja del grupo, precio, alquileres e hipoteca. */
@@ -364,34 +364,33 @@ private fun Deed(config: GameConfig, state: GameState, square: Int) {
     val sq = config.squares[square] as OwnableSquare
     val band = (sq as? Property)?.let { p -> config.groups.firstOrNull { it.id == p.group } }
         ?.let { Color(android.graphics.Color.parseColor(it.color)) } ?: Color.LightGray
-    Card(Modifier.fillMaxWidth()) {
-        Column {
-            Box(Modifier.fillMaxWidth().height(36.dp).background(band), contentAlignment = Alignment.Center) {
-                Text(sq.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center)
+    val forma = RoundedCornerShape(10.dp)
+    Column(Modifier.fillMaxWidth().clip(forma).border(2.dp, Chiva.Tinta, forma)) {
+        Box(Modifier.fillMaxWidth().height(36.dp).background(band), contentAlignment = Alignment.Center) {
+            Text(sq.name, fontWeight = FontWeight.Bold, fontSize = 16.sp, textAlign = TextAlign.Center)
+        }
+        Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(stringResource(R.string.deed_price, money(sq.price)), fontWeight = FontWeight.Bold)
+            when (sq) {
+                is Property -> {
+                    Text(stringResource(R.string.deed_rent, money(sq.rents[0])))
+                    sq.rents.drop(1).dropLast(1).forEachIndexed { k, r ->
+                        Text(pluralStringResource(R.plurals.deed_rent_houses, k + 1, k + 1, money(r)), fontSize = 13.sp)
+                    }
+                    if (sq.rents.size > 1) Text(stringResource(R.string.deed_rent_hotel, money(sq.rents.last())), fontSize = 13.sp)
+                    val house = sq.housePrice ?: config.rules.housePrice
+                    if (house != null) Text(stringResource(R.string.deed_house, money(house)), fontSize = 13.sp)
+                }
+                is Station -> sq.rents.forEachIndexed { k, r ->
+                    Text(stringResource(R.string.deed_station_rent, k + 1, money(r)), fontSize = 13.sp)
+                }
+                is Utility -> sq.diceMultipliers.forEachIndexed { k, m ->
+                    Text(stringResource(R.string.deed_utility, m, k + 1), fontSize = 13.sp)
+                }
+                else -> Unit
             }
-            Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(stringResource(R.string.deed_price, money(sq.price)), fontWeight = FontWeight.Bold)
-                when (sq) {
-                    is Property -> {
-                        Text(stringResource(R.string.deed_rent, money(sq.rents[0])))
-                        sq.rents.drop(1).dropLast(1).forEachIndexed { k, r ->
-                            Text(pluralStringResource(R.plurals.deed_rent_houses, k + 1, k + 1, money(r)), fontSize = 13.sp)
-                        }
-                        if (sq.rents.size > 1) Text(stringResource(R.string.deed_rent_hotel, money(sq.rents.last())), fontSize = 13.sp)
-                        val house = sq.housePrice ?: config.rules.housePrice
-                        if (house != null) Text(stringResource(R.string.deed_house, money(house)), fontSize = 13.sp)
-                    }
-                    is Station -> sq.rents.forEachIndexed { k, r ->
-                        Text(stringResource(R.string.deed_station_rent, k + 1, money(r)), fontSize = 13.sp)
-                    }
-                    is Utility -> sq.diceMultipliers.forEachIndexed { k, m ->
-                        Text(stringResource(R.string.deed_utility, m, k + 1), fontSize = 13.sp)
-                    }
-                    else -> Unit
-                }
-                runCatching { mortgageValue(config, state, square) }.getOrNull()?.let {
-                    Text(stringResource(R.string.deed_mortgage, money(it)), fontSize = 13.sp)
-                }
+            runCatching { mortgageValue(config, state, square) }.getOrNull()?.let {
+                Text(stringResource(R.string.deed_mortgage, money(it)), fontSize = 13.sp)
             }
         }
     }

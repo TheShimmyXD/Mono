@@ -89,7 +89,7 @@
     <string name="move_unmortgage">Levantar −%1$s</string>
     <string name="next">Seguir</string>
     <string name="buy_title">%1$s cayó en %2$s</string>
-    <string name="buy">Comprar %1$s</string>
+    <string name="buy">Comprar −%1$s</string>
     <string name="decline">No comprar</string>
     <string name="auction_title">Subasta de %1$s</string>
     <string name="auction_leader">Va ganando %1$s con %2$s.</string>

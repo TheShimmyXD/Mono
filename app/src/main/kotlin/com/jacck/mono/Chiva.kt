@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
@@ -32,9 +35,11 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
 
@@ -45,7 +50,10 @@ object Chiva {
     val Techo = Color(0xFFE63946)
     val Ocre = Color(0xFFFFD60A)
     val Turno = Color(0xFFFFE08A)
-    val Franja = listOf(0xFFE63946, 0xFFFFC21A, 0xFF1D7BEF, 0xFF2BB04A, 0xFFE5007E).map { Color(it) }
+    val Azul = Color(0xFF1D7BEF)
+    val Verde = Color(0xFF2BB04A)
+    val Magenta = Color(0xFFE5007E)
+    val Franja = listOf(Techo, Sol, Azul, Verde, Magenta)
 }
 
 /** Lilita One (OFL, `arte/letra/`): la letra de rótulo de chiva, en todos los textos. */
@@ -109,7 +117,7 @@ fun Calcomania(
 ) {
     Box(modifier) {
         Box(Modifier.matchParentSize().offset(sombra, sombra).background(Chiva.Tinta, forma))
-        Column(Modifier.fillMaxWidth().background(Color.White, forma).border(borde, Chiva.Tinta, forma).padding(borde), content = content)
+        Column(Modifier.fillMaxWidth().clip(forma).background(Color.White).border(borde, Chiva.Tinta, forma).padding(borde), content = content)
     }
 }
 
@@ -132,7 +140,37 @@ fun BotonChiva(
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
         ) {
             icono?.let { IconImage(it, 20.dp); Spacer(Modifier.width(6.dp)) }
-            Text(texto, color = if (principal) Color.White else Chiva.Tinta, fontSize = 16.sp, maxLines = 1, softWrap = false)
+            // Un nombre largo achica la letra hasta 11 sp en vez de cortarse («Calle del Embudo», FB.2b).
+            Text(
+                texto, color = if (principal) Color.White else Chiva.Tinta, maxLines = 1, softWrap = false,
+                autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 16.sp),
+            )
+        }
+    }
+}
+
+/**
+ * Diálogo de turno como carta de chiva (FB.2, D-33): franjas arriba y abajo, [titulo] en una banda
+ * de [color], [cuerpo] con scroll y debajo [botones] (`BotonChiva` apilados). No se cierra tocando
+ * fuera ni con atrás: el motor espera una decisión.
+ */
+@Composable
+fun DialogoChiva(
+    titulo: String, color: Color = Chiva.Techo, botones: @Composable ColumnScope.() -> Unit = {},
+    cuerpo: @Composable ColumnScope.() -> Unit = {},
+) {
+    Dialog(onDismissRequest = {}) {
+        Calcomania(sombra = 5.dp, borde = 3.dp, forma = RoundedCornerShape(16.dp)) {
+            FranjaChiva(8.dp)
+            Box(Modifier.fillMaxWidth().background(color).padding(horizontal = 12.dp, vertical = 10.dp), contentAlignment = Alignment.Center) {
+                Text(titulo, color = Color.White, fontSize = 20.sp, textAlign = TextAlign.Center)
+            }
+            Column(
+                Modifier.weight(1f, fill = false).verticalScroll(rememberScrollState()).padding(horizontal = 14.dp, vertical = 10.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp), content = cuerpo,
+            )
+            Column(Modifier.padding(start = 14.dp, end = 17.dp, bottom = 14.dp), verticalArrangement = Arrangement.spacedBy(10.dp), content = botones)
+            FranjaChiva(8.dp)
         }
     }
 }
