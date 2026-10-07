@@ -8,7 +8,7 @@ Un pedido de diseño abierto (tablero, panel, editor) se resuelve con 2-3 opcion
 
 Las maquetas van siempre en `app/src/main/kotlin/com/jacck/mono/demo/Maquetas.kt` (`@Composable fun Maqueta(letra: String)`, extra `maqueta` de `MainActivity`), con su commit: la pantalla siguiente sobrescribe ese archivo con Write y, tras la elección, queda el esqueleto vacío. Así no hay archivos que el autor tenga que borrar (M-029).
 
-La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><opción>` (p. ej. `FB.4c`) pone esa opción arriba y salen juntas con `pantallas maqueta=FB.4 maqueta=FB.4c`. Datos falsos con índices válidos: un −1 cierra la app y gasta una instalación (M-055).
+La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><opción>` (p. ej. `FB.4c`) pone esa opción arriba y salen juntas con `pantallas maqueta=FB.4 maqueta=FB.4c`. Datos falsos que cumplen los `require` de lo que dibujan (índices válidos; `RingGrid` hasta F4.3 pedía N par): si no, la app se cierra y se gasta una instalación (M-055). Un valor de extra no lleva comas (`pantallas` separa por comas): listas con `+` (`quitar=13+14`, M-068).
 
 ## 2. Después de cambiar una pantalla: captura
 
@@ -28,11 +28,11 @@ Si el teléfono no responde (`dispositivos`, `instalar`, `captura`): `redmi.md`.
 
 ## 3. Reglas de la interfaz
 
-- La API del motor se lee por firmas, no entera: `grep -nE '^\s*(fun|data class|class|sealed interface|data object|object) ' engine/src/main/kotlin/com/jacck/mono/engine/<Archivo>.kt` (M-024).
+- La API del motor y los componentes de la app (`Chiva.kt`, `board/BoardView.kt`) se leen por firmas, no enteros: `grep -nE -A3 '^\s*(fun|data class|class|sealed interface|data object|object) ' <Archivo>.kt` (M-024, M-067).
 - Código de la app en `app/src/main/kotlin/com/jacck/mono/` (`board/`, `game/`, `demo/`), pruebas en `app/src/test/kotlin/…`; no hay `java/` (M-030).
 - **Qué acción vale y cuánto cuesta:** `Engine.tryApply(config, state, action)` (null si no vale) y la cifra de su evento, como `propertyMoves` (D-24); para habilitar botones no se leen los cuerpos de las reglas del motor (M-027).
 - **Botones con dinero:** verbo + cifra con el signo del dinero (− pagas, + recibes): `Construir −$50`, `Vender +$25`; nunca el signo pegado a un ícono («+🏠 $50» se leyó como cobrar; el autor, 2026-10-06; M-026).
-- **Lo que la app escribe fuera de pantalla** (archivos; después Bluetooth) deja un `Log.i` desde el primer commit, y antes de pedir la prueba se comprueba: `telefono.py adb -- shell run-as com.jacck.mono ls -la files` (M-032).
+- **Lo que la app escribe fuera de pantalla** (archivos; después Bluetooth) deja un `Log.i` desde el primer commit, y antes de pedir la prueba se comprueba: `telefono.py adb -- shell run-as com.jacck.mono ls -la files` (M-032). La evidencia de una prueba del autor sale primero de un archivo (`partida.json`): el búfer `main` del Redmi guarda ~35 s si `instalar` no lo agrandó a 4 MiB (lo dice su salida, M-066).
 - **Pantalla que sale del menú y vuelve** (editores de F4): el menú va dentro de `rememberSaveableStateHolder().SaveableStateProvider("menu")`; sin eso, `rememberSaveable` pierde nombres y personajes al volver (F4.1, D-39; M-061).
 - La interfaz no decide reglas: llama al motor con una acción y dibuja el estado y los eventos que devuelve. Si la interfaz necesita algo que el motor no da, primero va al motor con su prueba (regla 4).
 - Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 16, 40 y 48: extremos de D-09 y el Clásico; M-021).

@@ -105,6 +105,15 @@ class TestTelefono(unittest.TestCase):
         self.assertIsNone(telefono.pick_device([]))
         self.assertIsNone(telefono.pick_device(["abc"], "otro"))
 
+    def test_buffer_command_agranda_main(self):
+        self.assertEqual(telefono.buffer_command("adb", "abc"), ["adb", "-s", "abc", "logcat", "-b", "main", "-G", "4M"])
+
+    def test_buffer_size_lee_main_de_logcat_g(self):
+        out = ("main: ring buffer is 256 KiB (254 KiB consumed, 1 MiB readable), max entry is 5120 B\n"
+               "system: ring buffer is 4 MiB (3 MiB consumed)")
+        self.assertEqual(telefono.buffer_size(out), "256 KiB")
+        self.assertIsNone(telefono.buffer_size("error: device offline"))
+
     def test_logcat_is_filtered(self):
         argv = telefono.logcat_command("adb", "abc", "Mono")
         self.assertIn("-d", argv)

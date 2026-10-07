@@ -107,6 +107,23 @@ def pick_device(serials: list[str], wanted: str | None = None) -> str | None:
     return (physical or serials or [None])[0]
 
 
+# El búfer `main` del Redmi trae 256 KiB: ~35 s de log; una prueba del autor dura minutos (M-066).
+LOG_BUFFER = "4M"
+
+
+def buffer_command(adb: str, serial: str, size: str = LOG_BUFFER) -> list[str]:
+    """Agranda el búfer `main` del log (se pierde al reiniciar el teléfono; `instalar` lo repone)."""
+    return [adb, "-s", serial, "logcat", "-b", "main", "-G", size]
+
+
+def buffer_size(output: str) -> str | None:
+    """«main: ring buffer is 4 MiB (…)» de `logcat -g` -> «4 MiB», o None."""
+    for line in output.splitlines():
+        if line.startswith("main:") and "ring buffer is" in line:
+            return line.split("ring buffer is", 1)[1].split("(")[0].strip()
+    return None
+
+
 def logcat_command(adb: str, serial: str, tag: str) -> list[str]:
     """Log ya escrito (-d), solo la etiqueta de la app y los errores fatales."""
     return [adb, "-s", serial, "logcat", "-d", "-v", "brief", f"{tag}:V", "AndroidRuntime:E", "*:S"]
@@ -297,6 +314,9 @@ def main() -> int:
             else:
                 print("installDebug: FALLA\n" + "\n".join(output.splitlines()[-TAIL_LINES:]))
             return 1
+        run(buffer_command(adb, serial))
+        size = buffer_size(run([adb, "-s", serial, "logcat", "-b", "main", "-g"]).stdout)
+        print(f"log: búfer main {size or 'desconocido'}")
         target = launch_target(conf)
         if args.orden == "instalar":
             if target:

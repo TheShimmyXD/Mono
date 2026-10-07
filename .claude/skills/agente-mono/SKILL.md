@@ -22,12 +22,12 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `references/` | `mandato.md` (primera sesión o duda de alcance) · `reglas.md` (F1 o regla sin ficha: escaneos y formato R-##) · `motor.md` (F0, F2) · `interfaz.md` (F0.4, F3, FA, F4) · `redmi.md` (si el teléfono no responde) · `arte.md` (FA; ícono, letra o imagen de terceros) · `enlace.md` (F5, después del hito). |
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
 | `scripts/cierre_paso.py` | Pruebas del motor y la app, compilación, arte, tope de ESTADO y fichas R-## en una orden; sale 1 si algo falla. |
-| `scripts/pagina.py` | Una página o un recorte de un reglamento a PNG (`--info`, `--rejilla 2x3`, `--recorte x,y,an,al`). Nunca el PDF entero. |
+| `scripts/pagina.py` | Reglamento a PNG por página o recorte (`reglas.md`); nunca el PDF entero. |
 | `scripts/telefono.py` | `dispositivos`, `instalar`, `captura --salida`, `log -n 60`, `cartas <casilla>… --salida`, `pantallas <extras>… --salida`, `emulador`, `adb -- <args>` (`adb` no está en el PATH). |
 
 ## Arranque
 
-0. Si leíste este archivo con cat o Read (la skill no se cargó sola), díselo al autor en una línea: «Esta sesión se lanzó antes de que existieran las skills o en otra carpeta, y `/clear` no las recarga: cierra este trabajo y abre uno nuevo con `cd ~/Escritorio/0_SP_Codes/Project_Mono && claude`», y sigue.
+0. Si leíste este archivo con cat o Read, díselo al autor en una línea: «`/clear` no recarga las skills: abre un trabajo nuevo con `cd ~/Escritorio/0_SP_Codes/Project_Mono && claude`», y sigue.
 1. Lee `Agente_Mono/ESTADO.md` y las 2 últimas entradas de `SESIONES.md`. No re-audites la carpeta.
 2. Corre `python3 .claude/skills/agente-mono/scripts/tablero.py --tasks 1`. Si ESTADO y las casillas no coinciden, corrígelo antes de seguir.
 3. Muestra el tablero, **10 líneas como máximo**: *Dónde vamos* (fase y contador), *Qué ya funciona* (con su comando), *Qué sigue hoy* y, solo si hace falta, *Qué necesito de ti*.
@@ -47,7 +47,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 - **Interfaz:** 2-3 opciones con captura antes de una pantalla nueva, y `telefono.py instalar` + `captura` después de cambiarla, antes de mostrarla (`interfaz.md`).
 - **Tarea grande** (más de ~6 R-##): pártela en sub-pasos (a, b, c), cada uno con `cierre_paso.py` y su commit; la casilla se marca con el último; ESTADO dice solo qué sub-pasos faltan (hashes y capturas, a SESIONES). Entre llamadas el árbol compila: el modelo nuevo va en la misma tanda que el código que lo usa.
 - **Cierre de cada paso:** `python3 .claude/skills/agente-mono/scripts/cierre_paso.py` (pruebas del motor y de la app, `assembleDebug`, tope de ESTADO; su salida se lee entera, sin `| tail`, que tapa los AVISO y el código de salida) y un commit local, antes del punto de control (ESTADO, SESIONES, trazas, `capturas/` y `fuentes/` están fuera de Git a propósito: el commit lleva el plan, el código, `REGLAS.md` y `DECISIONES.md`). Una dependencia nueva va a `gradle/libs.versions.toml` en el mismo commit y a ESTADO con su versión.
-- **Cada cifra se mide.** Lo que se afirma (también un recuento en una D-## o en el chat) lleva el número real de una corrida, un `grep -c` o una fuente; lo que juzga el autor (calidad, estética) no lo declaras tú.
+- **Cada cifra se mide.** Lo que se afirma (también en una D-##, un comentario del código o el chat) lleva el número real de una corrida, un `grep -c` o una fuente; lo que juzga el autor (calidad, estética) no lo declaras tú.
 - **Decisiones:** toda elección no trivial va como ficha D-## en el mismo paso. Un cambio de pila o de enfoque se consulta antes.
 - **Lo visible primero:** cuando algo nuevo se puede correr o ver, deja el comando en ESTADO («Qué ya funciona») y muéstralo en una línea con números.
 - **Borrar archivos** del proyecto: pídeselo al autor con `! git rm <rutas>` y sigue.
