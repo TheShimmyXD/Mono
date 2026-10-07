@@ -56,7 +56,7 @@ import com.jacck.mono.engine.model.GameState
 fun NewGameScreen(
     saved: GameState?, onResume: () -> Unit, boards: List<BoardChoice>, selected: String, onSelect: (String) -> Unit,
     broken: Set<String>, onEdit: () -> Unit, onDuplicate: () -> Unit, onRename: (String) -> Unit, onDelete: () -> Unit,
-    onStart: (List<String>, List<String>, Set<Int>) -> Unit,
+    onJoin: () -> Unit, onStart: (List<String>, List<String>, Set<Int>) -> Unit,
 ) {
     val defaults = stringArrayResource(R.array.default_names).toList()
     val board = boards.firstOrNull { it.key == selected } ?: boards.first()
@@ -86,6 +86,7 @@ fun NewGameScreen(
                 stringResource(R.string.menu_title), fontSize = 34.sp, textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             )
+            BotonChiva(stringResource(R.string.menu_join), onJoin, principal = false)
             if (saved != null) {
                 Calcomania(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onResume)) {
                     Column(

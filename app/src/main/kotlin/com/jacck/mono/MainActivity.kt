@@ -19,6 +19,7 @@ import com.jacck.mono.demo.Maqueta
 import com.jacck.mono.demo.withSampleProperties
 import com.jacck.mono.demo.withPhase
 import com.jacck.mono.enlace.EcoScreen
+import com.jacck.mono.enlace.GuestScreen
 import com.jacck.mono.enlace.HostScreen
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.GameConfig
@@ -49,7 +50,7 @@ const val LOG_TAG = "Mono"
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
  * `deuda`, `fin`) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
- * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`eco`) se abre la prueba de Bluetooth de F5.1 (`enlace/EcoScreen.kt`, D-45); con `sala`, la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47). La partida del menú se guarda tras cada jugada
+ * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`eco`) se abre la prueba de Bluetooth de F5.1 (`enlace/EcoScreen.kt`, D-45); con `sala`, la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
@@ -81,6 +82,8 @@ class MainActivity : ComponentActivity() {
                         EcoScreen()
                     } else if (link == "sala") {
                         HostScreen(Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), seed) { finish() }
+                    } else if (link == "unirme") {
+                        GuestScreen { finish() }
                     } else if (mockup != null) {
                         Maqueta(mockup)
                     } else if (demo != null) {
@@ -90,6 +93,7 @@ class MainActivity : ComponentActivity() {
                         var resumed by rememberSaveable { mutableStateOf(false) }
                         // Jugadores del otro teléfono (F5.3, D-47): con alguno, la partida espera en la sala.
                         var seats by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+                        var joining by rememberSaveable { mutableStateOf(false) }
                         // Tableros (F4.4, D-42): los originales y los propios de `files/tableros`; `selected` y
                         // `editing` son su clave (nombre del preset o id). `opened` cuenta las veces que se abre
                         // el editor, para que cada vez empiece de lo guardado y no del ViewModel anterior.
@@ -114,7 +118,12 @@ class MainActivity : ComponentActivity() {
                         val resume = saved.takeIf { resumed }
                         val game = chosen
                         val ed = boards.firstOrNull { it.key == editing }
-                        if (game == null && resume == null && ed != null) {
+                        if (joining) {
+                            GuestScreen {
+                                Log.i(LOG_TAG, "unirme: vuelve al menú")
+                                joining = false
+                            }
+                        } else if (game == null && resume == null && ed != null) {
                             val evm = viewModel(key = "editor-${ed.key}-$opened") { EditorViewModel(ed.config)
                                 .also { vm -> (intent.getStringExtra("quitar") ?: intent.getIntExtra("quitar", -1).takeIf { it >= 0 }?.toString())?.split(Regex("\\D+"))?.mapNotNull { it.trim().toIntOrNull() }?.sortedDescending()
                                     ?.filter { it in vm.config.squares.indices }?.forEach { vm.select(it); vm.remove() } }
@@ -134,7 +143,7 @@ class MainActivity : ComponentActivity() {
                                 val broken = remember(own) { own.filter { validate(it.config).isNotEmpty() }.map { it.id }.toSet() }
                                 NewGameScreen(
                                     saved?.state, onResume = { resumed = true }, boards = boards, selected = board.key, onSelect = { selected = it },
-                                    broken = broken, onEdit = { editing = board.key }, onDuplicate = { store(board.copy(own = false), board.config) },
+                                    broken = broken, onEdit = { editing = board.key }, onJoin = { joining = true }, onDuplicate = { store(board.copy(own = false), board.config) },
                                     onRename = { typed ->
                                         val name = boardName(typed, board.config.name)
                                         if (name != board.config.name) { shelf.save(board.config.copy(name = name), board.key); own = shelf.list() }

@@ -329,6 +329,15 @@
     <string name="host_cuts">Cortes hasta ahora: %1$d</string>
     <string name="host_note">Deja esta pantalla abierta: HyperOS corta el Bluetooth de las apps en segundo plano.</string>
     <string name="host_cancel">Cancelar</string>
+    <string name="join_title">Unirme por Bluetooth</string>
+    <string name="join_choose">¿A qué teléfono te unes? Debe tener la sala abierta.</string>
+    <string name="join_pair_hint">¿No sale? Emparéjalos antes en Ajustes › Bluetooth.</string>
+    <string name="join_none">No hay teléfonos emparejados: emparéjalos en Ajustes › Bluetooth.</string>
+    <string name="join_connecting">Conectando con %1$s…</string>
+    <string name="join_mine">En este teléfono juega: %1$s</string>
+    <string name="join_closed">Se cortó con %1$s (%2$s).</string>
+    <string name="join_again">Elegir otra vez</string>
+    <string name="menu_join">📶 Unirme a la partida de un amigo</string>
     <string name="eco_title">Enlace · eco</string>
     <string name="eco_phone_name">Este teléfono: %1$s</string>
     <string name="eco_listening">Esperando al otro lado…</string>
