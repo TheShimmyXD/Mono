@@ -1501,6 +1501,108 @@ def la_soledad():
     return s
 
 
+def casa_republicana(x, base, w, h, papel, sombra):
+    """Casa republicana de dos pisos: cornisa, frontón, ventanas altas y balcón de hierro."""
+    top = base - h
+    s = [(papel, poly([(x + w * 0.3, top), (x + w / 2, top - 9), (x + w * 0.7, top)])),
+         (papel, rect(x, top, w, h)), (sombra, rect(x, top, w, 3)), ("wall", rect(x - 2, top - 2, w + 4, 4)),
+         ("wall", rect(x - 2, top + h * 0.48, w + 4, 3)), ("door", arch(x + w / 2 - 6, base - 20, 12, 20))]
+    for u in (0.12, 0.66):
+        s += [("window", arch(x + w * u, top + 7, 10, 15)), ("window", arch(x + w * u, base - 20, 10, 14))]
+    s += [("bar", lines([(x + w * 0.08, top + 22, x + w * 0.92, top + 22)] +
+                        [(x + w * 0.08 + i * w * 0.84 / 8, top + 22, x + w * 0.08 + i * w * 0.84 / 8, top + h * 0.48)
+                         for i in range(9)]))]
+    return s
+
+
+def guayacan(cx, base, r):
+    """Árbol en flor: tronco y copa de flores amarillas."""
+    return [("trunk", poly([(cx - 2, base), (cx + 2, base), (cx + 1.5, base - r * 1.4), (cx - 1.5, base - r * 1.4)])),
+            ("ochre", circle(cx, base - r * 1.9, r)), ("oshade", circle(cx + r * 0.45, base - r * 1.6, r * 0.5)),
+            ("ochre", circle(cx - r * 0.6, base - r * 1.5, r * 0.55))]
+
+
+def palermo():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(76, 24), (82, 17), (92, 17), (98, 11), (110, 13), (116, 20), (124, 24)])),
+         ("far", poly([(0, 56), (40, 38), (80, 48), (120, 34), (160, 44), (200, 36), (200, 106), (0, 106)]))]
+    s += casa_republicana(4, 104, 56, 54, "ochre", "oshade") + casa_republicana(72, 104, 56, 62, "stone", "sshade")
+    s += casa_republicana(140, 104, 56, 54, "dolphin", "trim")
+    s += guayacan(66, 106, 12) + guayacan(134, 106, 12)
+    s += [("stone", rect(0, 104, W, 10)), ("sshade", lines([(x, 104, x, 114) for x in range(10, W, 20)])),
+          ("granite", rect(0, 114, W, 26)), ("shine", lines([(x, 124, x + 10, 124) for x in range(6, W, 22)]))]
+    return s
+
+
+def bici(x, y, papel):
+    """Bicicleta de lado: x, y es el eje de la rueda trasera."""
+    return [("tire", circle(x, y, 7)), ("sky", circle(x, y, 5)), ("tire", circle(x + 22, y, 7)), ("sky", circle(x + 22, y, 5)),
+            ("bar", lines([(x, y, x + 8, y - 11), (x + 8, y - 11, x + 19, y - 11), (x + 19, y - 11, x + 22, y),
+                           (x, y, x + 11, y), (x + 11, y, x + 8, y - 11), (x + 11, y, x + 19, y - 11), (x + 19, y - 11, x + 18, y - 15)])),
+            (papel, rrect(x + 4, y - 14, 8, 3, 1.5)), (papel, rect(x + 15, y - 16.5, 6, 2.4))]
+
+
+def park_way():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(30, 24, 9)),
+         ("far", poly([(0, 58), (40, 42), (80, 50), (120, 36), (160, 46), (200, 40), (200, 80), (0, 80)]))]
+    s += [(p, rect(x, 60, 14, 12)) for x, p in ((0, "wall"), (14, "ochre"), (28, "clay"), (158, "wall"), (172, "window"), (186, "ochre"))]
+    # el parque lineal: prado al centro, senderos a los lados, en perspectiva
+    s += [("coffee", rect(0, 70, W, 70)), ("stone", poly([(0, H), (200, H), (106, 70), (94, 70)])),
+          ("near", poly([(34, H), (166, H), (103, 70), (97, 70)]))]
+    for t in (0.08, 0.2, 0.38, 0.62, 0.95):
+        y, k = 70 + 66 * t, t
+        for lado in (-1, 1):
+            cx = 100 + lado * (8 + 80 * t)
+            s += [("trunk", rect(cx - 0.8 - 2 * k, y - 6 - 34 * k, 1.6 + 4 * k, 6 + 34 * k)),
+                  ("leaf", circle(cx, y - 8 - 38 * k, 3 + 13 * k)), ("coffee", circle(cx + lado * (1 + 4 * k), y - 4 - 30 * k, 2 + 7 * k))]
+    s += bici(132, 124, "roof") + [("wood", rect(42, 112, 24, 4)), ("ink", lines([(45, 116, 45, 122), (63, 116, 63, 122)]))]
+    return s
+
+
+def calle_19():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(112, 22), (118, 15), (128, 15), (134, 9), (146, 11), (152, 18), (160, 22)])),
+         ("far", poly([(0, 50), (40, 34), (80, 44), (120, 28), (160, 40), (200, 32), (200, 96), (0, 96)]))]
+    for x, w, top, papel, sombra in ((0, 36, 22, "granite", "gshade"), (36, 30, 40, "brick", "bshade"), (66, 40, 16, "wall", "wshade"),
+                                     (106, 30, 44, "ochre", "oshade"), (136, 38, 26, "brick", "bshade"), (174, 26, 38, "granite", "gshade")):
+        s += [(papel, rect(x, top, w, 96 - top)), (sombra, rect(x + w - 5, top, 5, 96 - top))]
+        s += [("window", rect(x + 4 + c * 9, y, 6, 6)) for c in range(int((w - 8) // 9)) for y in range(int(top) + 5, 88, 10)]
+    s += [("stone", rect(0, 94, W, 6)), ("granite", rect(0, 100, W, 40)),
+          ("shine", lines([(x, 120, x + 12, 120) for x in range(4, W, 24)]))]
+    # semáforo
+    s += [("granite", rect(170, 56, 4, 44)), ("coal", rect(164, 40, 16, 30)),
+          ("roof", circle(172, 46, 3.5)), ("ochre", circle(172, 55, 3.5)), ("leaf", circle(172, 64, 3.5))]
+    # buseta de colores
+    s += [("wall", rrect(24, 72, 104, 36, 5)), ("roof", rect(24, 94, 104, 5)), ("window", rect(24, 99, 104, 3)),
+          ("ochre", rect(24, 72, 104, 4))]
+    s += [("window", rect(x, 79, 13, 12)) for x in (30, 47, 64, 81, 98)] + [("window", rect(114, 78, 11, 15)),
+          ("ochre", rect(125, 100, 5, 4)), ("tire", circle(46, 110, 7)), ("tire", circle(108, 110, 7)),
+          ("granite", circle(46, 110, 3)), ("granite", circle(108, 110, 3))]
+    return s
+
+
+def avenida_jimenez():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(120, 24), (126, 17), (136, 17), (142, 11), (154, 13), (160, 20), (168, 24)])),
+         ("far", poly([(40, 96), (70, 50), (96, 26), (124, 46), (150, 60), (200, 70), (200, 98), (40, 98)])),
+         ("wall", rect(90, 22, 12, 6)), ("wall", rect(93.5, 17, 5, 6)), ("roof", poly([(93, 17), (96, 13), (99, 17)]))]
+    # iglesia de San Francisco: torre colonial y fachada de piedra
+    s += [("stone", rect(36, 52, 34, 46)), ("sshade", rect(36, 52, 34, 3)), ("door", arch(46, 74, 14, 24)), ("window", circle(53, 63, 3.5)),
+          ("stone", rect(12, 22, 24, 76)), ("sshade", rect(30, 22, 6, 76)), ("trim", rect(10, 44, 28, 3)),
+          ("door", arch(18, 28, 10, 13)), ("door", arch(19, 54, 8, 12)),
+          ("slate", arch(14, 10, 20, 14)), ("ink", lines([(24, 10, 24, 4), (21.5, 6.5, 26.5, 6.5)]))]
+    # edificio de oficinas
+    s += [("brick", rect(156, 18, 40, 80)), ("bshade", rect(188, 18, 8, 80))]
+    s += [("window", rect(x, y, 6, 7)) for x in (161, 171, 181) for y in range(24, 92, 11)]
+    # bus rojo articulado
+    s += [("tire", circle(84, 92, 5)), ("tire", circle(122, 92, 5)), ("tire", circle(144, 92, 5)),
+          ("roof", rrect(72, 66, 80, 24, 3)), ("rshade", rect(72, 84, 80, 3)), ("ink", lines([(112, 66, 112, 87)]))]
+    s += [("window", rect(x, 70, 8, 9)) for x in (76, 87, 98, 116, 127, 138)]
+    # el eje ambiental: plaza de ladrillo y canal de agua con piedras
+    s += [("clay", rect(0, 98, W, 42)), ("cshade", lines([(0, y, W, y) for y in (122, 130)])),
+          ("granite", rect(0, 104, W, 14)), ("sea", rect(0, 106, W, 10)),
+          ("wave", polyline([(x, 111 + (2 if (x // 10) % 2 else -2)) for x in range(0, W + 1, 10)])),
+          ("stone", rrect(40, 107, 12, 6, 3)), ("stone", rrect(118, 108, 14, 6, 3)), ("stone", rrect(170, 107, 10, 6, 3))]
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
@@ -1515,7 +1617,8 @@ LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero"
            "tierra_de_la_frontera": tierra_de_la_frontera,
            "las_cruces": las_cruces, "calle_del_embudo": calle_del_embudo, "san_victorino": san_victorino,
            "la_perseverancia": la_perseverancia, "barrio_egipto": barrio_egipto, "teusaquillo": teusaquillo,
-           "galerias": galerias, "la_soledad": la_soledad}
+           "galerias": galerias, "la_soledad": la_soledad, "palermo": palermo, "park_way": park_way,
+           "calle_19": calle_19, "avenida_jimenez": avenida_jimenez}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
