@@ -265,3 +265,16 @@
 - **Del agente:** la fase se llama FA (con letra) para no renumerar F4 y F5, que ya se citan en fichas y referencias. Fuente de cada dibujo en SVG dentro del repo; en la app, VectorDrawable (el formato vectorial de Android: nítido a cualquier tamaño y liviano). Dibujo propio y estilizado, sin calcar fotos ni logos.
 - **Cómo se revierte:** quitar la sección FA del plan; los emojis siguen en el historial de Git.
 - **Estado:** vigente.
+
+### D-28 · Estilo de arte: «arte de chiva» (FA.1)
+
+- **Pregunta:** con qué estilo se dibujan los lugares, los íconos y el acabado del tablero.
+- **Opciones (vistas en el Redmi, `capturas/FA.1_estilos.png`):** A postal plana (formas planas sin contorno, tonos suaves) · B estampilla grabada (tinta sobre crema, rayado, acento del grupo) · C arte de chiva (contorno negro grueso, colores saturados, franjas de chiva).
+- **Elección (del autor, 2026-10-06):** C.
+- **Del agente:**
+  - *Paleta:* cielo `#38C6F4`, sol `#FFC21A`, cerros `#3DB54A`/`#1E9E8C`, suelo `#FFB238`, muro `#FFFFFF` con sombra `#CFE0FF`, techo `#E63946`, puerta `#5B2A86`, ventana `#1D7BEF`, adorno `#E5007E`, ocre `#FFD60A`, piedra `#F7D9A8`, ladrillo `#E4572E`, aguja `#7B61D9`, hojas `#2BB04A` (la tabla completa, `PALETA` en `arte/arte.py`).
+  - *Trazo:* contorno `#1B1B1B` de 1,5 en cada forma; detalles en línea de 1,0-1,4; sol con 12 rayos.
+  - *Encuadre:* lienzo 200 × 140 (10:7); cielo, fondo (cerros o mar), el monumento del lugar al centro, casas a los lados, suelo abajo; franjas de chiva de 9 arriba y abajo (dientes rojo, amarillo, azul, verde y magenta sobre negro). En una casilla del tablero (~36 dp) la escena no se lee: ahí va un recorte o solo el color del grupo (se decide en FA.3).
+  - *Flujo:* `arte/arte.py` guarda cada lugar como formas con un papel (cielo, muro, techo…) y escribe `arte/svg/<id>.svg` (fuente que se ve en cualquier visor) y `app/src/main/res/drawable/arte_<id>.xml` (VectorDrawable: vectorial, nítido a cualquier tamaño). No se editan a mano: se cambia `arte.py` y se regenera. `[cierre]` corre `arte.py --revisar` (sale 1 si algo no está al día).
+- **Cómo se revierte:** cambiar `PALETA`, `CONTORNO` y `franjas()` en `arte.py` y regenerar; los estilos A y B siguen en el commit `270656e` (`demo/Maquetas.kt`).
+- **Estado:** vigente.
