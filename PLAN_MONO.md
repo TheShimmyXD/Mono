@@ -160,7 +160,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 - [x] **FA.1** Estilo artístico: 3 estilos para las mismas casillas (un pueblo, una ciudad y un barrio de Bogotá), en SVG convertido a VectorDrawable, vistos en el Redmi. *Terminado:* el autor elige; D-## con paleta, trazo, encuadre y flujo SVG → `res/drawable`.
 - [x] **FA.2** Íconos propios en vez de emojis (casas, hotel, dados, salida, cárcel, estaciones, servicios, impuestos, cartas, descansos) en el estilo de FA.1. *Terminado:* ningún emoji en `app/src/main` (grep vacío); captura del tablero aprobada.
-- [ ] **FA.3** Tarjeta de la casilla al tocarla en el tablero: arte, nombre, grupo, precio, alquileres con casas y hotel, hipoteca, dueño, casas y si está hipotecada (datos del motor). 2-3 maquetas antes. *Terminado:* en el Redmi, tocar una casilla propia, una ajena y una libre abre su tarjeta con sus datos; captura aprobada.
+- [x] **FA.3** Tarjeta de la casilla al tocarla en el tablero: arte, nombre, grupo, precio, alquileres con casas y hotel, hipoteca, dueño, casas y si está hipotecada (datos del motor). 2-3 maquetas antes. *Terminado:* en el Redmi, tocar una casilla propia, una ajena y una libre abre su tarjeta con sus datos; captura aprobada.
 - [ ] **FA.4** Arte de Tío Rico: los 32 pueblos y ciudades (por grupos, sub-pasos) y sus especiales (Estación Santa Fe, Tierras, Mirador, Hamaca, Lotería, Sorpresa). *Terminado:* cada casilla de Tío Rico con su arte en el tablero y en la tarjeta; captura aprobada.
 - [ ] **FA.5** Arte del Clásico: los 22 barrios y calles de Bogotá, estaciones, servicios y especiales. *Terminado:* cada casilla del Clásico con su arte en el tablero y en la tarjeta; captura aprobada.
 
