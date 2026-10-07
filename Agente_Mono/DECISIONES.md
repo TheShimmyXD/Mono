@@ -449,3 +449,13 @@
 - **Captura:** `capturas/F4.4_menu.png`, `capturas/F4.4_propio.png`.
 - **Cómo se revierte:** volver a las dos fichas Clásico / Tío Rico; los archivos de `tableros/` no estorban.
 - **Estado:** vigente.
+
+### D-43 · Hito «Primera quiebra»: Clásico de 32, 2 jugadores, sin tratos (F4.5)
+
+- **Pregunta:** qué tablero, cuántos jugadores y si hacen falta tratos (`Trade`) para que la partida del hito termine (duda abierta en D-41).
+- **Medido (sesión 27, prueba temporal con `simulate`, 40 semillas, tope de 1500 turnos de jugador):** el dinero inicial no acorta las partidas (Clásico de 24 con 4 jugadores: terminan 3, 3, 2, 5 y 6 de 40 con $1500, 1000, 700, 500 y 300). Por tablero, con $1500, terminan (mediana de turnos): de 24, 24/40 (106) con 2, 12/40 (159) con 3 y 3/40 (126) con 4; de 32 (Clásico sin las casillas 2, 4, 7, 17, 22, 33, 36 y 38: cartas e impuestos; válido), 36/40 (142), 22/40 (188) y 19/40 (246); de 40, 36/40 (168), 22/40 (239) y 18/40 (267). Sin tratos casi nadie completa un grupo, y sin grupo no se construye.
+- **Del autor:** Clásico de 32, 2 jugadores (la primera quiebra cierra la partida), sin tratos; los tratos quedan para después del hito.
+- **Del agente:** no hace falta código; el autor quita las 8 casillas en el editor y cambia el nombre y el precio de una propiedad.
+- **Resultado (2026-10-07, aprobado por el autor):** «Clásico copia» de 32 casillas, 2 jugadores; en el turno 123 Beto cayó en La Soledad, debía $750 de alquiler y quebró (`GameOver(winners=[0])`, log 17:57). Se quitaron Las Cruces, Contribuciones, La Perseverancia, Chapinero, Estación del Sur, Estación del Oriente, Usaquén e Impuesto de lujo (el agente dio números de casilla en vez de nombres). No quedó ninguna casilla con nombre o precio cambiado: el autor no tocó «Guardar casilla». Aprobó así, porque cambiar nombre y precio ya estaba aprobado en el Redmi en F4.1.
+- **Cómo se revierte:** otro tablero o más jugadores; los tratos, como fase con letra (D-27).
+- **Estado:** vigente.
