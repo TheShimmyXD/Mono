@@ -1272,6 +1272,143 @@ def tierra_de_la_frontera():
     return s
 
 
+# ---------- Clásico (FA.5): Bogotá ----------
+def casa_colonial(x, base, w, h, papel="wall", sombra="wshade"):
+    """Casa colonial bogotana: muro encalado, teja, puerta y balcón de madera."""
+    top, wx = base - h, x + w * 0.55
+    return [(papel, rect(x, top, w, h)), (sombra, rect(x, top, w, 3)),
+            ("roof", poly([(x - 3, top), (x + w * 0.2, top - 7), (x + w * 0.8, top - 7), (x + w + 3, top)])),
+            ("door", rect(x + w * 0.12, base - 16, 9, 16)),
+            ("window", rect(wx, top + 6, 10, 12)), ("trunk", rect(wx - 3, top + 13, 16, 6)),
+            ("dash", lines([(wx + i * 3.3, top + 13, wx + i * 3.3, top + 19) for i in range(4)]))]
+
+
+def sombrilla(cx, y, r, a, b, h):
+    """Sombrilla de vendedor: gajos de dos colores sobre un palo."""
+    s = [("ink", lines([(cx, y, cx, y + h)]))]
+    for i in range(6):
+        t = [math.pi * (i + k / 2) / 6 for k in range(3)]
+        s.append((a if i % 2 == 0 else b,
+                  poly([(cx, y)] + [(cx - r * math.cos(u), y - r * 0.55 * math.sin(u)) for u in t])))
+    return s
+
+
+def banderines(x0, x1, y, caida, n):
+    """Cuerda de banderines de fiesta que cuelga entre dos puntos."""
+    papeles = ["roof", "ochre", "window", "leaf", "trim"]
+    alto = lambda x: y + caida * (1 - ((x - (x0 + x1) / 2) / ((x1 - x0) / 2)) ** 2)
+    xs = [x0 + (x1 - x0) * i / 24 for i in range(25)]
+    s = [("rope", polyline([(x, alto(x)) for x in xs]))]
+    paso = (x1 - x0) / n
+    for i in range(n):
+        xa = x0 + paso * (i + 0.2)
+        xb = xa + paso * 0.6
+        s.append((papeles[i % 5], poly([(xa, alto(xa)), (xb, alto(xb)), ((xa + xb) / 2, alto((xa + xb) / 2) + 7)])))
+    return s
+
+
+def las_cruces():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(172, 24, 9)),
+         ("far", poly([(0, 62), (28, 40), (56, 48), (90, 26), (120, 40), (150, 30), (200, 46), (200, 106), (0, 106)]))]
+    # torre de la iglesia de Las Cruces
+    s += [("stone", rect(28, 30, 18, 50)), ("sshade", rect(41, 30, 5, 50)), ("slate", poly([(26, 30), (37, 14), (48, 30)])),
+          ("ink", lines([(37, 14, 37, 8), (34.5, 10.5, 39.5, 10.5)])), ("door", arch(33, 36, 8, 11)), ("window", circle(37, 56, 3))]
+    s += casa_colonial(4, 104, 44, 30) + casa_colonial(154, 104, 42, 32, "ochre", "oshade")
+    # plaza de mercado republicana
+    s += [("wall", rect(54, 56, 92, 48)), ("wshade", rect(54, 56, 92, 3)),
+          ("wall", poly([(78, 42), (100, 30), (122, 42)])), ("wall", rect(80, 42, 40, 14)), ("wshade", rect(78, 41, 44, 2.4)),
+          ("ochre", circle(100, 49, 5)), ("ink", lines([(100, 49, 100, 45.5), (100, 49, 102.5, 50)])),
+          ("roof", rect(84, 58, 32, 8)), ("trim", rect(54, 70, 92, 4)), ("door", arch(88, 74, 24, 30))]
+    s += [("window", rect(x, 60, 8, 7)) for x in (60, 70, 122, 132)]
+    s += [("window", arch(x, 79, 7, 14)) for x in (60, 72, 121, 133)]
+    tierra_plaza(s, 104)
+    # puestos de fruta
+    for x0, frutas in ((14, ("paint", "roof", "ochre", "paint")), (150, ("ochre", "roof", "leaf", "ochre"))):
+        s += [(p, circle(x0 + 6 + 8 * i, 110, 4)) for i, p in enumerate(frutas)]
+        s += [("wood", rect(x0, 112, 36, 10)), ("dash", lines([(x0, 117, x0 + 36, 117)]))]
+    return s
+
+
+def calle_del_embudo():
+    s = [("sky", rect(0, 0, W, H)),
+         ("cloud", poly([(136, 30), (142, 23), (152, 23), (158, 17), (170, 19), (176, 26), (184, 30)])),
+         ("far", poly([(30, 96), (64, 54), (100, 28), (136, 54), (170, 96)])),
+         ("wall", rect(94, 24, 12, 7)), ("wall", rect(97.5, 19, 5, 6)), ("roof", poly([(97, 19), (100, 15), (103, 19)]))]
+    # la capillita del Chorro de Quevedo, al fondo de la calle
+    s += [("wall", poly([(96, 76), (96, 68), (100, 64), (104, 68), (104, 76)])), ("door", arch(98, 67.5, 4, 5)),
+          ("ochre", circle(100, 71, 1.4)), ("roof", poly([(88, 83), (100, 75), (112, 83)])),
+          ("wall", rect(90, 82, 20, 16)), ("wshade", rect(105, 82, 5, 16)), ("door", arch(96.5, 88, 7, 10))]
+    # la calle se abre como un embudo hacia el que mira
+    s += [("stone", poly([(0, H), (W, H), (114, 98), (86, 98)]))]
+    for i in range(1, 4):
+        s.append(("sshade", lines([(86 + 7 * i, 98, 50 * i, H)])))
+    s.append(("sshade", lines([(86 - (y - 98) / 42 * 86, y, 114 + (y - 98) / 42 * 86, y) for y in (104, 113, 125)])))
+    # fachadas de colores a cada lado, en perspectiva
+    for lado, colores in ((1, ("window", "ochre", "wall")), (-1, ("clay", "wall", "leaf"))):
+        def q(d, v):
+            x = d if lado == 1 else W - d
+            yt, yb = 22 + d / 86 * 56, 98 + (86 - d) / 86 * 42
+            return x, yt + v * (yb - yt)
+        for (d0, d1), papel in zip(((0, 32), (32, 60), (60, 86)), colores):
+            caja = lambda u0, u1, v0, v1: poly([q(d0 + u0 * (d1 - d0), v0), q(d0 + u1 * (d1 - d0), v0),
+                                                q(d0 + u1 * (d1 - d0), v1), q(d0 + u0 * (d1 - d0), v1)])
+            k = 1 - d0 / 86 * 0.6
+            s += [(papel, caja(0, 1, 0, 1)),
+                  ("roof", poly([q(d0, 0), q(d1, 0), (q(d1, 0)[0], q(d1, 0)[1] - 6 * k + 1.5), (q(d0, 0)[0], q(d0, 0)[1] - 6 * k)])),
+                  ("door", caja(0.14, 0.4, 0.6, 1)), ("window", caja(0.14, 0.4, 0.18, 0.36)),
+                  ("window", caja(0.56, 0.86, 0.22, 0.44)), ("trunk", caja(0.5, 0.92, 0.38, 0.5)),
+                  ("window", caja(0.56, 0.86, 0.62, 0.8))]
+    return s
+
+
+def san_victorino():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(70, 26), (76, 19), (86, 19), (92, 13), (104, 15), (110, 22), (118, 26)])),
+         ("far", poly([(0, 56), (40, 36), (80, 46), (120, 30), (160, 42), (200, 34), (200, 106), (0, 106)]))]
+    # almacenes: dos edificios altos y una hilera de locales con letreros
+    s += [("brick", rect(0, 40, 46, 64)), ("bshade", rect(0, 40, 46, 3)),
+          ("granite", rect(154, 30, 46, 74)), ("gshade", rect(190, 30, 10, 74))]
+    s += [("window", rect(x, y, 7, 8)) for x in (6, 19, 32) for y in (48, 62, 76)]
+    s += [("window", rect(x, y, 7, 8)) for x in (160, 173) for y in (38, 52, 66, 80)]
+    s += [("wall", rect(46, 62, 108, 42)), ("wshade", rect(46, 62, 108, 3))]
+    for i, papel in enumerate(("roof", "window", "leaf", "trim")):
+        x = 48 + 26.5 * i
+        s += [(papel, rect(x, 66, 24, 8)), ("door", rect(x + 3, 86, 18, 18)),
+              (papel, poly([(x, 80), (x + 24, 80), (x + 26, 87), (x - 2, 87)])), ("wall", rect(x + 4, 80, 4, 7)), ("wall", rect(x + 16, 80, 4, 7))]
+    tierra_plaza(s, 104)
+    # la escultura de alas amarillas en medio de la plaza
+    s += [("stone", rect(90, 100, 20, 7)), ("granite", rect(98, 50, 4, 52)),
+          ("ochre", poly([(100, 54), (70, 24), (62, 48)])), ("oshade", poly([(100, 54), (62, 48), (76, 68)])),
+          ("ochre", poly([(100, 54), (130, 24), (138, 48)])), ("oshade", poly([(100, 54), (138, 48), (124, 68)]))]
+    # vendedores con sombrilla y bultos
+    s += sombrilla(30, 96, 20, "roof", "ochre", 20) + sombrilla(170, 96, 20, "window", "wall", 20)
+    s += [("wood", rect(16, 112, 28, 10)), ("paint", rrect(18, 104, 11, 9, 3)), ("leaf", rrect(30, 105, 11, 8, 3)),
+          ("wood", rect(156, 112, 28, 10)), ("ochre", rrect(158, 104, 11, 9, 3)), ("clay", rrect(170, 105, 11, 8, 3))]
+    return s
+
+
+def la_perseverancia():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(28, 22, 9)),
+         ("far", poly([(0, 44), (40, 26), (80, 36), (120, 16), (160, 30), (200, 20), (200, 100), (0, 100)])),
+         ("near", poly([(0, 76), (60, 62), (120, 52), (200, 40), (200, 104), (0, 104)]))]
+    # casitas escalonadas en la ladera de los cerros
+    for i, (x, base) in enumerate(((112, 60), (130, 57), (148, 53), (166, 50), (184, 47))):
+        papel = ("wall", "ochre", "clay", "window", "wall")[i]
+        s += [(papel, rect(x, base - 12, 14, 12)), ("roof", poly([(x - 2, base - 12), (x + 7, base - 19), (x + 16, base - 12)])),
+              ("door", rect(x + 3, base - 7, 4, 7)), ("window", rect(x + 9, base - 9, 3.5, 3.5))]
+    s += banderines(4, 196, 26, 14, 14)
+    # plaza de mercado del barrio
+    s += [("roof", poly([(0, 78), (18, 64), (104, 64), (122, 78)])), ("brick", rect(6, 76, 110, 26)), ("bshade", rect(6, 76, 110, 3)),
+          ("ochre", rect(42, 68, 38, 7))]
+    s += [("door", arch(x, 84, 10, 18)) for x in (13, 30, 47, 64, 81, 98)]
+    tierra_plaza(s, 102)
+    # la chicha: múcuras de barro y totumas
+    s += [("clay", vasija(150, 126, 36, 36)), ("cshade", rect(143, 92, 14, 3)),
+          ("clay", vasija(182, 128, 22, 24)), ("cshade", rect(178, 106, 8, 2.4)),
+          ("sand", poly([(108 + 20 * i / 10, 116 + 7 * math.sin(math.pi * i / 10)) for i in range(11)])),
+          ("ochre", rect(109, 114, 18, 2.4))]
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
@@ -1283,7 +1420,9 @@ LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero"
            "san_andres": san_andres, "medellin": medellin, "bogota": bogota,
            "estacion_santa_fe": estacion_santa_fe, "mirador": mirador, "hamaca": hamaca, "loteria": loteria,
            "sorpresa": sorpresa, "tierra_del_futuro": tierra_del_futuro, "tierra_de_la_aventura": tierra_de_la_aventura,
-           "tierra_de_la_frontera": tierra_de_la_frontera}
+           "tierra_de_la_frontera": tierra_de_la_frontera,
+           "las_cruces": las_cruces, "calle_del_embudo": calle_del_embudo, "san_victorino": san_victorino,
+           "la_perseverancia": la_perseverancia}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
