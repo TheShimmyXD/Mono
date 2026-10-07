@@ -2,6 +2,7 @@ package com.jacck.mono.board
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -48,7 +49,10 @@ private val BoardBg = Color(0xFFF4EFE1)
  * cualquier N; [center] va dentro del anillo (dados, casilla, jugadores, botones).
  */
 @Composable
-fun Board(config: GameConfig, state: GameState, modifier: Modifier = Modifier, center: @Composable () -> Unit) {
+fun Board(
+    config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
+    center: @Composable () -> Unit,
+) {
     BoxWithConstraints(modifier.background(BoardBg)) {
         val n = config.squares.size
         val grid = remember(n, maxWidth, maxHeight) { RingGrid.fit(n, maxWidth.value, maxHeight.value) }
@@ -64,7 +68,7 @@ fun Board(config: GameConfig, state: GameState, modifier: Modifier = Modifier, c
                 tokens = state.players.indices.filter { state.players[it].position == i && !state.players[it].bankrupt },
                 highlighted = i == current,
                 width = cw,
-                modifier = Modifier.offset(cw * at.col, ch * at.row).size(cw, ch),
+                modifier = Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).clickable { onSquare(i) },
             )
         }
         Box(Modifier.offset(cw, ch).size(cw * (grid.cols - 2), ch * (grid.rows - 2)).padding(6.dp)) { center() }

@@ -4,6 +4,7 @@ Cada lugar es una lista de formas con un papel (cielo, muro, techo...); el estil
 de cada papel. Sale la fuente SVG (`arte/svg/<id>.svg`) y el VectorDrawable de la app
 (`app/src/main/res/drawable/arte_<id>.xml`). Lienzo 200 x 140 (10:7).
 Íconos (FA.2): lienzo 24 x 24 sin franjas; salen como `arte/svg/ic_<id>.svg` y `ic_<id>.xml`.
+El mapa lugar -> arte de la app (`board/ArteLugares.kt`) también sale de aquí (FA.3).
 
 Uso, desde la raíz del proyecto: `python3 arte/arte.py` (escribe todo) o `--revisar` (solo
 comprueba que lo escrito está al día; sale 1 si no).
@@ -17,6 +18,7 @@ W, H = 200, 140
 RAIZ = Path(__file__).resolve().parent.parent
 SVG_DIR = RAIZ / "arte" / "svg"
 VD_DIR = RAIZ / "app" / "src" / "main" / "res" / "drawable"
+KT_ARTE = RAIZ / "app" / "src" / "main" / "kotlin" / "com" / "jacck" / "mono" / "board" / "ArteLugares.kt"
 
 
 # ---------- formas ----------
@@ -396,7 +398,18 @@ def vector_drawable(t, w=W, h=H):
             + "\n".join(filas) + "\n</vector>\n")
 
 
+def kotlin_arte():
+    filas = "\n".join(f'    "{n}" to R.drawable.arte_{n},' for n in sorted(LUGARES))
+    return ("// Generado por arte/arte.py: no editar a mano.\n"
+            "package com.jacck.mono.board\n\n"
+            "import com.jacck.mono.R\n\n"
+            "/** Arte de cada lugar por su clave (`artKey` del nombre), FA (D-28). */\n"
+            "internal val ArteLugares: Map<String, Int> = mapOf(\n"
+            f"{filas}\n)\n")
+
+
 def salidas():
+    yield KT_ARTE, kotlin_arte()
     for nombre, fn in LUGARES.items():
         t = trazos(fn())
         yield SVG_DIR / f"{nombre}.svg", svg(t)
@@ -417,7 +430,7 @@ def main(argv):
     for p, txt in salidas():
         p.parent.mkdir(parents=True, exist_ok=True)
         p.write_text(txt)
-    print(f"arte: {len(LUGARES)} lugares y {len(ICONOS)} íconos -> {(len(LUGARES) + len(ICONOS)) * 2} archivos"
+    print(f"arte: {len(LUGARES)} lugares y {len(ICONOS)} íconos -> {(len(LUGARES) + len(ICONOS)) * 2 + 1} archivos"
           f" ({len(viejos)} cambiados)")
     return 0
 

@@ -49,6 +49,7 @@ import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
 import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.board.PlayersPanel
+import com.jacck.mono.board.SquareCard
 import com.jacck.mono.board.Token
 import com.jacck.mono.engine.Dice
 import com.jacck.mono.engine.minimumBid
@@ -70,11 +71,19 @@ import com.jacck.mono.engine.model.Utility
  * propiedades de quien juega se manejan en una hoja que sube desde abajo (F3.4, D-24).
  */
 @Composable
-fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, newSeed: () -> Long) {
+fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: Int? = null, newSeed: () -> Long) {
     val state = vm.state
     var showProperties by remember { mutableStateOf(openProperties) }
+    var shownSquare by remember { mutableStateOf(openSquare) }
     Box(Modifier.fillMaxSize().background(Color(0xFF2E5E4E)).safeDrawingPadding()) {
-        Board(vm.config, state, Modifier.fillMaxSize().padding(2.dp)) { Center(vm) { showProperties = true } }
+        Board(vm.config, state, Modifier.fillMaxSize().padding(2.dp), onSquare = { shownSquare = it }) {
+            Center(vm) { showProperties = true }
+        }
+    }
+    // La carta de una casilla (FA.3) va primero: los diálogos del turno vuelven al cerrarla.
+    shownSquare?.let {
+        SquareCard(vm.config, state, it) { shownSquare = null }
+        return
     }
     if (showProperties && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
         PropertiesSheet(vm) { showProperties = false }

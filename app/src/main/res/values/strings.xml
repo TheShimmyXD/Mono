@@ -159,4 +159,22 @@
     <string name="ev_deed_dealt">%1$s recibe %2$s.</string>
     <string name="ev_game_over">Se acabó la partida.</string>
     <string name="ev_roll_again">%1$s sacó dobles: vuelve a tirar.</string>
+    <!-- Carta de la casilla (FA.3, D-30) -->
+    <string name="card_group_price">%1$s · Precio %2$s</string>
+    <string name="card_hotel">Hotel</string>
+    <plurals name="card_houses">
+        <item quantity="one">%1$d casa</item>
+        <item quantity="other">%1$d casas</item>
+    </plurals>
+    <plurals name="card_stations">
+        <item quantity="one">%1$d estación</item>
+        <item quantity="other">%1$d estaciones</item>
+    </plurals>
+    <string name="card_prices">Casa %1$s · Hotel %2$s</string>
+    <string name="card_free">Libre: la vende el Banco</string>
+    <string name="card_owner">De %1$s</string>
+    <string name="card_rent_now">Cobra ahora: %1$s</string>
+    <string name="card_tax">Paga %1$s</string>
+    <string name="card_tax_percent">o el %1$d %% de lo que tiene</string>
+    <string name="card_tax_hotel">y %1$s por cada hotel</string>
 </resources>

@@ -35,12 +35,12 @@ const val LOG_TAG = "Mono"
  * (repite una partida).
  * Con `n` (16..48) se abre en cambio el tablero de muestra de F3.2. Para probar F3.4 sin jugar media
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
- * y `hoja` (true: abre «Mis propiedades»). Con `maqueta` (letra) se abre la maqueta de la pantalla
+ * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3). Con `maqueta` (letra) se abre la maqueta de la pantalla
  * que se está diseñando (`demo/Maquetas.kt`, M-029). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
-private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja")
+private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "casilla")
 
 class MainActivity : ComponentActivity() {
 
@@ -52,6 +52,7 @@ class MainActivity : ComponentActivity() {
         val seed = intent.getLongExtra("semilla", System.currentTimeMillis())
         val sample = intent.getBooleanExtra("propiedades", false)
         val sheet = intent.getBooleanExtra("hoja", false)
+        val square = if (intent.hasExtra("casilla")) intent.getIntExtra("casilla", 0) else null
         val mockup = intent.getStringExtra("maqueta")
         val direct = GAME_EXTRAS.any(intent::hasExtra)
         val saveFile = SaveFile(filesDir)
@@ -91,7 +92,7 @@ class MainActivity : ComponentActivity() {
                                     GameViewModel(p.load(), n, seed, prepare = if (sample) ::withSampleProperties else { s -> s }, onState = keep)
                                 }
                             }
-                            GameScreen(vm, openProperties = sheet) { System.currentTimeMillis() }
+                            GameScreen(vm, openProperties = sheet, openSquare = square) { System.currentTimeMillis() }
                         }
                     }
                 }

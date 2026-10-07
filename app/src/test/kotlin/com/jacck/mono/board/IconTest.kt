@@ -49,3 +49,16 @@ class IconTest {
         assertEquals(listOf(Icon.DADO_1, Icon.DADO_2, Icon.DADO_3, Icon.DADO_4, Icon.DADO_5, Icon.DADO_6), (1..6).map { Icon.dado(it) })
     }
 }
+
+/** Clave del arte de cada lugar (FA.3, D-30): igual que el id de `arte/arte.py`. */
+class ArtKeyTest {
+
+    @Test
+    fun `los lugares con arte se encuentran por su nombre`() {
+        assertEquals("villa_de_leyva", artKey("Villa de Leyva"))
+        assertEquals("san_andres", artKey("San Andrés"))
+        assertEquals("barrio_egipto", artKey(" Barrio  Egipto "))
+        val names = (Preset.CLASSIC.load().squares + Preset.TIO_RICO.load().squares).map { artKey(it.name) }.toSet()
+        assertEquals(ArteLugares.keys, ArteLugares.keys.filter { it in names }.toSet())
+    }
+}

@@ -287,3 +287,14 @@
   - *Tamaños:* en el tablero, la mitad del ancho de la casilla (≤ 32 dp); casas y hotel, 1,3 × la letra; dados, 52 dp. En la escritura, «Con 2 casas» y «Con hotel» en texto (plurales de Android).
 - **Cómo se revierte:** `git revert` del commit de FA.2; los emojis vuelven con él.
 - **Estado:** vigente.
+
+### D-30 · Carta de la casilla al tocarla (FA.3)
+
+- **Pregunta:** qué se abre al tocar una casilla del tablero.
+- **Opciones (maquetas en el Redmi, `capturas/FA.3_maquetas.png`):** A hoja inferior · B carta de chiva centrada · C ficha compacta.
+- **Elección (del autor, 2026-10-06):** B.
+- **Del agente:** `board/SquareCard.kt` (un `Dialog`: se cierra tocando fuera). Franjas de chiva, nombre en la franja del grupo (negra si no tiene), arte del lugar o, sin arte, su ícono sobre cielo; alquileres con la fila de lo construido resaltada; «Cobra ahora» sale de `rentDue` del motor (incluye el doble del grupo completo); hipoteca de `mortgageValue`; dueño con su ficha, casas o «Hipotecada»; libre: «la vende el Banco». Impuestos: lo que se paga. Mientras la carta está abierta, los diálogos del turno esperan (vuelven al cerrarla).
+  - *Arte por lugar:* `arte/arte.py` escribe también `board/ArteLugares.kt` (clave = nombre sin tildes, minúsculas y `_`, `artKey`); FA.4 y FA.5 solo añaden lugares. `ArtKeyTest`.
+  - *Extra de prueba:* `casilla` (índice) abre la carta al arrancar.
+- **Cómo se revierte:** quitar `onSquare` del `Board` y la carta de `GameScreen`.
+- **Estado:** vigente.
