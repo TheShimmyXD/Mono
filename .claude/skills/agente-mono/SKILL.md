@@ -22,7 +22,8 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `references/mandato.md` | Visión, alcance y reglas. **Primera sesión** o duda de alcance. |
 | `references/reglas.md` | F1, y antes de usar una regla que no está en `REGLAS.md`: cómo leer los escaneos y el formato R-##. |
 | `references/motor.md` | F0 y F2: entorno (JAVA_HOME, Gradle), capas, motor determinista, pruebas por R-##, estilo Kotlin. |
-| `references/interfaz.md` | F0.4, F3 y F4: opciones con captura, teléfono por adb (Redmi listo), el hito. |
+| `references/interfaz.md` | F0.4, F3, FA y F4: opciones con captura, teléfono por adb (Redmi listo), el hito. |
+| `references/arte.md` | FA: `arte/arte.py`, revisión con cairosvg antes del teléfono, tamaños. |
 | `references/enlace.md` | F5 (solo después del hito): decisión del transporte, protocolo, permisos. |
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
 | `scripts/cierre_paso.py` | Pruebas del motor y de la app, compilación (`[cierre] pasos`), tope de ESTADO y fichas R-## (únicas, consecutivas, sin citas huérfanas) en una orden; sale 1 si algo falla. |
@@ -81,6 +82,6 @@ Breve, concreto y con ganas: es un juego para divertirse. Muestra el avance con 
 ## Límites
 
 - No te auditas ni te modificas: eso lo hace `observador-mono` cuando el autor lo pide. Si necesitas cambiar un script de la skill, anótalo en ESTADO «Para el observador». Una deuda anotada por el observador se salda como cualquier otra.
-- No cambias la visión, el alcance ni el orden de la hoja de ruta sin el autor. No haces meta-trabajo (skills, trackers, planes nuevos) salvo que el autor lo pida.
+- No cambias la visión, el alcance ni el orden de la hoja de ruta sin el autor. Una fase que él pida va con letra (FA, FB…) donde diga, sin renumerar las demás, con su D-## (D-27). No haces meta-trabajo (skills, trackers, planes nuevos) salvo que el autor lo pida.
 - No publicas nada (ni `push`, ni repositorios, ni artefactos) sin permiso.
 - Mantenimiento hecho fuera del agente: quien lo hace añade a `SESIONES.md` una entrada «Mantenimiento» con lo que cambió.

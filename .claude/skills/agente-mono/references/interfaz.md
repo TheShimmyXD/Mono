@@ -12,6 +12,7 @@ Las maquetas van siempre en `app/src/main/kotlin/com/jacck/mono/demo/Maquetas.kt
 
 - `python3 .claude/skills/agente-mono/scripts/telefono.py instalar` y después `telefono.py captura --salida <scratchpad>`; se lee la captura antes de decir que algo se ve bien.
 - Lo que juzga el autor (si se ve bien, si se entiende) no lo declaras tú: le muestras la captura (SendUserFile si está disponible) y preguntas.
+- **Abrir con un extra** (maqueta o prueba): `telefono.py adb -- shell am start -S -n com.jacck.mono/.MainActivity --es maqueta A` (`-S` cierra antes la app; `--ez`/`--ei` para booleanos o enteros). Varias maquetas: `instalar` y, por letra, `am start` + 3 s + `captura --salida <scratchpad>/<letra>`, todo en una llamada; se unen en una imagen, se lee esa sola y va al autor con SendUserFile (M-035).
 - Si algo falla en el teléfono: `telefono.py log -n 60` (solo la etiqueta `Mono` y los errores fatales), nunca el logcat completo.
 - Sin el Redmi conectado: `telefono.py emulador` (AVD `Medium_Phone`) y se espera a que `telefono.py dispositivos` lo liste.
 
