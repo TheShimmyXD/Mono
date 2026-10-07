@@ -190,3 +190,13 @@
 - **Cómo se revierte:** borrar `Simulator.kt` y `SimulatorTest.kt`.
 - **Estado:** vigente.
 
+
+### D-20 · Forma del tablero en la pantalla (F3.1)
+
+- **Pregunta:** cómo dibujar el anillo de N casillas en el Redmi en vertical (≈ 393 × 873 dp).
+- **Opciones (maquetas con el preset Clásico, `capturas/F3.1_maqueta_{A,B,C}.png`):** A cuadrado 11 × 11 bajo el ancho, con el panel debajo (casillas de ~36 dp, solo precio o ícono) · B rectángulo alto 7 × 15 que llena la pantalla, con el panel dentro del anillo (esta) · C anillo circular con la ficha de la casilla en el centro.
+- **Elección (del autor, 2026-10-06):** B. Las casillas llevan la franja del grupo, el nombre (2 líneas) y el precio; las especiales, un ícono; el dueño, una franja abajo; las fichas, puntos de color; la casilla en turno con borde grueso. Salida abajo a la derecha, avanza hacia la izquierda (como el cartón). En el centro: dados, ficha de la casilla, jugadores y botones.
+- **Para F3.2:** columnas y filas salen de N con una función pura (perímetro 2·(c+f)−4 = N, casillas lo más cuadradas posible para el alto y ancho disponibles), con su prueba para N = 20, 40 y 60. Con N = 60, unos 9 × 23 (≈ 43 × 37 dp).
+- **Por qué:** es la única de las tres en la que se leen los nombres y aprovecha todo el alto del teléfono.
+- **Cómo se revierte:** cambiar la función de geometría por la del cuadrado (A) o el círculo (C); las maquetas están en `app/…/maquetas/Maquetas.kt` (se borra en F3.2).
+- **Estado:** vigente.
