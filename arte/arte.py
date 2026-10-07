@@ -7,6 +7,7 @@ de cada papel. Sale la fuente SVG (`arte/svg/<id>.svg`) y el VectorDrawable de l
 Personajes (FB.3): lienzo 48 x 48 sin fondo; salen como `arte/svg/pj_<id>.svg` y `pj_<id>.xml`.
 Logos (FB.5): lienzo 108 x 108 del ícono adaptativo, en dos capas: fondo (llena todo) y frente (cabe en
 el círculo central de 66); salen como `logo_<id>_fondo.xml` y `logo_<id>_frente.xml`, y el SVG con las dos.
+El de la app (`LOGO_APP`) sale además como ícono adaptativo, `res/mipmap-anydpi-v26/ic_launcher.xml`.
 El mapa lugar -> arte de la app (`board/ArteLugares.kt`) también sale de aquí (FA.3), y la lista de
 personajes (`board/Personajes.kt`, FB.4).
 
@@ -2548,26 +2549,7 @@ def escalar(formas, k, dx, dy):
     return out
 
 
-def sol_de_rayos(cx, cy, n, papeles):
-    """Abanico de n cuñas desde el centro que se salen del lienzo, alternando papeles."""
-    r = LW
-    out = []
-    for i in range(n):
-        a0, a1 = (2 * math.pi * i / n, 2 * math.pi * (i + 1) / n)
-        out.append((papeles[i % len(papeles)], poly([(cx, cy), (cx + r * math.cos(a0), cy + r * math.sin(a0)),
-                                                      (cx + r * math.cos(a1), cy + r * math.sin(a1))])))
-    return out
-
-
-# En los logos el amarillo es `sunray` o `bolt`: con `sun`, `trazos` le pone rayos a la forma.
-def logo_mono():
-    """A: la cara del mono sobre un sol de chiva."""
-    fondo = [("sky", rect(0, 0, LW, LW))] + sol_de_rayos(54, 54, 16, ("sunray", "sky"))
-    k = 1.45
-    frente = [("ochre", circle(54, 54, 31))] + escalar(PERSONAJES["mono"](), k, 54 - 24 * k, 55 - 22 * k)
-    return fondo, frente
-
-
+# En los logos el amarillo es `bolt`: con `sun`, `trazos` le pone rayos a la forma.
 def logo_chiva():
     """B: la chiva de frente sobre los rombos de su carrocería."""
     fondo = [("leaf", rect(0, 0, LW, LW))]
@@ -2579,19 +2561,10 @@ def logo_chiva():
     return fondo, frente
 
 
-def logo_dado():
-    """C: un dado con los cinco puntos en los colores de la franja, sobre franjas diagonales."""
-    fondo = []
-    for i in range(-6, 8):
-        x = i * 18
-        fondo.append((("roof", "bolt", "window", "leaf", "trim")[i % 5], poly([(x, 0), (x + 18, 0), (x + 18 + LW, LW), (x + LW, LW)])))
-    frente = [("coal", rrect(29, 32, 52, 52, 11)), ("cloud", rrect(26, 26, 52, 52, 11))]
-    for (x, y), papel in zip(((39, 39), (65, 39), (52, 52), (39, 65), (65, 65)), ("roof", "window", "bolt", "leaf", "trim")):
-        frente.append((papel, circle(x, y, 6)))
-    return fondo, frente
-
-
-LOGOS = {"mono": logo_mono, "chiva": logo_chiva, "dado": logo_dado}
+# El de la app (FB.5, D-38, opción B); las otras dos opciones (mono en el sol, dado) están en `00e8e3e`.
+LOGOS = {"chiva": logo_chiva}
+LOGO_APP = "chiva"
+MIPMAP = VD_DIR.parent / "mipmap-anydpi-v26" / "ic_launcher.xml"
 
 # ---------- estilo C: arte de chiva ----------
 CONTORNO, ANCHO = "#1B1B1B", 1.5
@@ -2704,8 +2677,18 @@ def kotlin_personajes():
             f"{filas}\n)\n")
 
 
+def icono_app():
+    return ('<?xml version="1.0" encoding="utf-8"?>\n'
+            "<!-- Generado por arte/arte.py: no editar a mano. -->\n"
+            '<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">\n'
+            f'    <background android:drawable="@drawable/logo_{LOGO_APP}_fondo" />\n'
+            f'    <foreground android:drawable="@drawable/logo_{LOGO_APP}_frente" />\n'
+            "</adaptive-icon>\n")
+
+
 def salidas():
     yield KT_ARTE, kotlin_arte()
+    yield MIPMAP, icono_app()
     yield KT_PJ, kotlin_personajes()
     for nombre, fn in LUGARES.items():
         t = trazos(fn())
@@ -2740,7 +2723,7 @@ def main(argv):
         p.write_text(txt)
     n = len(LUGARES) + len(ICONOS) + len(PERSONAJES)
     print(f"arte: {len(LUGARES)} lugares, {len(ICONOS)} íconos, {len(PERSONAJES)} personajes y {len(LOGOS)} logos"
-          f" -> {n * 2 + len(LOGOS) * 3 + 2} archivos"
+          f" -> {n * 2 + len(LOGOS) * 3 + 3} archivos"
           f" ({len(viejos)} cambiados)")
     return 0
 

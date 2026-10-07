@@ -378,3 +378,17 @@
 - **Del autor:** aprobar FB.4 tal cual y anotar el jugador automático como idea para después del hito F4.5, sin programarlo (opciones descartadas: una línea aclaratoria en el menú; una fase FC de IA).
 - **Si se retoma:** fase con letra (D-27): jugador automático en `engine` con semilla (D-03) que elige entre las jugadas legales, y en el menú, persona o máquina por jugador; el campo iría en `PlayerState` como `token` (D-36).
 - **Estado:** vigente.
+
+### D-38 · Logo e ícono de la app: la chiva (FB.5)
+
+- **Pregunta:** qué logo sin texto (P6 sigue abierta) lleva el ícono de Mono.
+- **Del autor:** opción **B**, la chiva de frente sobre rombos (`capturas/FB.5_logos.png`; descartadas A, el mono en un sol, y C, un dado de colores; las tres en `00e8e3e`).
+- **Del agente:**
+  - *Lienzo:* 108 × 108, el del ícono adaptativo de Android: fondo que llena todo (verde con rombos amarillos, rojos y blancos) y frente que cabe en el círculo central de 66 (la chiva de `pj_chiva` × 1,4 con `escalar`); contorno 2,4 y líneas 1,8. El lanzador recorta las 72 del centro con la forma que quiera (HyperOS: cuadrado redondeado).
+  - *Salidas de `arte.py`:* `logo_chiva_fondo.xml`, `logo_chiva_frente.xml`, `arte/svg/logo_chiva.svg` y, por `LOGO_APP`, `res/mipmap-anydpi-v26/ic_launcher.xml`; el manifiesto usa `@mipmap/ic_launcher` como `icon` y `roundIcon`. Con minSdk 26 no hacen falta PNG por densidad.
+  - *Amarillo:* `bolt`, no `sun`: `trazos` le pone rayos a la primera forma `sun`.
+  - Sin capa monocroma (íconos temáticos de Android 13): el lanzador usa el de color. Se añade si el autor lo pide.
+- **Captura:** `capturas/FB.5_lanzador.png` (lanzador del Redmi).
+- **Cómo se revierte:** quitar `icon`/`roundIcon` del manifiesto (vuelve el ícono de Android); otro logo = otra función en `LOGOS` y cambiar `LOGO_APP`.
+- **Estado:** vigente.
+
