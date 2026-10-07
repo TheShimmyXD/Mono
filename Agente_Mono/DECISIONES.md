@@ -306,3 +306,12 @@
 - **Elección (del autor, 2026-10-06):** A. A mitad de FA.4 (15 lugares en `capturas/FA.4a_` a `FA.4d_cartas.png`) aprobó también el estilo para los grupos que faltan.
 - **Cómo se revierte:** maquetas de B y un fondo por casilla en `Board`.
 - **Estado:** vigente; vale también para FA.5.
+
+### D-32 · Fase FB «Interfaz de chiva, personajes y logo» antes de F4
+
+- **Pregunta:** el autor pide que la interfaz siga el estilo artístico, un logo para la app y poder escoger su jugador (hoy cada jugador es un círculo de color; el nombre ya se escribe en el menú y Ana, Beto… solo salen si se deja vacío).
+- **Opciones:** jugador = personaje dibujado · personaje y color · solo un nombre más claro; la fase antes de F4 · tras el hito F4 · tras F5; el logo con el nombre «Mono» · sin texto hasta decidir el nombre.
+- **Elección (del autor, 2026-10-07):** personaje dibujado (8, sin repetir); fase FB antes de F4; logo sin texto, el nombre visible sigue pendiente (P6).
+- **Del agente:** con letra (FB) para no renumerar F4 y F5. Antes de F4 porque el editor nace con el estilo nuevo y no hay que retocarlo. Personajes e ícono salen de `arte/arte.py`, como el resto del arte (D-28); el ícono es adaptativo (capa de fondo y de frente: el formato que Android recorta en círculo o en gota según el teléfono).
+- **Cómo se revierte:** quitar la sección FB del plan; la interfaz anterior sigue en el historial de Git.
+- **Estado:** vigente.
