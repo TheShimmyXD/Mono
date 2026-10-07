@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -36,14 +37,16 @@ import androidx.compose.ui.unit.sp
 import com.jacck.mono.R
 import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.engine.Preset
+import com.jacck.mono.engine.model.GameState
 
 /**
  * Menú de nueva partida (F3.5, maqueta A, D-25): preset, cuántos juegan (2-6) y sus nombres, todo
  * en una pantalla. Una casilla vacía juega con el nombre de muestra (gris); con nombres repetidos
  * no se puede empezar. `rememberSaveable` guarda lo elegido si Android recrea la pantalla.
+ * Con una partida guardada (`saved`), arriba va «Seguir la partida» (F3.6, D-26).
  */
 @Composable
-fun NewGameScreen(onStart: (Preset, List<String>) -> Unit) {
+fun NewGameScreen(saved: GameState?, onResume: () -> Unit, onStart: (Preset, List<String>) -> Unit) {
     val defaults = stringArrayResource(R.array.default_names).toList()
     var preset by rememberSaveable { mutableStateOf(Preset.CLASSIC) }
     var count by rememberSaveable { mutableStateOf(3) }
@@ -59,6 +62,14 @@ fun NewGameScreen(onStart: (Preset, List<String>) -> Unit) {
             Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {
+            if (saved != null) {
+                FilledTonalButton(onClick = onResume, modifier = Modifier.fillMaxWidth()) {
+                    Column(Modifier.padding(vertical = 8.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(stringResource(R.string.menu_resume), fontSize = 18.sp)
+                        Text(stringResource(R.string.menu_resume_detail, saved.players.joinToString(", ") { it.name }, saved.turn + 1), fontSize = 13.sp)
+                    }
+                }
+            }
             Text(stringResource(R.string.menu_title), style = MaterialTheme.typography.headlineMedium)
             Text(stringResource(R.string.menu_game), fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

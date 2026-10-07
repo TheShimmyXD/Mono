@@ -117,6 +117,8 @@
     <string name="menu_players">Jugadores</string>
     <string name="menu_repeated">Ese nombre ya está</string>
     <string name="menu_start">Empezar</string>
+    <string name="menu_resume">Seguir la partida</string>
+    <string name="menu_resume_detail">%1$s · turno %2$d</string>
     <string name="preset_classic">Clásico</string>
     <string name="preset_tio_rico">Tío Rico</string>
     <string name="what_happened">Lo que pasó</string>

@@ -21,6 +21,10 @@ object MonoJson {
 
     fun decodeState(text: String): GameState = json.decodeFromString(text)
 
+    fun encodeSaved(saved: SavedGame): String = json.encodeToString(saved)
+
+    fun decodeSaved(text: String): SavedGame = json.decodeFromString(text)
+
     fun encodeAction(action: Action): String = json.encodeToString(action)
 
     fun decodeAction(text: String): Action = json.decodeFromString(text)

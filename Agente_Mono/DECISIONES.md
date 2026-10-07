@@ -246,3 +246,13 @@
 - **Arranque:** `MainActivity` abre el menú; con cualquiera de los extras de prueba (`jugadores`, `tio_rico`, `semilla`, `propiedades`, `hoja`) va directo a la partida como antes, para adb. Lo elegido sobrevive a que Android recree la pantalla (`rememberSaveable`). No hay vuelta al menú desde la partida (llega con el guardado, F3.6).
 - **Cómo se revierte:** quitar la rama del menú en `MainActivity`; el motor no cambia.
 - **Estado:** vigente.
+
+### D-26 · Guardar y retomar: botón en el menú (F3.6)
+
+- **Pregunta:** qué pasa al abrir Mono con una partida a medias.
+- **Opciones:** botón «Seguir la partida» en el menú, abrir la partida directo, o una lista de varias guardadas.
+- **Elección (del autor):** botón en el menú, arriba: «Seguir la partida» con los nombres y el turno; debajo, la nueva partida como en D-25.
+- **Cómo (del agente):** `SavedGame(config, state)` en el motor (`MonoJson.encodeSaved`/`decodeSaved`; `SavedGameTest`: 40 jugadas, guardar, cargar y las 40 siguientes iguales, en los dos presets). La configuración va entera, no el nombre del preset, para que sirva con los tableros del editor (F4). La app guarda un solo `partida.json` en su carpeta privada tras cada jugada (`SaveFile`, 4 pruebas): escribe a un temporal y lo renombra (cerrar a mitad no deja un archivo cortado); una partida terminada lo borra; un archivo dañado se ignora. Empezar una partida nueva reemplaza la guardada. Los avisos de «Lo que pasó» y los últimos dados no se guardan: al seguir, la pantalla abre en la fase en que quedó.
+- **Extras de prueba:** las partidas abiertas con extras no se guardan, para no pisar la del autor.
+- **Cómo se revierte:** quitar `onState` en `MainActivity` y el botón del menú.
+- **Estado:** vigente.
