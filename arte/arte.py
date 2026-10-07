@@ -1972,6 +1972,132 @@ def zona_t():
     return s
 
 
+def rayo(cx, cy, k):
+    """Rayo de la energía: zigzag de seis puntas centrado en cx, cy."""
+    return poly([(cx + 2 * k, cy - 6 * k), (cx - 3 * k, cy + k), (cx, cy + k), (cx - 2 * k, cy + 6 * k), (cx + 3 * k, cy - k), (cx, cy - k)])
+
+
+def torre_electrica(cx, base, h):
+    """Torre de alta tensión de celosía; devuelve (formas, puntas de las crucetas)."""
+    a, b = base - h, base - h + 12
+    s = [("bar", lines([(cx - 9, base, cx - 2, a), (cx + 9, base, cx + 2, a), (cx - 12, a + 5, cx + 12, a + 5), (cx - 10, b, cx + 10, b)]
+                       + [(cx - 9 + 7 * t, base - h * t, cx + 9 - 7 * (t + 0.25), base - h * (t + 0.25)) for t in (0, 0.25, 0.5)]
+                       + [(cx + 9 - 7 * t, base - h * t, cx - 9 + 7 * (t + 0.25), base - h * (t + 0.25)) for t in (0, 0.25, 0.5)]))]
+    return s, [(cx - 12, a + 5), (cx + 12, a + 5), (cx - 10, b), (cx + 10, b)]
+
+
+def energia_bogota():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(130, 22), (136, 15), (146, 15), (152, 9.5), (164, 11), (170, 18), (178, 22)])),
+         ("far", poly([(0, 46), (40, 34), (80, 40), (120, 30), (160, 40), (200, 34), (200, 100), (0, 100)])),
+         ("lake", rect(50, 42, 100, 10))]
+    # cerros a lado y lado de la represa
+    s += [("coffee", poly([(0, 52), (40, 44), (68, 48), (66, 100), (0, 100)])),
+          ("coffee", poly([(132, 48), (160, 42), (200, 50), (200, 100), (134, 100)]))]
+    # la represa con su rebosadero
+    s += [("granite", poly([(62, 48), (138, 48), (134, 98), (66, 98)])), ("gshade", rect(62, 48, 76, 4)),
+          ("dash", lines([(64, y, 136, y) for y in (62, 74, 86)])),
+          ("cloud", poly([(92, 52), (108, 52), (110, 98), (90, 98)])),
+          ("fall", lines([(95, 54, 94, 96), (100, 54, 100, 96), (105, 54, 106, 96)]))]
+    s += [("near", rect(0, 98, W, 42)), ("sea", poly([(90, 98), (110, 98), (128, H), (72, H)])),
+          ("wave", lines([(88, 112, 100, 112), (98, 124, 112, 124)]))]
+    s += eucalipto(18, 108, 50) + eucalipto(42, 104, 36)
+    # casa de máquinas con el rayo, y la torre de alta tensión que se lleva la luz
+    s += [("brick", rect(122, 80, 44, 28)), ("bshade", rect(160, 80, 6, 28)), ("slate", poly([(118, 82), (126, 72), (162, 72), (170, 82)])),
+          ("door", arch(127, 92, 9, 16)), ("door", arch(152, 92, 9, 16)), ("coal", circle(144, 95, 8)), ("bolt", rayo(144, 95, 1.1))]
+    t1, p1 = torre_electrica(186, 124, 66)
+    s += t1
+    cables = [((166, 76), p1[0]), ((166, 80), p1[2]), (p1[1], (200, p1[1][1] + 6)), (p1[3], (200, p1[3][1] + 6))]
+    s += [("ink", polyline([(a[0] + (b[0] - a[0]) * k / 10, a[1] + (b[1] - a[1]) * k / 10 + 5 * math.sin(math.pi * k / 10)) for k in range(11)]))
+          for a, b in cables]
+    return s
+
+
+def acueducto_bogota():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(174, 22, 8)),
+         ("far", poly([(0, 44), (40, 30), (80, 40), (120, 28), (160, 38), (200, 30), (200, 96), (0, 96)]))]
+    # el tanque del agua en el cerro, con la tubería que baja
+    s += [("bar", lines([(30, 58, 26, 76), (48, 58, 52, 76), (30, 58, 52, 76), (48, 58, 26, 76)])),
+          ("granite", rect(24, 34, 30, 24)), ("gshade", rect(48, 34, 6, 24)), ("window", rect(24, 44, 30, 4)),
+          ("granite", poly([(22, 34), (39, 24), (56, 34)]))]
+    s += casa_colonial(0, 96, 48, 30) + casa_colonial(152, 96, 48, 28, "ochre", "oshade")
+    tierra_plaza(s, 96)
+    # la pila con el Mono en lo alto
+    s += [("stone", poly([(54, 118), (64, 104), (136, 104), (146, 118), (146, 126), (54, 126)])), ("sshade", rect(54, 118, 92, 3)),
+          ("shallow", poly([(66, 106), (134, 106), (140, 116), (60, 116)])),
+          ("stone", rect(94, 60, 12, 48)), ("sshade", rect(102, 60, 4, 48)),
+          ("stone", poly([(82, 72), (118, 72), (112, 80), (88, 80)])), ("shallow", rect(84, 72, 32, 2.5)),
+          ("fall", polyline([(86, 76), (78, 82), (72, 92), (70, 106)])), ("fall", polyline([(114, 76), (122, 82), (128, 92), (130, 106)])),
+          ("stone", rect(90, 56, 20, 5)),
+          ("granite", poly([(94, 56), (106, 56), (104, 44), (96, 44)])), ("granite", circle(100, 39, 5.5)),
+          ("ink", lines([(106, 50, 110, 42), (107.5, 45, 112, 47)]))]
+    s += [("clay", vasija(30, 128, 16, 18)), ("clay", vasija(170, 128, 16, 18))]
+    return s
+
+
+DOLAR = ((14.6, 12.6), (14, 11.4, 12, 11.4), (9.5, 11.4, 9.5, 13.3), (9.5, 15.1, 12, 15.1), (14.5, 15.1, 14.5, 16.9),
+         (14.5, 18.8, 12, 18.8), (9.9, 18.8, 9.3, 17.6))
+
+
+def signo_peso(cx, cy, k):
+    """El $ del ícono de impuesto (lienzo 24) llevado a cx, cy y multiplicado por k."""
+    def q(x, y):
+        return f"{f(cx + (x - 12) * k)} {f(cy + (y - 15.1) * k)}"
+    d = "M" + q(*DOLAR[0]) + "".join("Q" + q(a, b) + " " + q(c, e) for a, b, c, e in DOLAR[1:])
+    return raw(d + "M" + q(12, 10) + "L" + q(12, 20.2))
+
+
+def pila_monedas(x, base, n):
+    """Pila de n monedas de oro vistas de lado."""
+    return [("ochre", rrect(x - 10, base - 5 * (i + 1), 20, 5, 2)) for i in range(n)]
+
+
+def contribuciones():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(20, 24), (26, 17), (36, 17), (42, 11), (54, 13), (60, 20), (68, 24)])),
+         ("far", poly([(0, 48), (40, 36), (80, 44), (120, 32), (160, 42), (200, 36), (200, 96), (0, 96)]))]
+    # la casa del recaudo: muro encalado, portada de piedra y letrero
+    s += [("roof", poly([(12, 44), (24, 34), (176, 34), (188, 44)])), ("rshade", rect(12, 42, 176, 3)),
+          ("wall", rect(18, 44, 164, 52)), ("wshade", rect(18, 44, 164, 3)),
+          ("stone", rect(80, 50, 40, 46)), ("sshade", rect(80, 50, 40, 3)), ("door", arch(88, 64, 24, 32)),
+          ("ochre", rrect(84, 52, 32, 9, 3)), ("dollar", signo_peso(100, 56.5, 0.7))]
+    for x in (26, 52, 134):
+        s += [("window", rect(x, 56, 14, 20)), ("bar", lines([(x + 4.7, 56, x + 4.7, 76), (x + 9.3, 56, x + 9.3, 76)])),
+              ("wood", rect(x - 2, 76, 18, 3))]
+    tierra_plaza(s, 96)
+    # pilas de monedas y una moneda grande
+    s += pila_monedas(24, 128, 4) + pila_monedas(46, 128, 6) + pila_monedas(68, 128, 3)
+    s += [("ochre", circle(90, 118, 10)), ("oshade", circle(90, 118, 7)), ("dollar", signo_peso(90, 118, 1.1))]
+    # el recibo y el sello que cae sobre él
+    s += [("wall", poly([(112, 106), (176, 102), (180, 128), (116, 131)])),
+          ("dash", lines([(120, 112, 150, 110.5), (120, 118, 146, 116.8), (120, 124, 140, 123.2)])),
+          ("stamp", circle(160, 118, 8)), ("stamp", signo_peso(160, 118, 1.0)),
+          ("wood", rect(155, 66, 10, 14)), ("trunk", circle(160, 62, 9)), ("roof", rect(142, 80, 36, 11)), ("rshade", rect(142, 88, 36, 3)),
+          ("coal", rect(145, 91, 30, 4)), ("ink", lines([(136, 84, 128, 84), (136, 92, 126, 95), (184, 84, 192, 84), (184, 92, 194, 95)]))]
+    return s
+
+
+def impuesto_de_lujo():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(28, 20, 8))]
+    # la joyería con su corona en lo alto
+    s += [("door", rect(12, 30, 176, 72)), ("ochre", rect(8, 28, 184, 5)),
+          ("ochre", poly([(84, 28), (82, 13), (92, 21), (100, 11), (108, 21), (118, 13), (116, 28)])),
+          ("roof", circle(92, 24, 2.6)), ("window", circle(100, 22, 2.6)), ("leaf", circle(108, 24, 2.6)),
+          ("trim", poly([(12, 36)] + [(12 + 11 * i + 5.5, 44 if i % 2 == 0 else 36) for i in range(16)] + [(188, 36)])),
+          ("coal", rect(28, 48, 144, 46)), ("ochre", rect(26, 46, 148, 3))]
+    # lingotes de oro a los lados
+    for x, y in ((38, 92), (60, 92), (49, 85), (140, 92), (162, 92), (151, 85)):
+        s += [("ochre", poly([(x - 10, y), (x + 10, y), (x + 7, y - 7), (x - 7, y - 7)])), ("shine", lines([(x - 4, y - 4, x + 2, y - 4)]))]
+    # el anillo con su diamante
+    s += [("ochre", circle(100, 80, 13)), ("coal", circle(100, 80, 8.5)), ("oshade", poly([(94, 66), (106, 66), (103, 72), (97, 72)])),
+          ("shallow", poly([(90, 54), (110, 54), (118, 61), (82, 61)])), ("turq", poly([(82, 61), (118, 61), (100, 77)])),
+          ("shine", lines([(96, 54, 92, 61), (104, 54, 108, 61), (92, 61, 100, 77), (108, 61, 100, 77)])),
+          ("cloud", star(124, 54, 7, 2.2)), ("cloud", star(76, 70, 6, 2))]
+    # andén y carros de lujo
+    s += [("stone", rect(0, 102, W, 10)), ("sshade", rect(0, 110, W, 2)), ("granite", rect(0, 112, W, 28)),
+          ("glyph", lines([(x, 122, x + 12, 122) for x in range(6, W, 28)]))]
+    s += carro(22, 130, "roof") + carro(128, 130, "ochre")
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
@@ -1991,7 +2117,9 @@ LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero"
            "pasadena": pasadena, "cedritos": cedritos, "santa_barbara": santa_barbara, "rosales": rosales,
            "el_chico": el_chico, "usaquen": usaquen,
            "estacion_de_la_sabana": estacion_de_la_sabana, "estacion_del_norte": estacion_del_norte,
-           "estacion_del_sur": estacion_del_sur, "estacion_del_oriente": estacion_del_oriente, "zona_t": zona_t}
+           "estacion_del_sur": estacion_del_sur, "estacion_del_oriente": estacion_del_oriente, "zona_t": zona_t,
+           "empresa_de_energia": energia_bogota, "acueducto": acueducto_bogota, "contribuciones": contribuciones,
+           "impuesto_de_lujo": impuesto_de_lujo}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -2144,7 +2272,8 @@ PALETA = {
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),
           "dash": ("#1B1B1B", 0.9), "rope": ("#8B5A2B", 1.0), "shine": ("#FFFFFF", 1.3),
-          "fall": ("#7FD3F0", 1.8)}
+          "fall": ("#7FD3F0", 1.8),
+          "stamp": ("#E63946", 2.0)}
 FRANJA = ["#E63946", "#FFC21A", "#1D7BEF", "#2BB04A", "#E5007E"]
 
 

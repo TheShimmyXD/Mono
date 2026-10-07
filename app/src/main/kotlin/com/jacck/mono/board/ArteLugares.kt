@@ -5,6 +5,7 @@ import com.jacck.mono.R
 
 /** Arte de cada lugar por su clave (`artKey` del nombre), FA (D-28). */
 internal val ArteLugares: Map<String, Int> = mapOf(
+    "acueducto" to R.drawable.arte_acueducto,
     "avenida_jimenez" to R.drawable.arte_avenida_jimenez,
     "barichara" to R.drawable.arte_barichara,
     "barranquilla" to R.drawable.arte_barranquilla,
@@ -19,7 +20,9 @@ internal val ArteLugares: Map<String, Int> = mapOf(
     "cedritos" to R.drawable.arte_cedritos,
     "chapinero" to R.drawable.arte_chapinero,
     "cienaga" to R.drawable.arte_cienaga,
+    "contribuciones" to R.drawable.arte_contribuciones,
     "el_chico" to R.drawable.arte_el_chico,
+    "empresa_de_energia" to R.drawable.arte_empresa_de_energia,
     "estacion_de_la_sabana" to R.drawable.arte_estacion_de_la_sabana,
     "estacion_del_norte" to R.drawable.arte_estacion_del_norte,
     "estacion_del_oriente" to R.drawable.arte_estacion_del_oriente,
@@ -30,6 +33,7 @@ internal val ArteLugares: Map<String, Int> = mapOf(
     "guane" to R.drawable.arte_guane,
     "guatape" to R.drawable.arte_guatape,
     "hamaca" to R.drawable.arte_hamaca,
+    "impuesto_de_lujo" to R.drawable.arte_impuesto_de_lujo,
     "jardin" to R.drawable.arte_jardin,
     "jerico" to R.drawable.arte_jerico,
     "la_perseverancia" to R.drawable.arte_la_perseverancia,
