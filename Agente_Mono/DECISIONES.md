@@ -315,3 +315,18 @@
 - **Del agente:** con letra (FB) para no renumerar F4 y F5. Antes de F4 porque el editor nace con el estilo nuevo y no hay que retocarlo. Personajes e ícono salen de `arte/arte.py`, como el resto del arte (D-28); el ícono es adaptativo (capa de fondo y de frente: el formato que Android recorta en círculo o en gota según el teléfono).
 - **Cómo se revierte:** quitar la sección FB del plan; la interfaz anterior sigue en el historial de Git.
 - **Estado:** vigente.
+
+### D-33 · Estilo de la interfaz: «Chiva de fiesta» (FB.1)
+
+- **Pregunta:** cómo se ven las pantallas (colores, letra, botones, franjas y diálogos) para que sigan el arte de chiva (D-28).
+- **Opciones (vistas en el Redmi, `capturas/FB.1_estilos.png`; código en `b91f161`, `demo/Maquetas.kt`):** A Chiva de fiesta (todo cargado) · B Carrocería azul (fondo azul, Lilita solo en títulos y botones) · C Sobria con acentos (el tablero de hoy con contorno negro; chiva solo en panel y diálogos).
+- **Elección (del autor, 2026-10-07):** A.
+- **Del agente (el tema para FB.2):**
+  - *Colores:* pantalla sol `#FFC21A`; casillas y paneles blancos; tinta `#1B1B1B` para contornos y texto; casilla de turno `#FFE08A`; botón principal techo `#E63946` con texto blanco, secundario ocre `#FFD60A` con texto tinta; error en techo. Fichas de jugador, como hoy hasta FB.3-FB.4.
+  - *Letra:* Lilita One (`res/font/lilita_one.ttf`, licencia OFL en `arte/letra/OFL_LilitaOne.txt`; trae tildes, ñ, ¿ y ¡) en todo: títulos, botones, nombres y cifras. Un `Typography` de Compose con esa familia, así todo `Text` la hereda.
+  - *Contorno y sombra:* casilla 1,5 dp (3 dp la de turno); panel 2,5 dp con esquinas de 12 dp; botón 2 dp y esquinas de 10 dp; paneles, botones y diálogos con sombra negra sólida desplazada (4, 3 y 5 dp), como una calcomanía.
+  - *Franjas:* de chiva (dientes rojo, amarillo, azul, verde y magenta sobre tinta) de 12 dp arriba y abajo de la pantalla y de 10 dp en la cabecera de cada diálogo; la de la carta (`SquareCard.kt`) pasa a ser la misma pieza.
+  - *Diálogos:* carta blanca con contorno de 3 dp y esquinas de 16 dp, franja arriba, título centrado, banda del grupo con el nombre en mayúsculas, cifras en filas y dos botones lado a lado (secundario a la izquierda, principal a la derecha; texto en una línea, 16 sp: «Comprar −$240» cabe, M-026).
+  - *Cómo:* un `ChivaTheme` (colores de Material 3 + `Typography` con Lilita) en `MainActivity` y piezas comunes (`FranjaChiva`, `Calcomania`, `BotonChiva`) en un archivo propio de la app; las pantallas usan esas piezas, no colores sueltos.
+- **Cómo se revierte:** volver a `MaterialTheme` sin parámetros en `MainActivity` y a los componentes de Material; las opciones B y C siguen en `b91f161`.
+- **Estado:** vigente.
