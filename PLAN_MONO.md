@@ -184,7 +184,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 ### F5 · Enlace
 
-- [ ] **F5.1** Transporte: Bluetooth clásico (RFCOMM) o Nearby Connections, con prueba de concepto. *Terminado:* D-## aprobada por el autor.
+- [x] **F5.1** Transporte: Bluetooth clásico (RFCOMM) o Nearby Connections, con prueba de concepto. *Terminado:* D-## aprobada por el autor.
 - [ ] **F5.2** Protocolo: anfitrión que decide, acciones numeradas, el invitado aplica las mismas; probado en la JVM con un transporte falso. *Terminado:* dos motores idénticos tras 1000 partidas simuladas.
 - [ ] **F5.3** Permisos (Android 12+), descubrir y conectar; HyperOS no corta la conexión. *Terminado:* conexión de 10 min sin cortes entre el Redmi y el PC (D-44).
 - [ ] **F5.4** Partida de punta a punta entre el Redmi y el PC (jugador de terminal con el mismo motor, D-44). *Terminado:* una partida corta terminada, con captura del Redmi y la salida del PC.

@@ -477,4 +477,4 @@
 - **Prueba de concepto (medida):** pantalla `--es enlace eco` en el Redmi + `python3 pc/eco.py` en el PC (canal buscado con `sdptool browse`: cambia al reabrir, 5 y luego 6). Conexión en 105 ms; 20/20 y 200/200 ecos correctos, ida y vuelta mediana 10-11 ms (máx 66 y 120 ms); UTF-8 («ñ») intacto. Tras cerrarse el PC, el Redmi vuelve a escuchar a los 2 s. Pruebas: `EchoLoopTest` (2) y `pc/test_eco.py` (4).
 - **Tropiezo:** el PC tenía al Redmi como emparejado pero el Redmi ya no al PC: `Connection refused`. Se arregló quitando el emparejamiento en el PC (`bluetoothctl remove`) y emparejando de nuevo desde el Redmi.
 - **Cómo se revierte:** el transporte queda detrás del bucle de mensajes (`echoLoop` no sabe de Bluetooth); cambiar a otro es reescribir `EcoServer`.
-- **Estado:** propuesta, a la espera del autor.
+- **Estado:** vigente (aprobada por el autor, 2026-10-07).
