@@ -6,7 +6,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,12 +17,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -162,27 +158,33 @@ private fun PropertiesSheet(vm: GameViewModel, onClose: () -> Unit) {
     val state = vm.state
     val owner = state.current
     val mine = state.holdings.filter { it.value.owner == owner }.toSortedMap()
-    ModalBottomSheet(onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    ModalBottomSheet(
+        onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = Chiva.Sol,
+    ) {
         Column(
-            Modifier.padding(horizontal = 16.dp).padding(bottom = 24.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(6.dp),
+            Modifier.padding(start = 14.dp, end = 17.dp).padding(bottom = 24.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Token(PlayerColors[owner], 14.dp)
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    stringResource(R.string.properties_title, state.players[owner].name), fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f),
-                )
-                Text(money(state.players[owner].money), fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Calcomania {
+                Row(Modifier.fillMaxWidth().background(Chiva.Techo).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Token(PlayerColors[owner], 18.dp)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        stringResource(R.string.properties_title, state.players[owner].name), color = Color.White, fontSize = 20.sp,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text(money(state.players[owner].money), color = Color.White, fontSize = 20.sp)
+                }
             }
-            vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
-            if (mine.isEmpty()) Text(stringResource(R.string.properties_none))
+            Rejected(vm)
+            if (mine.isEmpty()) Text(stringResource(R.string.properties_none), fontSize = 16.sp)
             mine.forEach { (square, holding) -> PropertyRow(vm, square, holding) }
         }
     }
 }
 
+/** Una propiedad en su tarjeta: franja del grupo, nombre, estado y edificios; debajo, sus jugadas. */
 @Composable
 private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
     val sq = vm.config.squares[square]
@@ -194,30 +196,29 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
         sq is Property -> stringResource(R.string.no_houses)
         else -> null
     }
-    val small = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
-    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-        Box(Modifier.size(10.dp, 36.dp).background(band))
-        Column(Modifier.weight(1f)) {
-            Text(sq.name, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            status?.let { Text(it, fontSize = 12.sp) }
-            if (!holding.mortgaged) BuildingIcons(holding, 16.dp)
+    val moves = propertyMoves(vm.config, vm.state, square)
+    Calcomania(sombra = 3.dp, borde = 2.dp, forma = RoundedCornerShape(10.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(12.dp, 44.dp).background(band))
+            Column(Modifier.weight(1f).padding(horizontal = 10.dp, vertical = 6.dp)) {
+                Text(sq.name, fontSize = 16.sp)
+                status?.let { Text(it, fontSize = 13.sp) }
+                if (!holding.mortgaged) BuildingIcons(holding, 16.dp)
+            }
         }
-        propertyMoves(vm.config, vm.state, square).forEach { move ->
-            val amount = money(move.amount)
-            when (move.action) {
-                is Action.Build -> FilledTonalButton(onClick = { vm.act(move.action) }, contentPadding = small) {
-                    Text(stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount))
+        if (moves.isNotEmpty()) {
+            Row(Modifier.padding(start = 8.dp, end = 11.dp, bottom = 11.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                moves.forEach { move ->
+                    val amount = money(move.amount)
+                    val (text, main) = when (move.action) {
+                        is Action.Build -> stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount) to true
+                        is Action.SellBuilding -> stringResource(R.string.move_sell, amount) to false
+                        is Action.Mortgage -> stringResource(R.string.move_mortgage, amount) to false
+                        is Action.Unmortgage -> stringResource(R.string.move_unmortgage, amount) to true
+                        else -> null to false
+                    }
+                    if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), principal = main)
                 }
-                is Action.SellBuilding -> OutlinedButton(onClick = { vm.act(move.action) }, contentPadding = small) {
-                    Text(stringResource(R.string.move_sell, amount))
-                }
-                is Action.Mortgage -> OutlinedButton(onClick = { vm.act(move.action) }, contentPadding = small) {
-                    Text(stringResource(R.string.move_mortgage, amount))
-                }
-                is Action.Unmortgage -> Button(onClick = { vm.act(move.action) }, contentPadding = small) {
-                    Text(stringResource(R.string.move_unmortgage, amount))
-                }
-                else -> Unit
             }
         }
     }

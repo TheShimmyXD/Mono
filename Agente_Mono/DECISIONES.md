@@ -340,6 +340,7 @@
   - *Color de la banda por tipo:* techo rojo para decidir (compra, impuesto, deuda), azul para «Lo que pasó», magenta la subasta, tinta la Cárcel y verde el fin (colores de la franja, `Chiva.Azul`, `Magenta`, `Verde`).
   - *Texto de botón:* sigue en una línea; si no cabe, `autoSize` baja la letra de 16 a 11 sp («Vender un edificio de Calle del Embudo» se cortaba). «Comprar $60» pasa a «Comprar −$60» (M-026).
   - *Extra de prueba `fase`* (`compra`, `subasta`, `carcel`, `impuesto`, `deuda`, `fin`; `demo/SamplePhases.kt`, prueba `SamplePhasesTest` en los dos presets): abre la partida en ese diálogo sin el aviso inicial; la subasta sale del motor (rechazar y pujar el mínimo). Como `propiedades` y `hoja` (D-24), no guarda la partida.
-- **Capturas:** `capturas/FB.2b_dialogos.png`.
-- **Cómo se revierte:** los diálogos vuelven a `AlertDialog` de Material desde `2eb9a48`.
+  - *Menú y «Mis propiedades» (FB.2c):* el menú en `PantallaChiva` con «Juego» y «Jugadores» en paneles `Calcomania`, opciones con `OpcionChiva` (roja la elegida, blanca las demás), «Seguir la partida» en una calcomanía azul, campos con contorno de tinta y nombre de muestra en tinta al 40 %. La hoja con fondo sol, cabecera roja con el dinero y cada propiedad en su tarjeta con las jugadas debajo, a lo ancho (rojo si pagas, ocre si recibes).
+- **Capturas:** `capturas/FB.2b_dialogos.png`, `capturas/FB.2c_menu_hoja.png`.
+- **Cómo se revierte:** los diálogos, el menú y la hoja vuelven a los componentes de Material desde `2eb9a48`.
 - **Estado:** vigente.

@@ -174,3 +174,16 @@ fun DialogoChiva(
         }
     }
 }
+
+/** Ficha de opción (FB.2c): roja con letra blanca si está elegida, blanca con letra de tinta si no. */
+@Composable
+fun OpcionChiva(texto: String, elegida: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val forma = RoundedCornerShape(10.dp)
+    Box(
+        modifier.clip(forma).background(if (elegida) Chiva.Techo else Color.White).border(2.dp, Chiva.Tinta, forma)
+            .clickable(role = Role.RadioButton, onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(texto, color = if (elegida) Color.White else Chiva.Tinta, fontSize = 16.sp, maxLines = 1)
+    }
+}
