@@ -1007,6 +1007,91 @@ def villavicencio():
     return s
 
 
+def san_andres():
+    s = [("sky", rect(0, 0, W, H)), ("sun", circle(32, 28, 10)),
+         ("cloud", poly([(120, 26), (126, 19), (136, 19), (142, 13), (154, 15), (160, 23), (168, 26)])),
+         # mar de los siete colores: franjas de turquesa a azul profundo
+         ("lake", rect(0, 58, W, 14)), ("sea", rect(0, 70, W, 14)), ("turq", rect(0, 82, W, 14)), ("shallow", rect(0, 94, W, 14)),
+         ("wave", lines([(20, 64, 34, 64), (150, 76, 166, 76), (60, 88, 74, 88), (170, 100, 184, 100)]))]
+    # Johnny Cay con sus palmas
+    s += [("sand", poly([(96, 72), (108, 64), (150, 64), (164, 72)])), ("leaf", poly([(108, 64), (114, 56), (144, 56), (150, 64)]))]
+    for cx, h in ((118, 26), (130, 32), (142, 24)):
+        s += palma_cera(cx, 64, h)
+    # velero
+    s += [("wall", poly([(50, 76), (82, 76), (76, 82), (56, 82)])), ("bar", lines([(66, 76, 66, 42)])),
+          ("wall", poly([(67, 44), (67, 74), (86, 74)])), ("paint", poly([(65, 48), (65, 74), (50, 74)]))]
+    # playa con palmera y cangrejo
+    s += [("sand", poly([(0, 131), (0, 106), (60, 102), (120, 108), (200, 104), (200, 131)])),
+          ("sandshade", poly([(0, 131), (0, 122), (80, 118), (200, 124), (200, 131)]))]
+    s += [("trunk", poly([(184, 126), (189, 126), (180, 82), (177, 83)])),
+          ("leaf", poly([(178, 82), (160, 78), (150, 86), (164, 82)])), ("leaf", poly([(178, 82), (170, 66), (158, 64), (168, 72)])),
+          ("leaf", poly([(178, 82), (190, 66), (202, 66), (192, 72)])), ("leaf", poly([(178, 82), (198, 80), (206, 90), (192, 84)])),
+          ("coffee", circle(176, 84, 2.6)), ("coffee", circle(181, 85, 2.6))]
+    s += [("roof", rrect(34, 116, 16, 9, 4)), ("ink", lines([(36, 124, 32, 128), (40, 125, 38, 129), (44, 125, 46, 129), (48, 124, 52, 128),
+                                                            (36, 117, 32, 112), (48, 117, 52, 112)])),
+          ("wall", circle(39, 115, 1.6)), ("wall", circle(45, 115, 1.6))]
+    return s
+
+
+def medellin():
+    s = [("sky", rect(0, 0, W, H)), ("cloud", poly([(14, 24), (20, 17), (30, 17), (36, 12), (48, 14), (54, 22), (60, 24)])),
+         ("far", poly([(0, 40), (40, 30), (80, 42), (120, 34), (160, 44), (200, 32), (200, 100), (0, 100)])),
+         ("near", poly([(0, 56), (30, 60), (60, 76), (90, 96), (110, 96), (140, 74), (170, 58), (200, 52), (200, 104), (0, 104)]))]
+    # casitas de las laderas
+    colores = ["brick", "ochre", "paint", "window", "wall", "leaf", "roof"]
+    k = 0
+    for x0, y0, dx, dy, n in ((4, 62, 12, 7, 6), (2, 76, 13, 7, 6), (150, 64, 11, -3, 5), (140, 80, 12, -2, 5)):
+        for i in range(n):
+            x, y = x0 + i * dx, y0 + i * dy
+            s += [(colores[k % 7], rect(x, y, 10, 8)), ("door", rect(x + 3.5, y + 3, 3, 5))]
+            k += 1
+    # Metrocable
+    s += [("bar", lines([(0, 34, 200, 18)])), ("wall", rect(56, 26, 3, 74)), ("wall", rect(146, 18, 3, 82))]
+    for x in (30, 100, 176):
+        y = 34 - 16 * x / 200
+        s += [("bar", lines([(x, y, x, y + 6)])), ("ochre", rrect(x - 6, y + 6, 12, 10, 3)), ("window", rect(x - 4, y + 8, 8, 4))]
+    # edificio Coltejer, la aguja
+    s += [("granite", poly([(88, 104), (112, 104), (112, 50), (100, 22), (88, 50)])),
+          ("gshade", poly([(104, 104), (112, 104), (112, 50), (100, 22), (104, 50)])),
+          ("sky", poly([(96, 50), (104, 50), (100, 36)])),
+          ("dash", lines([(88, y, 112, y) for y in range(58, 104, 6)])), ("ink", lines([(100, 22, 100, 14)]))]
+    # metro sobre su viaducto
+    s += [("ground", rect(0, 104, W, 27)),
+          ("stone", rect(0, 100, W, 5)), ("stone", rect(30, 105, 6, 26)), ("stone", rect(98, 105, 6, 26)), ("stone", rect(166, 105, 6, 26)),
+          ("wall", rrect(40, 88, 120, 12, 3)), ("ochre", rect(40, 95, 120, 2.5))]
+    s += [("window", rect(46 + 13 * i, 90, 9, 4)) for i in range(9)]
+    return s
+
+
+def bogota():
+    s = [("sky", rect(0, 0, W, H)),
+         ("far", poly([(0, 70), (20, 44), (44, 22), (62, 26), (84, 46), (110, 52), (150, 48), (200, 56), (200, 96), (0, 96)])),
+         ("coffee", poly([(0, 84), (30, 72), (70, 80), (120, 70), (160, 76), (200, 70), (200, 100), (0, 100)])),
+         # Monserrate en la cima y el funicular
+         ("wall", rect(37, 16, 16, 9)), ("wall", rect(42, 10, 6, 7)), ("roof", poly([(41, 10), (45, 5), (49, 10)])),
+         ("door", arch(43, 19, 4, 6))]
+    # Torre Colpatria
+    s += [("granite", rect(164, 30, 22, 70)), ("gshade", rect(180, 30, 6, 70)), ("granite", rect(168, 24, 14, 6)),
+          ("dash", lines([(164, y, 186, y) for y in range(36, 100, 6)])), ("ink", lines([(175, 24, 175, 14)])),
+          ("roof", rect(164, 30, 22, 2)), ("window", rect(164, 46, 22, 2)), ("paint", rect(164, 62, 22, 2))]
+    # Catedral Primada: fachada neoclásica de dos torres
+    s += [("stone", rect(56, 60, 88, 40)), ("sshade", rect(56, 60, 88, 3)),
+          ("stone", poly([(80, 60), (100, 46), (120, 60)])), ("sshade", rect(80, 58, 40, 2.4)),
+          ("window", circle(100, 54, 3))]
+    for x0 in (56, 124):
+        s += [("stone", rect(x0, 34, 20, 66)), ("sshade", rect(x0 + 14, 34, 6, 66)), ("trim", rect(x0 - 2, 56, 24, 3)),
+              ("stone", rect(x0 + 3, 22, 14, 12)), ("door", arch(x0 + 6.5, 25, 7, 9)),
+              ("slate", arch(x0 + 3, 14, 14, 10)), ("ink", lines([(x0 + 10, 14, x0 + 10, 10)])),
+              ("door", arch(x0 + 6, 40, 8, 12)), ("door", arch(x0 + 6, 76, 8, 14))]
+    s += [("door", arch(92, 76, 16, 24)), ("door", arch(80, 82, 8, 14)), ("door", arch(112, 82, 8, 14)),
+          ("dash", lines([(x, 64, x, 100) for x in (78, 90, 110, 122)]))]
+    # Plaza de Bolívar con sus palomas
+    tierra_plaza(s, 100)
+    for x, y in ((40, 116), (60, 124), (150, 118), (170, 126), (128, 112)):
+        s += [("granite", rrect(x - 4, y - 3, 8, 5, 2)), ("granite", circle(x + 4, y - 4, 2.2)), ("ink", lines([(x + 6, y - 4, x + 8, y - 3.5)]))]
+    return s
+
+
 LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero": chapinero,
            "topaga": topaga, "mongua": mongua, "raquira": raquira,
            "guane": guane, "zapatoca": zapatoca, "san_gil": san_gil, "barichara": barichara,
@@ -1014,7 +1099,8 @@ LUGARES = {"villa_de_leyva": villa_de_leyva, "cartagena": cartagena, "chapinero"
            "jerico": jerico, "jardin": jardin, "guatape": guatape, "rionegro": rionegro,
            "cienaga": cienaga, "mompox": mompox, "santa_marta": santa_marta, "barranquilla": barranquilla,
            "tulua": tulua, "buga": buga, "palmira": palmira, "cali": cali,
-           "puerto_gaitan": puerto_gaitan, "yopal": yopal, "leticia": leticia, "villavicencio": villavicencio}
+           "puerto_gaitan": puerto_gaitan, "yopal": yopal, "leticia": leticia, "villavicencio": villavicencio,
+           "san_andres": san_andres, "medellin": medellin, "bogota": bogota}
 
 
 # ---------- íconos (FA.2): lienzo 24 x 24 ----------
@@ -1161,7 +1247,7 @@ PALETA = {
     "coal": "#3A3340", "clay": "#D9622B", "cshade": "#A8441B", "lake": "#155FA8", "frailejon": "#BFE08F",
     "fstem": "#7A6A55", "moor": "#C7C24E", "sand": "#EDB35C", "sandshade": "#C98536", "moss": "#C9D3C2",
     "canyon": "#D99A5B", "canyon2": "#B5673A", "coffee": "#1E8A3C", "palm": "#E4DCC8", "bamboo": "#9BC53D",
-    "wood": "#D49A5A", "granite": "#C3C6D6", "gshade": "#9599B2", "dolphin": "#F497B6",
+    "wood": "#D49A5A", "granite": "#C3C6D6", "gshade": "#9599B2", "dolphin": "#F497B6", "turq": "#2EC4B6", "shallow": "#8EE8D8",
 }
 LINEAS = {"gline": ("#D97C0B", 1.0), "wave": ("#FFFFFF", 1.3), "ink": ("#1B1B1B", 1.4),
           "bar": ("#1B1B1B", 1.5), "dollar": ("#1B1B1B", 1.4), "glyph": ("#FFFFFF", 2.2),
