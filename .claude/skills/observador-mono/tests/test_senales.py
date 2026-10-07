@@ -176,6 +176,12 @@ class TestSenalesMono(unittest.TestCase):
         self.assertIn("R-99", found["K14"])
         self.assertNotIn("R-07", found["K14"])
 
+    def test_model_kdoc_does_not_count_for_k14(self):
+        self.write("engine/src/main/model/Options.kt", "/** Fila 1 (R-08). */\nval x = 0\n")
+        self.write("engine/src/main/Rules.kt", "/** Salario (R-07). */\n")
+        self.write("engine/src/test/RulesTest.kt", "// R-07\n")
+        self.assertEqual(self.signals(), {})
+
     def test_impure_engine(self):
         self.write("engine/src/main/Dice.kt", "import android.util.Log\nval r = Random()\nval ok = Random(seed)\n")
         found = self.signals()
@@ -184,11 +190,19 @@ class TestSenalesMono(unittest.TestCase):
         self.assertNotIn("Dice.kt:3", found["K13"])
 
     def test_ui_change_needs_a_capture(self):
+        self.write("app/src/main/Board.kt", "@Composable\nfun Board() {}\n")
         ui = f"{self.root}/app/src/main/Board.kt"
         write = tool(1, "Write", file_path=ui)
         self.assertIn("K15", self.signals([write]))
         capture = tool(2, "Bash", command="python3 s/telefono.py captura --salida /x/scratchpad")
         self.assertNotIn("K15", self.signals([write, capture]))
+
+    def test_text_or_logic_without_screen_is_not_ui(self):
+        # M-014: textos de res/values y un .kt sin @Composable no cambian una pantalla.
+        self.write("app/src/main/ErrorText.kt", "fun message() = 1\n")
+        logic = tool(1, "Write", file_path=f"{self.root}/app/src/main/ErrorText.kt")
+        texts = tool(2, "Write", file_path=f"{self.root}/app/src/main/res/values/strings.xml")
+        self.assertNotIn("K15", self.signals([logic, texts]))
 
 
 if __name__ == "__main__":

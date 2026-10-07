@@ -96,12 +96,15 @@ def summarize(name: str, returncode: int, output: str) -> tuple[bool, list[str]]
 
 
 def check_state_limit(root: Path, conf: dict) -> tuple[bool, str]:
-    """ESTADO.md dentro de su tope de caracteres."""
+    """ESTADO.md dentro de su tope de caracteres; por encima del 90 %, aviso (M-016)."""
     path = root / conf["proyecto"]["carpeta_agente"] / "ESTADO.md"
     limit = int(conf["topes"]["estado_md"])
     size = len(path.read_text(encoding="utf-8")) if path.is_file() else 0
     ok = size <= limit
-    return ok, f"estado: {'OK' if ok else 'FALLA'} - {size}/{limit} caracteres"
+    line = f"estado: {'OK' if ok else 'FALLA'} - {size}/{limit} caracteres"
+    if ok and size > limit * 0.9:
+        line += " (AVISO: mueve a ESTADO_historial.md las líneas de «Qué ya funciona» de fases cerradas)"
+    return ok, line
 
 
 def rule_problems(rules_text: str, cited_texts: list[str]) -> list[str]:

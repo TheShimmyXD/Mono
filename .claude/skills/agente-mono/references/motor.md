@@ -26,6 +26,8 @@
 - Escenario pequeño y explícito: tablero de pocas casillas, dados fijados (generador falso o semilla con resultado conocido), lo que se espera escrito con números.
 - La prueba compara con lo que dice la ficha R-## (la fuente), no con lo que devuelve otra función del motor.
 - Invariantes en F2.9: el dinero total (jugadores + banco) se conserva; nadie queda con dinero negativo sin estar en quiebra; la partida termina o llega al tope de turnos. Tiempo de las 1000 partidas medido y anotado en ESTADO.
+- Antes de programar una tarea, sus fichas en una tanda: `for r in 19 20 21; do awk -v id="### R-$r " 'index($0,id)==1{p=1;print;next} p&&/^##/{p=0} p' REGLAS.md; done`.
+- Antes del punto de control de una tarea del motor, cruza los R-## de sus fichas con `grep -rhoE 'fun `R-[0-9]+' engine/src/test | sort -u`; la que falte, su prueba (también la regla que solo vive en una opción del modelo).
 - `cierre_paso.py` corre `:engine:test` y `:app:assembleDebug`; el resumen dice cuántas pruebas pasaron (`engine/build/test-results`, sin abrir `build/` entero: `grep -h -o 'tests="[0-9]*"' engine/build/test-results/test/*.xml`).
 
 ## 5. Estilo

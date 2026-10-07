@@ -14,3 +14,10 @@
 | M-008 | agente-mono | K06 | Decir en el cierre qué queda fuera de Git | INF-2026-10-06-e47b9e54: #18-#21 | Aplicada 2026-10-06 → agente-mono/SKILL.md (Cierre de cada paso) |
 | M-009 | agente-mono | K16 | Recortes del Tío Rico por columna en `reglas.md` §2 | INF-2026-10-06-e47b9e54: r50-0 y r50-33 leídos dos veces | Propuesta |
 | M-010 | agente-mono | K07/K12 | `cierre_paso.py` comprueba los R-## (únicos, consecutivos, citas con ficha) | INF-2026-10-06-e47b9e54: #72 | Aplicada 2026-10-06 → agente-mono/scripts/cierre_paso.py (paso `reglas`) + 3 pruebas + SKILL.md |
+| M-011 | agente-mono | K03 | Tarea grande en sub-pasos con `cierre_paso.py` y commit cada uno; el árbol compila entre llamadas | INF-2026-10-06-631ec06d: F2.6a/b sin cierre; F2.6c cortada sin compilar | Aplicada 2026-10-06 → agente-mono/SKILL.md (Durante la sesión: «Tarea grande») |
+| M-012 | observador-mono | K14 | K14 no cuenta R-## del KDoc de `engine/…/model/` | INF-2026-10-06-631ec06d: 10 de 14 falsos positivos | Aplicada 2026-10-06 → observador-mono/scripts/senales.py + 1 prueba |
+| M-013 | agente-mono | K05 | Orden de una línea para leer las fichas de una tarea en `motor.md` §4 | INF-2026-10-06-631ec06d: awk repetido 3 veces | Aplicada 2026-10-06 → agente-mono/references/motor.md §4 |
+| M-014 | observador-mono | K15 | K15 solo cuenta escrituras que cambian una pantalla (`.kt` con `@Composable`/`setContent` o `res/` fuera de `values/`) | INF-2026-10-06-45b5bf71: #61-#62 | Aplicada 2026-10-06 → observador-mono/scripts/senales.py + 1 prueba |
+| M-015 | observador-mono | K04 | El observador hace commit aparte de lo que aplica | INF-2026-10-06-45b5bf71: #44 y árbol sucio al arrancar | Aplicada 2026-10-06 → observador-mono/SKILL.md (flujo 9) |
+| M-016 | agente-mono | K09 | `cierre_paso.py` avisa con ESTADO por encima del 90 % | INF-2026-10-06-45b5bf71: 5484 en 631ec06d, 4632 ahora, #68 | Aplicada 2026-10-06 → agente-mono/scripts/cierre_paso.py + prueba |
+| M-017 | agente-mono | K14 | Cruzar los R-## de la tarea con las pruebas antes del punto de control (`motor.md` §4) | INF-2026-10-06-45b5bf71: #35-#37 (R-38) | Aplicada 2026-10-06 → agente-mono/references/motor.md §4 |

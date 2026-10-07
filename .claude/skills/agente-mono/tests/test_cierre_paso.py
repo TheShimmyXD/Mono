@@ -55,6 +55,13 @@ class TestCierrePaso(unittest.TestCase):
             ok, line = cierre_paso.check_state_limit(root, conf)
             self.assertFalse(ok)
             self.assertIn("50/40", line)
+            # Por encima del 90 % sigue en OK, con aviso (M-016).
+            (root / "Agente_X" / "ESTADO.md").write_text("a" * 38, encoding="utf-8")
+            ok, line = cierre_paso.check_state_limit(root, conf)
+            self.assertTrue(ok)
+            self.assertIn("AVISO", line)
+            (root / "Agente_X" / "ESTADO.md").write_text("a" * 30, encoding="utf-8")
+            self.assertNotIn("AVISO", cierre_paso.check_state_limit(root, conf)[1])
 
 
     def test_rules_numbering_and_orphan_citations(self):

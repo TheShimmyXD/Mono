@@ -50,7 +50,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`).
 6. **Consolidar antes de añadir** (K09). Si un archivo de la skill pasa del 90 % de su tope, la primera propuesta es reorganizar: lo que se usa en pocas sesiones baja a `references/<situación>.md` con una línea en SKILL.md («Antes de X: lee Y»); reglas repetidas se funden; comandos largos pasan a scripts. Una regla no violada en 10 sesiones puede bajar a una referencia.
 7. **Guardar.** Informe en `informes/INF-<fecha>-<id8>.md` (métricas en 3 líneas; señales confirmadas y descartadas; propuestas; lo que se hizo bien) y las propuestas en el registro con estado «Propuesta».
 8. **Preguntar una sola vez.** Una pregunta cerrada (AskUserQuestion, selección múltiple) sobre qué aplicar, con la recomendada primero. Si el autor no contesta o dice que no, quedan «Propuesta».
-9. **Aplicar solo lo aprobado,** con el cambio mínimo exacto; marca «Aplicada <fecha> → archivo». Si toca un script, corre sus pruebas. Si toca una skill compartida (`python-programmer`, `iniciar-proyecto`), se generaliza, se calibra contra los demás proyectos del autor y se pide confirmación aparte.
+9. **Aplicar solo lo aprobado,** con el cambio mínimo exacto; marca «Aplicada <fecha> → archivo». Si toca un script, corre sus pruebas. Al terminar, un commit local aparte con solo esos archivos: `Mantenimiento (observador): M-### …`. Si toca una skill compartida (`python-programmer`, `iniciar-proyecto`), se generaliza, se calibra contra los demás proyectos del autor y se pide confirmación aparte.
 
 ## Reglas
 

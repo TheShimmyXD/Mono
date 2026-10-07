@@ -115,6 +115,25 @@ def last_write(events: list[dict], prefixes: list[str]) -> int:
     return max(found, default=0)
 
 
+def last_screen_write(events: list[dict], ui: str, root: Path) -> int:
+    """K15 (M-014): último evento que cambió una pantalla: un .kt de la interfaz con
+    @Composable o setContent (según el archivo actual), o un recurso fuera de res/values/."""
+    def is_screen(path: str) -> bool:
+        if "/res/values/" in path:
+            return False
+        if path.endswith(".kt"):
+            file = Path(path) if Path(path).is_absolute() else root / path
+            try:
+                text = file.read_text(encoding="utf-8")
+            except OSError:
+                return True
+            return "@Composable" in text or "setContent" in text
+        return True
+    found = [e["n"] for e in tools(events)
+             if any(in_paths(p, [ui]) and is_screen(p) for p in written_paths(e))]
+    return max(found, default=0)
+
+
 def commands_after(events: list[dict], n: int) -> list[str]:
     # Azorian M-017: el propio comando de la escritura cuenta (sed -i ... && cierre_paso.py).
     return [command_of(e) for e in tools(events) if e["n"] >= n and e.get("herramienta") == "Bash"]
@@ -378,11 +397,13 @@ def project_signals(root: Path, conf: dict, data: dict) -> list[tuple[str, str, 
     if impure:
         found.append((f"{x}13", "Alta", f"Motor impuro: {', '.join(impure[:10])}"))
     tested = rule_ids(kotlin_files(root / observer.get("pruebas_motor", "engine/src/test")))
-    if cited - tested:
-        found.append((f"{x}14", "Media", f"Reglas del motor sin prueba: {ids_text(cited - tested)}"))
+    # El KDoc de `model/` describe la forma de los datos, no la lógica: no cuenta para K14 (M-012).
+    logic = rule_ids([p for p in engine if "model" not in p.parts])
+    if logic - tested:
+        found.append((f"{x}14", "Media", f"Reglas del motor sin prueba: {ids_text(logic - tested)}"))
     ui = observer.get("interfaz")
     events = data.get("eventos", [])
-    last_ui = last_write(events, [ui]) if ui else 0
+    last_ui = last_screen_write(events, ui, root) if ui else 0
     if last_ui:
         after = commands_after(events, last_ui)
         if not any("telefono.py" in c and "captura" in c for c in after):
