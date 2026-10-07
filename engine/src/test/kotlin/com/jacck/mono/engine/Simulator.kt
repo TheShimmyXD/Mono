@@ -86,7 +86,7 @@ fun simulate(config: GameConfig, players: Int, seed: Long, maxTurns: Int): SimRe
 }
 
 /** Acciones a probar en orden; el motor dice cuál es válida (`IllegalActionException`). */
-private fun candidates(config: GameConfig, state: GameState, random: Random, extras: Int): List<Action> {
+internal fun candidates(config: GameConfig, state: GameState, random: Random, extras: Int): List<Action> {
     val me = state.current
     fun owned(player: Int) = state.holdings.filterValues { it.owner == player }.keys.toList()
     return when (val phase = state.phase) {

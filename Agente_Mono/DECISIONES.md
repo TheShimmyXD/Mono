@@ -478,3 +478,11 @@
 - **Tropiezo:** el PC tenía al Redmi como emparejado pero el Redmi ya no al PC: `Connection refused`. Se arregló quitando el emparejamiento en el PC (`bluetoothctl remove`) y emparejando de nuevo desde el Redmi.
 - **Cómo se revierte:** el transporte queda detrás del bucle de mensajes (`echoLoop` no sabe de Bluetooth); cambiar a otro es reescribir `EcoServer`.
 - **Estado:** vigente (aprobada por el autor, 2026-10-07).
+
+### D-46 · Protocolo de la partida en enlace: el anfitrión decide y numera, el invitado aplica y compara
+
+- **Pregunta (F5.2):** cómo quedan iguales las dos copias del motor aunque se pierdan o desordenen mensajes.
+- **Decisión:** `engine/.../link/` (Kotlin puro, para que el PC lo use en F5.4). Mensajes JSON compactos, uno por línea, con `PROTOCOL_VERSION = 1`: `Hello`, `Snapshot` (tablero + estado + jugadores del invitado), `Propose(acción, after)`, `Applied(n, acción, resumen)`, `Rejected`, `Resync(after, full)`, `Bye`. El anfitrión (`Host`) aplica, numera y guarda el registro; una propuesta hecha sin ver lo último no se aplica: se le reenvía lo que falta. El invitado (`Guest`) guarda las adelantadas, ignora las repetidas, aplica en orden y compara el resumen (FNV-1a de 64 bits del JSON del estado); si no cuadra pide la partida entera. Sin noticias en un rato, `timeout()` pide lo que falta. Los dados no viajan: el azar va en `GameState.random` (D-03). Quién decide una acción: `actor()` (pujador, deudor o quien juega); `TimeUp` solo lo manda el anfitrión; `Trade` se rechaza hasta tener motor.
+- **Medido (`LinkTest`, 5 pruebas):** 1000 partidas (Clásico y Tío Rico, 16-48 casillas, 2-6 jugadores, tope 150 turnos) por un transporte falso que pierde 5 %, duplica 3 % y adelanta 10 %: las 1000 acaban con el mismo estado y resumen en los dos lados, 0 resúmenes distintos; 453 215 acciones, 1 237 749 mensajes, 62 055 perdidos, 28 851 pedidos de reenvío; 66 s.
+- **Cómo se revierte:** el protocolo no toca el motor; se cambia en `link/` subiendo `PROTOCOL_VERSION`.
+- **Estado:** propuesta, a la espera del autor.
