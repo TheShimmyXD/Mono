@@ -13,6 +13,8 @@ Desde la raiz del proyecto:
   python3 .claude/skills/agente-mono/scripts/telefono.py adb -- shell wm size   (cualquier orden de adb, M-007)
   python3 .claude/skills/agente-mono/scripts/telefono.py cartas 1 3 6 8 --salida capturas/FA.5f_cartas.png [--tio-rico]
       (instala, abre la carta de cada casilla, captura y une con hoja_arte.py; M-037)
+  python3 .claude/skills/agente-mono/scripts/telefono.py pantallas - fase=compra propiedades=true,hoja=true --salida capturas/FB.2_pantallas.png
+      (instala, abre la app con cada juego de extras -'-' sin extras: el menu-, espera 6 s, captura y une; M-048)
 Con varios dispositivos se prefiere el fisico (el Redmi); --serie elige uno.
 """
 
@@ -30,6 +32,10 @@ from pathlib import Path
 DEFAULT_LOG_LINES = 60
 # Espera tras abrir una carta: el arranque en frio tarda (FA.3: una captura salio en blanco).
 CARTA_ESPERA_S = 5
+# Una pantalla que abre un dialogo tarda mas en aparecer entero (M-046)
+PANTALLA_ESPERA_S = 6
+# Extras que la app lee con getLongExtra: van con --el
+LONG_EXTRAS = {"semilla"}
 # Lineas de salida de gradle que se muestran si la instalacion falla.
 TAIL_LINES = 15
 # Estados de `adb devices` que no son 'device', con la pista para arreglarlos (Mono M-004).
@@ -154,11 +160,35 @@ def run(argv: list[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(argv, capture_output=True, text=True, **kwargs)
 
 
+def extras_args(item: str) -> list[str]:
+    """`fase=compra,hoja=true` -> argumentos de am start; el tipo sale del valor (M-048)."""
+    if item in ("", "-"):
+        return []
+    argv: list[str] = []
+    for pair in item.split(","):
+        key, _, value = pair.partition("=")
+        if key in LONG_EXTRAS:
+            kind = "el"
+        elif value in ("true", "false"):
+            kind = "ez"
+        elif value.lstrip("-").isdigit():
+            kind = "ei"
+        else:
+            kind = "es"
+        argv += [f"--{kind}", key, value]
+    return argv
+
+
+def pantalla_command(adb: str, serial: str, target: str, item: str) -> list[str]:
+    """Reabre la app (-S) con los extras de `item` (M-048)."""
+    return [adb, "-s", serial, "shell", "am", "start", "-S", "-n", target, *extras_args(item)]
+
+
 def build_parser() -> argparse.ArgumentParser:
     """Opciones propias; lo que va tras `--` lo separa `split_passthrough` antes."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="adb: telefono.py adb -- <argumentos>")
-    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas"])
-    parser.add_argument("casillas", nargs="*", type=int, help="cartas: indices de las casillas")
+    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas"])
+    parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura")
     parser.add_argument("--tio-rico", action="store_true", help="cartas: preset Tio Rico (si no, el Clasico)")
     parser.add_argument("--serie")
     parser.add_argument("--salida", type=Path)
@@ -166,26 +196,42 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def cartas(args, root: Path, adb: str, serial: str, target: str | None) -> int:
-    """Captura la carta de cada casilla y las une en --salida (hoja_arte.py --unir, con el venv del arte)."""
-    if not args.casillas or args.salida is None or target is None:
-        print("Uso: telefono.py cartas <casilla>... --salida capturas/<paso>_cartas.png [--tio-rico]")
-        return 1
-    carpeta = root / "capturas" / "tmp" / f"cartas_{dt.datetime.now():%H%M%S}"
+def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]], wait: float, salida: Path) -> int:
+    """Abre cada (etiqueta, orden), espera, captura y une en `salida` (hoja_arte.py --unir, venv del arte)."""
+    carpeta = root / "capturas" / "tmp" / f"serie_{dt.datetime.now():%H%M%S}"
     carpeta.mkdir(parents=True)
-    for k, casilla in enumerate(args.casillas):
-        run(carta_command(adb, serial, target, casilla, args.tio_rico))
-        time.sleep(CARTA_ESPERA_S)
+    for k, (label, argv) in enumerate(shots):
+        run(argv)
+        time.sleep(wait)
         if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
             print("Pantalla apagada: pide al autor que desbloquee el Redmi. Capturas a medias en " + str(carpeta))
             return 1
-        with (carpeta / f"{k:02d}_casilla_{casilla}.png").open("wb") as handle:
+        name = "".join(c if c.isalnum() else "_" for c in label)
+        with (carpeta / f"{k:02d}_{name}.png").open("wb") as handle:
             subprocess.run([adb, "-s", serial, "exec-out", "screencap", "-p"], stdout=handle)
     hoja = Path(__file__).with_name("hoja_arte.py")
     venv = Path("~/.cache/mono-arte/bin/python").expanduser()
-    done = run([str(venv), str(hoja), "--unir", str(carpeta), "--salida", str(args.salida)], cwd=root)
-    print(f"Instalada en {serial}; {len(args.casillas)} cartas. " + (done.stdout + done.stderr).strip())
+    done = run([str(venv), str(hoja), "--unir", str(carpeta), "--salida", str(salida)], cwd=root)
+    print(f"Instalada en {serial}; {len(shots)} capturas. " + (done.stdout + done.stderr).strip())
     return done.returncode
+
+
+def cartas(args, root: Path, adb: str, serial: str, target: str | None) -> int:
+    """Captura la carta de cada casilla y las une en --salida (M-037)."""
+    if not args.objetivos or not all(o.isdigit() for o in args.objetivos) or args.salida is None or target is None:
+        print("Uso: telefono.py cartas <casilla>... --salida capturas/<paso>_cartas.png [--tio-rico]")
+        return 1
+    shots = [(f"casilla_{c}", carta_command(adb, serial, target, int(c), args.tio_rico)) for c in args.objetivos]
+    return serie(root, adb, serial, shots, CARTA_ESPERA_S, args.salida)
+
+
+def pantallas(args, root: Path, adb: str, serial: str, target: str | None) -> int:
+    """Captura la app abierta con cada juego de extras y las une en --salida (M-048)."""
+    if not args.objetivos or args.salida is None or target is None:
+        print("Uso: telefono.py pantallas <extras>... --salida capturas/<paso>.png  (extras: fase=compra o a=1,b=true; '-' sin extras)")
+        return 1
+    shots = [(item, pantalla_command(adb, serial, target, item)) for item in args.objetivos]
+    return serie(root, adb, serial, shots, PANTALLA_ESPERA_S, args.salida)
 
 
 def main() -> int:
@@ -232,7 +278,7 @@ def main() -> int:
         print((done.stdout + done.stderr).rstrip())
         return done.returncode
 
-    if args.orden in ("instalar", "cartas"):
+    if args.orden in ("instalar", "cartas", "pantallas"):
         env = gradle_env(conf) | {"ANDROID_SERIAL": serial}
         done = run(["./gradlew", "--console=plain", "-q", ":app:installDebug"], cwd=root, env=env)
         if done.returncode != 0:
@@ -249,7 +295,7 @@ def main() -> int:
                 run([adb, "-s", serial, "shell", "am", "start", "-n", target])
             print(f"Instalada en {serial}" + (f" y abierta ({target})." if target else "."))
             return 0
-        return cartas(args, root, adb, serial, target)
+        return (cartas if args.orden == "cartas" else pantallas)(args, root, adb, serial, target)
 
     if args.orden == "captura":
         if args.salida is None:

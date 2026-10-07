@@ -46,6 +46,19 @@ class TestCierrePaso(unittest.TestCase):
         self.assertEqual(env["JAVA_HOME"], str(Path.home() / "jbr"))
         self.assertEqual(env["CI"], "1")
 
+    def test_junit_counts_from_gradle_tasks(self):
+        """M-050: «N pruebas» desde los XML de las tareas :<módulo>:test… de la orden."""
+        xml = '<?xml version="1.0"?>\n<testsuite name="A" tests="3" skipped="0" failures="1" errors="0">'
+        self.assertEqual(cierre_paso.junit_totals([xml, xml.replace('tests="3"', 'tests="2"'), "nada"]), (5, 2))
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            d = root / "app" / "build" / "test-results" / "testDebugUnitTest"
+            d.mkdir(parents=True)
+            (d / "TEST-x.xml").write_text(xml.replace('failures="1"', 'failures="0"'))
+            argv = ["./gradlew", "-q", ":app:testDebugUnitTest", ":app:assembleDebug"]
+            self.assertEqual(cierre_paso.test_results(root, argv), "3 pruebas")
+            self.assertIsNone(cierre_paso.test_results(root, ["python3", "arte/arte.py"]))
+
     def test_estado_limit(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

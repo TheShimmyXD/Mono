@@ -95,6 +95,29 @@ def summarize(name: str, returncode: int, output: str) -> tuple[bool, list[str]]
     return ok, summary
 
 
+def junit_totals(xml_texts: list[str]) -> tuple[int, int]:
+    """Pruebas y fallas (failures + errors) sumadas de los XML de JUnit (pura, M-050)."""
+    tests = failed = 0
+    for text in xml_texts:
+        head = re.search(r"<testsuite\b[^>]*>", text)
+        if head is None:
+            continue
+        attrs = dict(re.findall(r'(\w+)="(\d+)"', head.group(0)))
+        tests += int(attrs.get("tests", 0))
+        failed += int(attrs.get("failures", 0)) + int(attrs.get("errors", 0))
+    return tests, failed
+
+
+def test_results(root: Path, argv: list[str]) -> str | None:
+    """«N pruebas» de las tareas `:<módulo>:test…` de una orden de Gradle, desde sus XML (M-050)."""
+    dirs = [root / m.group(1) / "build" / "test-results" / m.group(2)
+            for m in (re.fullmatch(r":([\w-]+):(test\w*)", arg) for arg in argv) if m]
+    if not dirs:
+        return None
+    tests, failed = junit_totals([f.read_text(encoding="utf-8") for d in dirs for f in sorted(d.glob("TEST-*.xml"))])
+    return f"{tests} pruebas" + (f", {failed} fallan" if failed else "")
+
+
 def check_state_limit(root: Path, conf: dict) -> tuple[bool, str]:
     """ESTADO.md dentro de su tope de caracteres; por encima del 90 %, aviso (M-016)."""
     path = root / conf["proyecto"]["carpeta_agente"] / "ESTADO.md"
@@ -159,6 +182,9 @@ def main() -> int:
         except OSError as exc:
             returncode, output = 1, str(exc)
         ok, lines = summarize(name, returncode, output)
+        counted = test_results(root, argv) if ok else None
+        if counted:
+            lines[0] = f"{name}: OK - {counted}"
         seconds = time.monotonic() - start
         lines[0] += f" ({seconds:.0f} s)" if seconds >= 5 else ""
         print("\n".join(lines), flush=True)

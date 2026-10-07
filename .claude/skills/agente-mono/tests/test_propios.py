@@ -141,8 +141,22 @@ class TestCartasYHoja(unittest.TestCase):
     def test_cartas_opciones_mezcladas(self):
         own, _ = telefono.split_passthrough(["cartas", "--salida", "x.png", "1", "3", "--tio-rico"])
         args = telefono.build_parser().parse_intermixed_args(own)
-        self.assertEqual((args.orden, args.casillas, args.tio_rico), ("cartas", [1, 3], True))
-        self.assertEqual(telefono.build_parser().parse_intermixed_args(["captura", "--salida", "/x"]).casillas, [])
+        self.assertEqual((args.orden, args.objetivos, args.tio_rico), ("cartas", ["1", "3"], True))
+        self.assertEqual(telefono.build_parser().parse_intermixed_args(["captura", "--salida", "/x"]).objetivos, [])
+
+    def test_pantallas_extras_por_tipo(self):
+        """M-048: el tipo del extra sale del valor; semilla va como long; '-' abre sin extras."""
+        self.assertEqual(telefono.extras_args("fase=compra"), ["--es", "fase", "compra"])
+        self.assertEqual(
+            telefono.extras_args("propiedades=true,jugadores=3,semilla=7"),
+            ["--ez", "propiedades", "true", "--ei", "jugadores", "3", "--el", "semilla", "7"],
+        )
+        self.assertEqual(telefono.extras_args("-"), [])
+        argv = telefono.pantalla_command("adb", "S1", "p/.A", "fase=fin")
+        self.assertEqual(argv, ["adb", "-s", "S1", "shell", "am", "start", "-S", "-n", "p/.A", "--es", "fase", "fin"])
+        own, _ = telefono.split_passthrough(["pantallas", "-", "fase=compra", "--salida", "x.png"])
+        args = telefono.build_parser().parse_intermixed_args(own)
+        self.assertEqual((args.orden, args.objetivos), ("pantallas", ["-", "fase=compra"]))
 
     def test_hoja_no_pasa_de_1600(self):
         self.assertLessEqual(3 * hoja_arte.celda() + 4 * hoja_arte.SEP, hoja_arte.ANCHO_MAX)

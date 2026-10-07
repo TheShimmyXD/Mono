@@ -23,7 +23,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
 | `scripts/cierre_paso.py` | Pruebas del motor y la app, compilación, arte, tope de ESTADO y fichas R-## en una orden; sale 1 si algo falla. |
 | `scripts/pagina.py` | Una página o un recorte de un reglamento a PNG (`--info`, `--rejilla 2x3`, `--recorte x,y,an,al`). Nunca el PDF entero. |
-| `scripts/telefono.py` | `dispositivos`, `instalar`, `captura --salida`, `log -n 60`, `cartas <casilla>… --salida`, `emulador`, `adb -- <args>` (`adb` no está en el PATH). |
+| `scripts/telefono.py` | `dispositivos`, `instalar`, `captura --salida`, `log -n 60`, `cartas <casilla>… --salida`, `pantallas <extras>… --salida`, `emulador`, `adb -- <args>` (`adb` no está en el PATH). |
 
 ## Arranque
 
