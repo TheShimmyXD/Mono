@@ -468,3 +468,13 @@
 - **Consecuencia:** el transporte es Bluetooth clásico RFCOMM (Nearby Connections solo funciona entre Androids). F5.1 sigue pidiendo su prueba de concepto y su D-## aprobada. Para F5.4, el motor (Kotlin puro, D-02) corre en el PC como jugador de terminal, unido al Bluetooth por un puente en Python.
 - **Cómo se revierte:** devolver los *Terminado* al teléfono de un amigo; lo del PC queda como herramienta de pruebas.
 - **Estado:** vigente.
+
+### D-45 · Transporte de F5: Bluetooth clásico RFCOMM, el teléfono anfitrión hace de servidor
+
+- **Pregunta (F5.1):** con qué transporte y con qué papeles hablan los dos aparatos.
+- **Comprobado en la documentación (2026-10-07):** `bt-permissions` (Android 12+: `BLUETOOTH_CONNECT` para hablar con emparejados, `BLUETOOTH_SCAN` solo para buscar, `BLUETOOTH_ADVERTISE` solo para hacerse visible; `BLUETOOTH` y `BLUETOOTH_ADMIN` con `maxSdkVersion="30"`) y `connect-bluetooth-devices` (`accept` y `connect` bloquean: hilo propio; un cliente por canal). Fuentes del SDK 37: `listenUsingRfcommWithServiceRecord` y `getBondedDevices` piden `BLUETOOTH_CONNECT`; `cancelDiscovery`, `BLUETOOTH_SCAN`; `isEnabled` y `createRfcommSocketToServiceRecord`, ninguno.
+- **Decisión:** RFCOMM seguro (cifrado y con emparejamiento) con un UUID propio (`1a80cf3d-…`, `enlace/EcoServer.kt`). El anfitrión (el que decide en F5.2) es el servidor: escucha con `listenUsingRfcommWithServiceRecord("Mono", UUID)` y el invitado se conecta. Así la app solo pide «Dispositivos cercanos» (`BLUETOOTH_CONNECT`); buscar teléfonos sin emparejar (`BLUETOOTH_SCAN`) queda para F5.3 si hace falta. Nearby Connections queda fuera (D-44: no habla con el PC).
+- **Prueba de concepto (medida):** pantalla `--es enlace eco` en el Redmi + `python3 pc/eco.py` en el PC (canal buscado con `sdptool browse`: cambia al reabrir, 5 y luego 6). Conexión en 105 ms; 20/20 y 200/200 ecos correctos, ida y vuelta mediana 10-11 ms (máx 66 y 120 ms); UTF-8 («ñ») intacto. Tras cerrarse el PC, el Redmi vuelve a escuchar a los 2 s. Pruebas: `EchoLoopTest` (2) y `pc/test_eco.py` (4).
+- **Tropiezo:** el PC tenía al Redmi como emparejado pero el Redmi ya no al PC: `Connection refused`. Se arregló quitando el emparejamiento en el PC (`bluetoothctl remove`) y emparejando de nuevo desde el Redmi.
+- **Cómo se revierte:** el transporte queda detrás del bucle de mensajes (`echoLoop` no sabe de Bluetooth); cambiar a otro es reescribir `EcoServer`.
+- **Estado:** propuesta, a la espera del autor.
