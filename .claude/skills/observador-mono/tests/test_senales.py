@@ -41,6 +41,17 @@ class TestSenales(unittest.TestCase):
     def setUp(self):
         senales._root["path"] = ROOT
 
+    def test_skill_sizes_warn_from_90_percent(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            for name, size in (("cerca", 95), ("sobre", 101), ("holgada", 50)):
+                folder = root / ".claude" / "skills" / name
+                folder.mkdir(parents=True)
+                (folder / "SKILL.md").write_text("x" * size, encoding="utf-8")
+            over, near = senales.skill_sizes(root, conf(skills=["cerca", "sobre", "holgada"]))
+        self.assertEqual(over, [".claude/skills/sobre/SKILL.md (101/100)"])
+        self.assertEqual(near, [".claude/skills/cerca/SKILL.md (95/100)"])
+
     def test_in_paths_counts_only_from_the_root(self):
         self.assertTrue(senales.in_paths(f"{ROOT}/tests/test_x.py", ["tests/"]))
         self.assertFalse(senales.in_paths(f"{ROOT}/.claude/skills/a/tests/t.py", ["tests/"]))

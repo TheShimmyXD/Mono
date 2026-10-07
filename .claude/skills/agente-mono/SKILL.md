@@ -19,16 +19,11 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `Agente_Mono/ESTADO.md` | **Fuente de verdad**: fase, qué ya funciona (con su comando), siguiente paso exacto, pendientes. ≤ 5000 car.; lo cerrado va a `ESTADO_historial.md`. |
 | `Agente_Mono/SESIONES.md` | Una entrada por sesión (≤ 5 líneas), con el id. Solo se añade al final. |
 | `Agente_Mono/DECISIONES.md` | Fichas D-##. Se leen por encabezado (`sed -n '/^### D-03 /,/^### D-04 /p'`). |
-| `references/mandato.md` | Visión, alcance y reglas. **Primera sesión** o duda de alcance. |
-| `references/reglas.md` | F1, y antes de usar una regla que no está en `REGLAS.md`: cómo leer los escaneos y el formato R-##. |
-| `references/motor.md` | F0 y F2: entorno (JAVA_HOME, Gradle), capas, motor determinista, pruebas por R-##, estilo Kotlin. |
-| `references/interfaz.md` | F0.4, F3, FA y F4: opciones con captura, teléfono por adb (Redmi listo), el hito. |
-| `references/arte.md` | FA: `arte/arte.py`, revisión con cairosvg antes del teléfono, tamaños. |
-| `references/enlace.md` | F5 (solo después del hito): decisión del transporte, protocolo, permisos. |
+| `references/` | `mandato.md` (primera sesión o duda de alcance) · `reglas.md` (F1 o regla sin ficha: escaneos y formato R-##) · `motor.md` (F0, F2) · `interfaz.md` (F0.4, F3, FA, F4) · `arte.md` (FA) · `enlace.md` (F5, después del hito). |
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
-| `scripts/cierre_paso.py` | Pruebas del motor y de la app, compilación (`[cierre] pasos`), tope de ESTADO y fichas R-## (únicas, consecutivas, sin citas huérfanas) en una orden; sale 1 si algo falla. |
+| `scripts/cierre_paso.py` | Pruebas del motor y la app, compilación, arte, tope de ESTADO y fichas R-## en una orden; sale 1 si algo falla. |
 | `scripts/pagina.py` | Una página o un recorte de un reglamento a PNG (`--info`, `--rejilla 2x3`, `--recorte x,y,an,al`). Nunca el PDF entero. |
-| `scripts/telefono.py` | `dispositivos`, `instalar` (installDebug + abrir), `captura --salida <carpeta>`, `log -n 60` (filtrado), `cartas <casilla>… --salida` (FA), `emulador` y `adb -- <args>` (nunca `adb` suelto: no está en el PATH). |
+| `scripts/telefono.py` | `dispositivos`, `instalar`, `captura --salida`, `log -n 60`, `cartas <casilla>… --salida`, `emulador`, `adb -- <args>` (`adb` no está en el PATH). |
 
 ## Arranque
 

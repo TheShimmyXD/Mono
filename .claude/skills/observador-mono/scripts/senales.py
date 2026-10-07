@@ -220,9 +220,9 @@ def self_corrections(events: list[dict]) -> list[int]:
     ]
 
 
-def skill_sizes(root: Path, conf: dict) -> list[str]:
-    """09: archivos de las skills por encima de su tope."""
-    over = []
+def skill_sizes(root: Path, conf: dict) -> tuple[list[str], list[str]]:
+    """09: archivos de las skills por encima de su tope, y los que pasan del 90 % (consolidar, paso 6)."""
+    over, near = [], []
     limits = conf["topes"]
     for skill in conf["observador"]["skills"]:
         folder = root / ".claude" / "skills" / skill
@@ -234,7 +234,9 @@ def skill_sizes(root: Path, conf: dict) -> list[str]:
             size = len(path.read_text(encoding="utf-8")) if path.is_file() else 0
             if size > limit:
                 over.append(f"{path.relative_to(root)} ({size}/{limit})")
-    return over
+            elif size >= 0.9 * limit:
+                near.append(f"{path.relative_to(root)} ({size}/{limit})")
+    return over, near
 
 
 def run_structure(root: Path, conf: dict) -> str:
@@ -319,9 +321,11 @@ def audit(root: Path, conf: dict, data: dict) -> list[tuple[str, str, str]]:
             (f"{x}08", "Alta", f"Mensajes del autor con corrección o reclamo: #{complaints}")
         )
 
-    over = skill_sizes(root, conf)
+    over, near = skill_sizes(root, conf)
     if over:
         found.append((f"{x}09", "Media", "Sobre el tope: " + "; ".join(over)))
+    if near:
+        found.append((f"{x}09", "Info", "Cerca del tope (≥ 90 %): " + "; ".join(near)))
 
     if python and code:
         early = code_before_style(events, code)
