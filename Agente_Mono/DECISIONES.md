@@ -459,3 +459,12 @@
 - **Resultado (2026-10-07, aprobado por el autor):** «Clásico copia» de 32 casillas, 2 jugadores; en el turno 123 Beto cayó en La Soledad, debía $750 de alquiler y quebró (`GameOver(winners=[0])`, log 17:57). Se quitaron Las Cruces, Contribuciones, La Perseverancia, Chapinero, Estación del Sur, Estación del Oriente, Usaquén e Impuesto de lujo (el agente dio números de casilla en vez de nombres). No quedó ninguna casilla con nombre o precio cambiado: el autor no tocó «Guardar casilla». Aprobó así, porque cambiar nombre y precio ya estaba aprobado en el Redmi en F4.1.
 - **Cómo se revierte:** otro tablero o más jugadores; los tratos, como fase con letra (D-27).
 - **Estado:** vigente.
+
+### D-44 · El PC hace de segundo jugador de pruebas por Bluetooth (F5)
+
+- **Pregunta:** cómo probar F5 sin un segundo teléfono (P4) y sin descargar nada nuevo.
+- **Comprobado (sesión 27):** el PC tiene adaptador Bluetooth (apagado: `bluetoothctl show` → `Powered: no`) y el Python del sistema trae `socket.AF_BLUETOOTH` y `BTPROTO_RFCOMM`. La imagen del emulador (`android-37.0`) ya está, pero su Bluetooth es virtual y no conecta con un teléfono real (por confirmar en la documentación de Android en F5.1).
+- **Del autor:** el PC como segundo jugador de pruebas. Los *Terminado* de F5.3, F5.4 y F5.5 pasan a Redmi ↔ PC; F5.6 (hito «Enlace») sigue con el teléfono de un amigo.
+- **Consecuencia:** el transporte es Bluetooth clásico RFCOMM (Nearby Connections solo funciona entre Androids). F5.1 sigue pidiendo su prueba de concepto y su D-## aprobada. Para F5.4, el motor (Kotlin puro, D-02) corre en el PC como jugador de terminal, unido al Bluetooth por un puente en Python.
+- **Cómo se revierte:** devolver los *Terminado* al teléfono de un amigo; lo del PC queda como herramienta de pruebas.
+- **Estado:** vigente.
