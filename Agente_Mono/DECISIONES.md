@@ -370,3 +370,11 @@
 - **Capturas:** `capturas/FB.4_opciones.png` (maqueta), `capturas/FB.4_pantallas.png` (menú, partida y hoja).
 - **Cómo se revierte:** `Token` y el menú sin personajes están en `29e7480`; el campo `token` puede quedarse (null no cambia nada).
 - **Estado:** vigente.
+
+### D-37 · Jugar contra la máquina queda como idea, después del hito (FB.4)
+
+- **Pregunta:** al probar FB.4, el autor notó que no puede decir quién es él y quién es «la IA».
+- **Hecho:** no hay IA; los 2-6 jugadores son personas que se pasan el teléfono (pasar y jugar), y `PLAN_MONO.md` §1 deja «jugar contra la máquina» fuera de la v1.
+- **Del autor:** aprobar FB.4 tal cual y anotar el jugador automático como idea para después del hito F4.5, sin programarlo (opciones descartadas: una línea aclaratoria en el menú; una fase FC de IA).
+- **Si se retoma:** fase con letra (D-27): jugador automático en `engine` con semilla (D-03) que elige entre las jugadas legales, y en el menú, persona o máquina por jugador; el campo iría en `PlayerState` como `token` (D-36).
+- **Estado:** vigente.
