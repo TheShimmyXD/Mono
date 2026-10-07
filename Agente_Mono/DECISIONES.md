@@ -298,3 +298,11 @@
   - *Extra de prueba:* `casilla` (índice) abre la carta al arrancar.
 - **Cómo se revierte:** quitar `onSquare` del `Board` y la carta de `GameScreen`.
 - **Estado:** vigente.
+
+### D-31 · El arte de Tío Rico solo en la carta (FA.4)
+
+- **Pregunta:** el *Terminado* de FA.4 dice «arte en el tablero y en la tarjeta»; en una casilla de ~36 dp la escena no se lee.
+- **Opciones:** A el arte se ve al tocar la casilla (carta de D-30), el tablero sigue con nombre y precio · B recorte del monumento de fondo en cada casilla (maquetas).
+- **Elección (del autor, 2026-10-06):** A. A mitad de FA.4 (15 lugares en `capturas/FA.4a_` a `FA.4d_cartas.png`) aprobó también el estilo para los grupos que faltan.
+- **Cómo se revierte:** maquetas de B y un fondo por casilla en `Board`.
+- **Estado:** vigente; vale también para FA.5.
