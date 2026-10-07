@@ -43,7 +43,7 @@ estado_md = 5000
 # (Mono, 2026-10-06); vacío en un documento. entorno: variables para esas órdenes (~ vale).
 pasos = [
   ["motor", "./gradlew --console=plain -q :engine:test"],
-  ["app", "./gradlew --console=plain -q :app:assembleDebug"],
+  ["app", "./gradlew --console=plain -q :app:testDebugUnitTest :app:assembleDebug"],
 ]
 entorno = { JAVA_HOME = "~/android-studio/jbr" }
 

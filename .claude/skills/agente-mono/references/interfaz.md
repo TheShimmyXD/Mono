@@ -18,12 +18,13 @@ Un pedido de diseño abierto (tablero, panel, editor) se resuelve con 2-3 opcion
 Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arregla así (una vez por equipo y teléfono):
 - `no permissions`: regla udev con sudo, en su terminal: `/etc/udev/rules.d/51-android.rules` con `SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666"` y lo mismo con `2717` (Xiaomi); después `sudo udevadm control --reload-rules && sudo udevadm trigger`, `adb kill-server` y reconectar el cable.
 - `unauthorized`: aceptar «¿Permitir depuración USB?» en el teléfono.
+- Pantalla apagada (HyperOS la apaga a los ~10 min y adb no puede encenderla): `captura` lo detecta y no guarda nada; se pide al autor que desbloquee el Redmi (M-020).
 - `INSTALL_FAILED_USER_RESTRICTED`: HyperOS pide «Instalar vía USB» en Opciones de desarrollador y tocar Instalar en el teléfono a tiempo.
 
 ## 3. Reglas de la interfaz
 
 - La interfaz no decide reglas: llama al motor con una acción y dibuja el estado y los eventos que devuelve. Si la interfaz necesita algo que el motor no da, primero va al motor con su prueba (regla 4).
-- Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 20, 40, 60).
+- Tablero en anillo para cualquier N (D-05): la geometría (posición de cada casilla en el borde) es una función pura con su prueba en `app/src/test` (N = 16, 40 y 48: extremos de D-09 y el Clásico; M-021).
 - Pantalla del Redmi: se mide con `adb shell wm size` y `wm density` en F0.4 y se anota en ESTADO; todo se ve en vertical, sin girar el teléfono. Textos en `strings.xml`.
 - Un ViewModel por pantalla que guarda el estado del motor; el guardado de partidas y tableros (F3.6, F4.4) en archivos JSON de la app.
 

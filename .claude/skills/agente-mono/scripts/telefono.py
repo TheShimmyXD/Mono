@@ -106,6 +106,23 @@ def adb_passthrough(adb: str, serial: str, rest: list[str]) -> list[str]:
     return [adb, "-s", serial, *(rest[1:] if rest[:1] == ["--"] else rest)]
 
 
+def split_passthrough(argv: list[str]) -> tuple[list[str], list[str]]:
+    """Separa lo que va tras `--` (para adb) de las opciones propias (M-018: REMAINDER se las tragaba)."""
+    if "--" in argv:
+        i = argv.index("--")
+        return argv[:i], argv[i + 1:]
+    return argv, []
+
+
+def screen_awake(dumpsys_power: str) -> bool:
+    """False si `dumpsys power` dice que la pantalla no está despierta (M-020); sin el dato, True."""
+    for line in dumpsys_power.splitlines():
+        line = line.strip()
+        if line.startswith("mWakefulness="):
+            return line == "mWakefulness=Awake"
+    return True
+
+
 def launch_target(conf: dict) -> str | None:
     """paquete/actividad para `am start -n`; None si F0.2 aun no fijo el paquete."""
     package = conf["android"].get("paquete") or ""
@@ -125,14 +142,20 @@ def run(argv: list[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(argv, capture_output=True, text=True, **kwargs)
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+def build_parser() -> argparse.ArgumentParser:
+    """Opciones propias; lo que va tras `--` lo separa `split_passthrough` antes."""
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="adb: telefono.py adb -- <argumentos>")
     parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb"])
     parser.add_argument("--serie")
     parser.add_argument("--salida", type=Path)
     parser.add_argument("-n", type=int, default=DEFAULT_LOG_LINES)
-    parser.add_argument("resto", nargs=argparse.REMAINDER, help="para adb: -- <argumentos>")
-    args = parser.parse_args()
+    return parser
+
+
+def main() -> int:
+    own, rest = split_passthrough(sys.argv[1:])
+    args = build_parser().parse_args(own)
+    args.resto = rest
 
     cfg = find_config(Path.cwd())
     if cfg is None:
@@ -193,6 +216,9 @@ def main() -> int:
     if args.orden == "captura":
         if args.salida is None:
             print("Falta --salida <carpeta> (el scratchpad, con su ruta literal).")
+            return 1
+        if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
+            print("Pantalla apagada: pide al autor que desbloquee el Redmi (HyperOS no deja encenderla por adb). Sin captura.")
             return 1
         args.salida.mkdir(parents=True, exist_ok=True)
         out = args.salida / f"captura_{dt.datetime.now():%H%M%S}.png"

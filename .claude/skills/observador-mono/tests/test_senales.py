@@ -182,6 +182,12 @@ class TestSenalesMono(unittest.TestCase):
         self.write("engine/src/test/RulesTest.kt", "// R-07\n")
         self.assertEqual(self.signals(), {})
 
+    def test_rule_range_is_not_a_citation(self):
+        # M-022: «R-01..R-40» en un KDoc de Presets.kt daba K14 R-01.
+        self.write("engine/src/main/Presets.kt", "/** Monopoly (R-01..R-40). */\n/** Salario (R-07). */\n")
+        self.write("engine/src/test/RulesTest.kt", "// R-07\n")
+        self.assertEqual(self.signals(), {})
+
     def test_impure_engine(self):
         self.write("engine/src/main/Dice.kt", "import android.util.Log\nval r = Random()\nval ok = Random(seed)\n")
         found = self.signals()

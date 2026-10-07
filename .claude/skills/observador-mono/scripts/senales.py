@@ -340,6 +340,8 @@ def audit(root: Path, conf: dict, data: dict) -> list[tuple[str, str, str]]:
 
 # Mono: IDs de reglas (R-07), código impuro en el motor (D-02, D-03) y la captura (K15).
 RX_RULE_ID = re.compile(r"\bR-(\d{2,3})\b")
+# «R-01..R-40» nombra un tramo del reglamento, no una regla programada (M-022).
+RX_RULE_RANGE = re.compile(r"\bR-\d{2,3}\s*(?:\.\.|–)\s*R-\d{2,3}\b")
 RX_CATALOG_ID = re.compile(r"^#{2,4}\s+R-(\d{2,3})\b", re.M)
 RX_IMPURE = re.compile(
     r"^\s*import\s+(?:android|androidx)\.|Math\.random|System\.currentTimeMillis"
@@ -354,7 +356,7 @@ def kotlin_files(folder: Path) -> list[Path]:
 
 def rule_ids(paths: list[Path]) -> set[int]:
     """Números de R-## citados en esos archivos."""
-    return {int(n) for p in paths for n in RX_RULE_ID.findall(p.read_text(encoding="utf-8"))}
+    return {int(n) for p in paths for n in RX_RULE_ID.findall(RX_RULE_RANGE.sub("", p.read_text(encoding="utf-8")))}
 
 
 def catalog_ids(path: Path) -> set[int]:

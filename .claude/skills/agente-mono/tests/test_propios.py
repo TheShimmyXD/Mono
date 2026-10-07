@@ -82,6 +82,21 @@ class TestTelefono(unittest.TestCase):
         self.assertIn("Instalar via USB", telefono.install_hint(out))
         self.assertIsNone(telefono.install_hint("BUILD FAILED"))
 
+    def test_options_after_the_order_and_adb_passthrough(self):
+        # M-018: con REMAINDER, `captura --salida X` perdía --salida.
+        own, rest = telefono.split_passthrough(["captura", "--salida", "/x"])
+        self.assertEqual(rest, [])
+        self.assertEqual(telefono.build_parser().parse_args(own).salida, Path("/x"))
+        own, rest = telefono.split_passthrough(["adb", "--", "shell", "am", "start", "--ei", "n", "16"])
+        self.assertEqual(own, ["adb"])
+        self.assertEqual(rest, ["shell", "am", "start", "--ei", "n", "16"])
+
+    def test_screen_awake(self):
+        # M-020: con la pantalla en reposo, screencap da un PNG negro.
+        self.assertFalse(telefono.screen_awake("Power Manager State:\n  mWakefulness=Dozing\n"))
+        self.assertTrue(telefono.screen_awake("  mWakefulness=Awake\n"))
+        self.assertTrue(telefono.screen_awake(""))
+
     def test_prefers_physical_phone(self):
         self.assertEqual(telefono.pick_device(["emulator-5554", "abc123"]), "abc123")
         self.assertEqual(telefono.pick_device(["emulator-5554"]), "emulator-5554")
