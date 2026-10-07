@@ -19,7 +19,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `Agente_Mono/ESTADO.md` | **Fuente de verdad**: fase, qué ya funciona (con su comando), siguiente paso exacto, pendientes. ≤ 5000 car.; lo cerrado va a `ESTADO_historial.md`. |
 | `Agente_Mono/SESIONES.md` | Una entrada por sesión (≤ 5 líneas), con el id. Solo se añade al final. |
 | `Agente_Mono/DECISIONES.md` | Fichas D-##. Se leen por encabezado (`sed -n '/^### D-03 /,/^### D-04 /p'`). |
-| `references/` | `mandato.md` (primera sesión o duda de alcance) · `reglas.md` (F1 o regla sin ficha: escaneos y formato R-##) · `motor.md` (F0, F2) · `interfaz.md` (F0.4, F3, FA, F4) · `arte.md` (FA) · `enlace.md` (F5, después del hito). |
+| `references/` | `mandato.md` (primera sesión o duda de alcance) · `reglas.md` (F1 o regla sin ficha: escaneos y formato R-##) · `motor.md` (F0, F2) · `interfaz.md` (F0.4, F3, FA, F4) · `redmi.md` (si el teléfono no responde) · `arte.md` (FA) · `enlace.md` (F5, después del hito). |
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
 | `scripts/cierre_paso.py` | Pruebas del motor y la app, compilación, arte, tope de ESTADO y fichas R-## en una orden; sale 1 si algo falla. |
 | `scripts/pagina.py` | Una página o un recorte de un reglamento a PNG (`--info`, `--rejilla 2x3`, `--recorte x,y,an,al`). Nunca el PDF entero. |

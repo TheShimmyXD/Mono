@@ -16,21 +16,16 @@ La maqueta cabe en una pantalla (adb no desliza, D-23); si no, `maqueta=<paso><o
 - Lo que juzga el autor (si se ve bien, si se entiende) no lo declaras tú: le muestras la captura (SendUserFile si está disponible) y preguntas.
 - **Lo que va al autor sale del APK instalado:** si cambias algo visible después de capturar (un texto, un color), reinstala y recaptura esa pantalla antes de enviarla; el pie de SendUserFile dice solo lo que se ve en la imagen (M-049).
 - **Abrir con un extra** (maqueta o prueba): `telefono.py adb -- shell am start -S -n com.jacck.mono/.MainActivity --es maqueta A` (`-S` cierra antes la app; `--ez`/`--ei` para booleanos o enteros). Varias pantallas en una orden: `telefono.py pantallas - maqueta=A fase=compra propiedades=true,hoja=true --salida capturas/<paso>.png` instala, abre cada una (`-` = sin extras, el menú), espera 6 s (con menos, un diálogo sale a medio aparecer), captura y las une; se lee esa sola imagen y va al autor con SendUserFile (M-035, M-048). No se escribe código de Pillow para unir capturas. Los extras de partida abren con el aviso «Lo que pasó» encima del tablero (M-046).
+- **Ícono o nombre de la app:** `telefono.py adb -- shell am start -a android.intent.action.MAIN -c android.intent.category.HOME` y `captura`; la pantalla de inicio es del autor: a `capturas/` va solo el recorte del ícono (M-059).
 - Si algo falla en el teléfono: `telefono.py log -n 60` (solo la etiqueta `Mono` y los errores fatales), nunca el logcat completo.
-- Sin el Redmi conectado: `telefono.py emulador` (AVD `Medium_Phone`) y se espera a que `telefono.py dispositivos` lo liste.
 
-### Redmi listo (F0.4, 2026-10-06)
+### Pruebas en el Redmi
 
-Si `telefono.py dispositivos` da una pista en vez de la serie, el autor lo arregla así (una vez por equipo y teléfono):
-- `no permissions`: regla udev con sudo, en su terminal: `/etc/udev/rules.d/51-android.rules` con `SUBSYSTEM=="usb", ATTR{idVendor}=="18d1", MODE="0666"` y lo mismo con `2717` (Xiaomi); después `sudo udevadm control --reload-rules && sudo udevadm trigger`, `adb kill-server` y reconectar el cable.
-- `unauthorized`: aceptar «¿Permitir depuración USB?» en el teléfono.
-- Pantalla apagada (HyperOS la apaga a los ~10 min y adb no puede encenderla): `captura` lo detecta y no guarda nada; se pide al autor que desbloquee el Redmi (M-020).
-- `INSTALL_FAILED_USER_RESTRICTED`: HyperOS pide «Instalar vía USB» en Opciones de desarrollador y tocar Instalar en el teléfono a tiempo.
+Si el teléfono no responde (`dispositivos`, `instalar`, `captura`): `redmi.md`.
 - **adb no puede tocar la pantalla:** `input tap` da `INJECT_EVENTS` (haría falta «Depuración USB (ajustes de seguridad)»). Las partidas de prueba las juega el autor; tú instalas, le dices hasta dónde jugar y capturas (D-23, M-023). Antes de automatizar algo por adb, prueba un solo paso a mano y lee su stderr.
 - **Estado avanzado sin tocar:** para capturar una pantalla que necesita media partida, un extra de prueba en `MainActivity` que prepara el estado o abre la pantalla (`propiedades`, `hoja`; D-24), anotado en su KDoc y en ESTADO (M-028).
-- **`instalar` cierra la partida abierta** (la de un APK anterior no vuelve): la prueba del autor se hace en lo recién instalado, y se le dice. La pregunta del resultado trae los fallos probables como opciones («no salió X», «se cerró», «salió distinto»; M-033). Si no cuadra, antes de buscar el fallo: la hora de su respuesta (¿alcanzó a hacerlo?) y el log desde `MainActivity creada`; `--------- beginning of main` lo imprime logcat siempre, no es rotación (M-031).
+- **`instalar` cierra la app, pero `files/partida.json` sigue:** «Seguir la partida» abre la de antes de instalar. La prueba del autor pide «Partida nueva» con los toques desde el menú, y la evidencia compara la hora de `partida.json` con la de la instalación (M-058). La pregunta del resultado trae los fallos probables como opciones («no salió X», «se cerró», «salió distinto»; M-033). Si no cuadra, antes de buscar el fallo: la hora de su respuesta (¿alcanzó a hacerlo?) y el log desde `MainActivity creada`; `--------- beginning of main` lo imprime logcat siempre, no es rotación (M-031).
 - **Un *Terminado* con prueba del autor:** antes, el comando que la comprueba va a ESTADO (p. ej. `telefono.py adb -- shell run-as com.jacck.mono cat files/partida.json | grep token`). La primera pregunta es «¿Ya la jugaste?» (Ya / Después), no la aprobación; con «Ya», se corre ese comando y solo entonces Aprobar / Con un cambio / Todavía no. Sin evidencia, sin `[x]` (M-052).
-- **Sin `svc power stayon`** (el autor, 2026-10-06): pide el desbloqueo justo antes y agrupa `instalar` + capturas en la misma llamada.
 
 ## 3. Reglas de la interfaz
 

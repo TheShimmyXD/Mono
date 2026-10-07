@@ -40,7 +40,7 @@ LONG_EXTRAS = {"semilla"}
 TAIL_LINES = 15
 # Estados de `adb devices` que no son 'device', con la pista para arreglarlos (Mono M-004).
 DEVICE_HINTS = {
-    "no permissions": "falta la regla udev de Linux (interfaz.md, 'Redmi listo')",
+    "no permissions": "falta la regla udev de Linux (redmi.md)",
     "unauthorized": "acepta 'Permitir depuracion USB' en la pantalla del telefono",
     "offline": "desconecta y vuelve a conectar el cable",
 }
