@@ -433,7 +433,7 @@ Tío Rico (1 página): la rejilla 2×3 parte las columnas de texto, así que el 
 | Regla | Monopoly | Tío Rico | Dónde va |
 |---|---|---|---|
 | R-19, R-52..R-54 | Impuesto: $200 o 10 % del patrimonio, a elegir antes de contar | Tierra del Futuro $1500 + $200 por castillo; de la Aventura $1800; de la Frontera $2000 | Casilla `Tax` con `fixed`, `percent`, `perHotel` |
-| R-18 | Casualidad y Arca Comunal, con «Salir libre de la Cárcel» | Lotería y Sorpresa | Mazos del preset (F2.5); el texto de las cartas lo da el autor |
+| R-18 | Casualidad y Arca Comunal, con «Salir libre de la Cárcel» | Lotería y Sorpresa | Mazos del preset (F2.5); el texto de las cartas, D-17 |
 | R-07 | Salida «GO» | «Estación Santa Fe» | Nombre de la casilla `Start` |
 | R-52 | — | el dinero de las Tierras va «al centro espacial…», etc. | ◇ al Banco |
 

@@ -120,4 +120,13 @@ class BuyRentTest {
         val two = twoPlayers(classic, mapOf(7 to Holding(1), 12 to Holding(1)))
         assertEquals(70, rentDue(classic, two, 7, Dice(3, 4)))
     }
+
+    @Test
+    fun `R-08 lo que pasa lo decide la casilla donde cae`() {
+        val onProperty = Engine.roll(classic, twoPlayers(classic), Dice(1, 2)).state
+        assertEquals(TurnPhase.Buy(3), onProperty.phase)
+        val onRest = Engine.roll(classic, twoPlayers(classic), Dice(1, 3)).state
+        assertEquals(TurnPhase.EndOfTurn, onRest.phase)
+        assertEquals(listOf(1500, 1500), money(onRest))
+    }
 }

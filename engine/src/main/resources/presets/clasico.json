@@ -1,0 +1,853 @@
+{
+  "name": "Clásico",
+  "groups": [
+    {
+      "id": "marron",
+      "name": "Marrón",
+      "color": "#8B4513"
+    },
+    {
+      "id": "celeste",
+      "name": "Celeste",
+      "color": "#87CEEB"
+    },
+    {
+      "id": "rosado",
+      "name": "Rosado",
+      "color": "#D93A96"
+    },
+    {
+      "id": "naranja",
+      "name": "Naranja",
+      "color": "#F7941D"
+    },
+    {
+      "id": "rojo",
+      "name": "Rojo",
+      "color": "#ED1B24"
+    },
+    {
+      "id": "amarillo",
+      "name": "Amarillo",
+      "color": "#FEF200"
+    },
+    {
+      "id": "verde",
+      "name": "Verde",
+      "color": "#1FB25A"
+    },
+    {
+      "id": "azul",
+      "name": "Azul",
+      "color": "#0072BB"
+    }
+  ],
+  "squares": [
+    {
+      "type": "start",
+      "name": "Salida"
+    },
+    {
+      "type": "property",
+      "name": "Las Cruces",
+      "group": "marron",
+      "price": 60,
+      "rents": [
+        2,
+        10,
+        30,
+        90,
+        160,
+        250
+      ],
+      "housePrice": 50,
+      "hotelPrice": 50,
+      "mortgage": 30
+    },
+    {
+      "type": "card",
+      "name": "Arca Comunal",
+      "deck": "B"
+    },
+    {
+      "type": "property",
+      "name": "Calle del Embudo",
+      "group": "marron",
+      "price": 60,
+      "rents": [
+        4,
+        20,
+        60,
+        180,
+        320,
+        450
+      ],
+      "housePrice": 50,
+      "hotelPrice": 50,
+      "mortgage": 30
+    },
+    {
+      "type": "tax",
+      "name": "Contribuciones",
+      "fixed": 200,
+      "percent": 10,
+      "perHotel": 0
+    },
+    {
+      "type": "station",
+      "name": "Estación de la Sabana",
+      "price": 200,
+      "rents": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mortgage": 100
+    },
+    {
+      "type": "property",
+      "name": "San Victorino",
+      "group": "celeste",
+      "price": 100,
+      "rents": [
+        6,
+        30,
+        90,
+        270,
+        400,
+        550
+      ],
+      "housePrice": 50,
+      "hotelPrice": 50,
+      "mortgage": 50
+    },
+    {
+      "type": "card",
+      "name": "Casualidad",
+      "deck": "A"
+    },
+    {
+      "type": "property",
+      "name": "La Perseverancia",
+      "group": "celeste",
+      "price": 100,
+      "rents": [
+        6,
+        30,
+        90,
+        270,
+        400,
+        550
+      ],
+      "housePrice": 50,
+      "hotelPrice": 50,
+      "mortgage": 50
+    },
+    {
+      "type": "property",
+      "name": "Barrio Egipto",
+      "group": "celeste",
+      "price": 120,
+      "rents": [
+        8,
+        40,
+        100,
+        300,
+        450,
+        600
+      ],
+      "housePrice": 50,
+      "hotelPrice": 50,
+      "mortgage": 60
+    },
+    {
+      "type": "jail",
+      "name": "Cárcel"
+    },
+    {
+      "type": "property",
+      "name": "Teusaquillo",
+      "group": "rosado",
+      "price": 140,
+      "rents": [
+        10,
+        50,
+        150,
+        450,
+        625,
+        750
+      ],
+      "housePrice": 100,
+      "hotelPrice": 100,
+      "mortgage": 70
+    },
+    {
+      "type": "utility",
+      "name": "Empresa de Energía",
+      "price": 150,
+      "diceMultipliers": [
+        4,
+        10
+      ],
+      "mortgage": 75
+    },
+    {
+      "type": "property",
+      "name": "Galerías",
+      "group": "rosado",
+      "price": 140,
+      "rents": [
+        10,
+        50,
+        150,
+        450,
+        625,
+        750
+      ],
+      "housePrice": 100,
+      "hotelPrice": 100,
+      "mortgage": 70
+    },
+    {
+      "type": "property",
+      "name": "Chapinero",
+      "group": "rosado",
+      "price": 160,
+      "rents": [
+        12,
+        60,
+        180,
+        500,
+        700,
+        900
+      ],
+      "housePrice": 100,
+      "hotelPrice": 100,
+      "mortgage": 80
+    },
+    {
+      "type": "station",
+      "name": "Estación del Norte",
+      "price": 200,
+      "rents": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mortgage": 100
+    },
+    {
+      "type": "property",
+      "name": "La Soledad",
+      "group": "naranja",
+      "price": 180,
+      "rents": [
+        14,
+        70,
+        200,
+        550,
+        750,
+        950
+      ],
+      "housePrice": 100,
+      "hotelPrice": 100,
+      "mortgage": 90
+    },
+    {
+      "type": "card",
+      "name": "Arca Comunal",
+      "deck": "B"
+    },
+    {
+      "type": "property",
+      "name": "Palermo",
+      "group": "naranja",
+      "price": 180,
+      "rents": [
+        14,
+        70,
+        200,
+        550,
+        750,
+        950
+      ],
+      "housePrice": 100,
+      "hotelPrice": 100,
+      "mortgage": 90
+    },
+    {
+      "type": "property",
+      "name": "Park Way",
+      "group": "naranja",
+      "price": 200,
+      "rents": [
+        16,
+        80,
+        220,
+        600,
+        800,
+        1000
+      ],
+      "housePrice": 100,
+      "hotelPrice": 100,
+      "mortgage": 100
+    },
+    {
+      "type": "rest",
+      "name": "Parada Libre"
+    },
+    {
+      "type": "property",
+      "name": "Calle 19",
+      "group": "rojo",
+      "price": 220,
+      "rents": [
+        18,
+        90,
+        250,
+        700,
+        875,
+        1050
+      ],
+      "housePrice": 150,
+      "hotelPrice": 150,
+      "mortgage": 110
+    },
+    {
+      "type": "card",
+      "name": "Casualidad",
+      "deck": "A"
+    },
+    {
+      "type": "property",
+      "name": "Avenida Jiménez",
+      "group": "rojo",
+      "price": 220,
+      "rents": [
+        18,
+        90,
+        250,
+        700,
+        875,
+        1050
+      ],
+      "housePrice": 150,
+      "hotelPrice": 150,
+      "mortgage": 110
+    },
+    {
+      "type": "property",
+      "name": "Carrera Séptima",
+      "group": "rojo",
+      "price": 240,
+      "rents": [
+        20,
+        100,
+        300,
+        750,
+        925,
+        1100
+      ],
+      "housePrice": 150,
+      "hotelPrice": 150,
+      "mortgage": 120
+    },
+    {
+      "type": "station",
+      "name": "Estación del Sur",
+      "price": 200,
+      "rents": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mortgage": 100
+    },
+    {
+      "type": "property",
+      "name": "Niza",
+      "group": "amarillo",
+      "price": 260,
+      "rents": [
+        22,
+        110,
+        330,
+        800,
+        975,
+        1150
+      ],
+      "housePrice": 150,
+      "hotelPrice": 150,
+      "mortgage": 130
+    },
+    {
+      "type": "property",
+      "name": "Pasadena",
+      "group": "amarillo",
+      "price": 260,
+      "rents": [
+        22,
+        110,
+        330,
+        800,
+        975,
+        1150
+      ],
+      "housePrice": 150,
+      "hotelPrice": 150,
+      "mortgage": 130
+    },
+    {
+      "type": "utility",
+      "name": "Acueducto",
+      "price": 150,
+      "diceMultipliers": [
+        4,
+        10
+      ],
+      "mortgage": 75
+    },
+    {
+      "type": "property",
+      "name": "Cedritos",
+      "group": "amarillo",
+      "price": 280,
+      "rents": [
+        24,
+        120,
+        360,
+        850,
+        1025,
+        1200
+      ],
+      "housePrice": 150,
+      "hotelPrice": 150,
+      "mortgage": 140
+    },
+    {
+      "type": "goToJail",
+      "name": "Váyase a la Cárcel"
+    },
+    {
+      "type": "property",
+      "name": "Santa Bárbara",
+      "group": "verde",
+      "price": 300,
+      "rents": [
+        26,
+        130,
+        390,
+        900,
+        1100,
+        1275
+      ],
+      "housePrice": 200,
+      "hotelPrice": 200,
+      "mortgage": 150
+    },
+    {
+      "type": "property",
+      "name": "Rosales",
+      "group": "verde",
+      "price": 300,
+      "rents": [
+        26,
+        130,
+        390,
+        900,
+        1100,
+        1275
+      ],
+      "housePrice": 200,
+      "hotelPrice": 200,
+      "mortgage": 150
+    },
+    {
+      "type": "card",
+      "name": "Arca Comunal",
+      "deck": "B"
+    },
+    {
+      "type": "property",
+      "name": "El Chicó",
+      "group": "verde",
+      "price": 320,
+      "rents": [
+        28,
+        150,
+        450,
+        1000,
+        1200,
+        1400
+      ],
+      "housePrice": 200,
+      "hotelPrice": 200,
+      "mortgage": 160
+    },
+    {
+      "type": "station",
+      "name": "Estación del Oriente",
+      "price": 200,
+      "rents": [
+        25,
+        50,
+        100,
+        200
+      ],
+      "mortgage": 100
+    },
+    {
+      "type": "card",
+      "name": "Casualidad",
+      "deck": "A"
+    },
+    {
+      "type": "property",
+      "name": "Usaquén",
+      "group": "azul",
+      "price": 350,
+      "rents": [
+        35,
+        175,
+        500,
+        1100,
+        1300,
+        1500
+      ],
+      "housePrice": 200,
+      "hotelPrice": 200,
+      "mortgage": 175
+    },
+    {
+      "type": "tax",
+      "name": "Impuesto de lujo",
+      "fixed": 100,
+      "percent": 0,
+      "perHotel": 0
+    },
+    {
+      "type": "property",
+      "name": "Zona T",
+      "group": "azul",
+      "price": 400,
+      "rents": [
+        50,
+        200,
+        600,
+        1400,
+        1700,
+        2000
+      ],
+      "housePrice": 200,
+      "hotelPrice": 200,
+      "mortgage": 200
+    }
+  ],
+  "rules": {
+    "minPlayers": 2,
+    "maxPlayers": 6,
+    "startingMoney": 1500,
+    "salary": 200,
+    "startTieRule": "REROLL_TIED",
+    "doublesRollAgain": true,
+    "doublesToJail": 3,
+    "jail": true,
+    "jailFine": 50,
+    "jailMaxTurns": 3,
+    "auctionPriceDiscount": null,
+    "unsoldStaysWithBank": true,
+    "rentWhileMortgaged": false,
+    "mortgageValue": "PRINTED",
+    "mortgageWithBuildings": false,
+    "unmortgageFee": {
+      "percent": 10,
+      "fixed": 0
+    },
+    "percentRounding": "UP",
+    "buildOnlyWhenLanding": false,
+    "maxHouses": 4,
+    "evenBuild": true,
+    "housePrice": null,
+    "hotelPrice": null,
+    "hotelReturnsHouses": true,
+    "houseStock": 32,
+    "hotelStock": 12,
+    "groupDoubleRent": true,
+    "hotelGroupDoubleRent": false,
+    "sellBuildingsToBank": true,
+    "tradeBuildings": false,
+    "tradeFee": 0,
+    "mortgagedTradeInterest": 10,
+    "bankUnlimited": true,
+    "rentMustBeClaimed": false,
+    "freeParkingPot": false,
+    "endCondition": "LAST_STANDING",
+    "startingDeeds": 0,
+    "bankruptcyInterest": 10
+  },
+  "cards": [
+    {
+      "deck": "A",
+      "text": "Avance hasta la Salida. Cobre $200.",
+      "effect": {
+        "type": "moveTo",
+        "square": 0
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta Carrera Séptima. Si pasa por la Salida, cobre $200.",
+      "effect": {
+        "type": "moveTo",
+        "square": 24
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta Teusaquillo. Si pasa por la Salida, cobre $200.",
+      "effect": {
+        "type": "moveTo",
+        "square": 11
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta el servicio más cercano. Si tiene dueño, tire los dados y pague 10 veces lo que saque.",
+      "effect": {
+        "type": "moveToNearest",
+        "kind": "UTILITY",
+        "rentFactor": 1,
+        "diceMultiplier": 10
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta la estación más cercana. Si tiene dueño, pague el doble del alquiler.",
+      "effect": {
+        "type": "moveToNearest",
+        "kind": "STATION",
+        "rentFactor": 2,
+        "diceMultiplier": null
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta la estación más cercana. Si tiene dueño, pague el doble del alquiler.",
+      "effect": {
+        "type": "moveToNearest",
+        "kind": "STATION",
+        "rentFactor": 2,
+        "diceMultiplier": null
+      }
+    },
+    {
+      "deck": "A",
+      "text": "El Banco le paga un dividendo de $50.",
+      "effect": {
+        "type": "collect",
+        "amount": 50
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Salga libre de la Cárcel. Guarde esta carta hasta usarla o venderla.",
+      "effect": {
+        "type": "getOutOfJail"
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Retroceda 3 casillas.",
+      "effect": {
+        "type": "moveBy",
+        "steps": -3
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Váyase a la Cárcel. Vaya directo, sin pasar por la Salida ni cobrar $200.",
+      "effect": {
+        "type": "goToJail"
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Reparaciones generales: pague $25 por cada casa y $100 por cada hotel.",
+      "effect": {
+        "type": "repairs",
+        "perHouse": 25,
+        "perHotel": 100
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Multa por exceso de velocidad: pague $15.",
+      "effect": {
+        "type": "pay",
+        "amount": 15
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Viaje hasta la Estación de la Sabana. Si pasa por la Salida, cobre $200.",
+      "effect": {
+        "type": "moveTo",
+        "square": 5
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta Zona T.",
+      "effect": {
+        "type": "moveTo",
+        "square": 39
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Lo nombraron presidente de la junta: pague $50 a cada jugador.",
+      "effect": {
+        "type": "payEach",
+        "amount": 50
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Vence su préstamo de construcción: cobre $150.",
+      "effect": {
+        "type": "collect",
+        "amount": 150
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Avance hasta la Salida. Cobre $200.",
+      "effect": {
+        "type": "moveTo",
+        "square": 0
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Error del Banco a su favor: cobre $200.",
+      "effect": {
+        "type": "collect",
+        "amount": 200
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Consulta médica: pague $50.",
+      "effect": {
+        "type": "pay",
+        "amount": 50
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Vende sus acciones: cobre $50.",
+      "effect": {
+        "type": "collect",
+        "amount": 50
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Salga libre de la Cárcel. Guarde esta carta hasta usarla o venderla.",
+      "effect": {
+        "type": "getOutOfJail"
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Váyase a la Cárcel. Vaya directo, sin pasar por la Salida ni cobrar $200.",
+      "effect": {
+        "type": "goToJail"
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Vence su fondo de vacaciones: cobre $100.",
+      "effect": {
+        "type": "collect",
+        "amount": 100
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Devolución de impuestos: cobre $20.",
+      "effect": {
+        "type": "collect",
+        "amount": 20
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Es su cumpleaños: cobre $10 de cada jugador.",
+      "effect": {
+        "type": "collectFromEach",
+        "amount": 10
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Vence su seguro de vida: cobre $100.",
+      "effect": {
+        "type": "collect",
+        "amount": 100
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Cuenta del hospital: pague $100.",
+      "effect": {
+        "type": "pay",
+        "amount": 100
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Matrícula del colegio: pague $50.",
+      "effect": {
+        "type": "pay",
+        "amount": 50
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Honorarios por una asesoría: cobre $25.",
+      "effect": {
+        "type": "collect",
+        "amount": 25
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Arreglo de calles: pague $40 por cada casa y $115 por cada hotel.",
+      "effect": {
+        "type": "repairs",
+        "perHouse": 40,
+        "perHotel": 115
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Segundo premio en un concurso de belleza: cobre $10.",
+      "effect": {
+        "type": "collect",
+        "amount": 10
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Recibe una herencia: cobre $100.",
+      "effect": {
+        "type": "collect",
+        "amount": 100
+      }
+    }
+  ]
+}

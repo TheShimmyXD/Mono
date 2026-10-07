@@ -154,4 +154,9 @@ class ValidatorTest {
         assertHas(ConfigError.BadCard(0, CardProblem.NO_NEAREST), noStations.copy(cards = listOf(Card(Deck.A, "Tren", CardEffect.MoveToNearest(NearestKind.STATION, rentFactor = 2)))))
         assertEquals(emptyList<ConfigError>(), validate(card(CardEffect.MoveToNearest(NearestKind.UTILITY, diceMultiplier = 10))))
     }
+
+    @Test
+    fun `R-17 reclamar el alquiler no lo tiene el motor`() {
+        assertHas(ConfigError.Incoherent(Incoherence.RENT_MUST_BE_CLAIMED), valid.copy(rules = valid.rules.copy(rentMustBeClaimed = true)))
+    }
 }

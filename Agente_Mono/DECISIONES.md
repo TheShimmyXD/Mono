@@ -167,4 +167,15 @@
 - **Elección (del autor, 2026-10-06):** los balancea el agente, porque el autor no tiene los juegos a mano; el texto de las cartas también lo escribe el agente, con los efectos clásicos de D-14. En F2.8 cada cifra de los presets cita esta ficha (lo que no viene de una R-##), y el método de balanceo se anota aquí al hacerlo.
 - **Por qué:** decisión del autor; los valores se pueden cambiar en el editor (F4).
 - **Cómo se revierte:** se cambian los JSON de los presets; el validador y las pruebas de F2.8 dicen si siguen siendo válidos.
-- **Estado:** vigente; el método, pendiente de F2.8.
+- **Método (F2.8):** Clásico = cifras de la edición clásica (calles, ferrocarriles $200 con [25, 50, 100, 200], servicios $150 con ×4/×10, hipoteca impresa = 1/2, hotel al precio de la casa, 16 + 16 cartas), porque usan la misma escala que $1500 de R-03 y $200 de R-10; el segundo impuesto («Impuesto de lujo», $100 fijo) no está en el reglamento y sale de aquí. Tío Rico = clásico × 10 (el sueldo de R-45 es 10 × el de R-10): la propiedad k (0..31) toma la calle clásica `round(k × 21 / 31)`, precio y alquileres × 10, sin la renta de 4 casas (castillo = hotel × 10); casa y castillo, los fijos de R-46 y R-47; 11 + 11 cartas (R-41) con los efectos clásicos × 10, sin las de Cárcel. Generado con un script del agente; el JSON es la fuente.
+- **Estado:** vigente.
+
+### D-18 · Tablero y nombres de los presets
+
+- **Pregunta:** qué casilla va en cada posición y cómo se llaman (ningún reglamento trae el tablero) y cómo se nombran si algún día se publica (P3).
+- **Opciones:** nombres propios inventados · calles reales de Monopoly · provisionales; Tío Rico de 44 casillas, de 44 con estaciones o de 40 como el Clásico.
+- **Elección (del autor, 2026-10-06):** nombres propios: Clásico con barrios y calles de Bogotá, Tío Rico con pueblos y ciudades de Colombia; mazos «Casualidad»/«Arca Comunal» y «Lotería»/«Sorpresa» (R-18), Tierras con su nombre de R-52..R-54. Clásico: el esqueleto clásico de 40 (8 grupos, 4 estaciones, 2 servicios, Contribuciones en 4, Cárcel en 10). Tío Rico: 44 casillas (11 por lado) = Estación Santa Fe + 32 propiedades en 8 grupos de 4 (los 32 títulos de R-41) + 3 Tierras (14, 33, 39) + 6 de cartas + 2 descansos (11, 22). Los presets siguen llamándose «Clásico» y «Tío Rico».
+- **Del agente:** `Preset.load()` en `engine/…/Presets.kt` lee `engine/src/main/resources/presets/<id>.json`; sin Cárcel, Tío Rico lleva `jailFine` 0 y `jailMaxTurns` 3 (no se usan).
+- **Por qué:** sin arte ni nombres de terceros (riesgo de marcas del plan); 32 títulos solo caben con N = 44 (múltiplo de 4, D-09).
+- **Cómo se revierte:** cambiar el JSON; `PresetTest` dice qué deja de cumplir.
+- **Estado:** vigente.

@@ -1,0 +1,748 @@
+{
+  "name": "Tío Rico",
+  "groups": [
+    {
+      "id": "boyaca",
+      "name": "Boyacá",
+      "color": "#8B4513"
+    },
+    {
+      "id": "santander",
+      "name": "Santander",
+      "color": "#87CEEB"
+    },
+    {
+      "id": "cafe",
+      "name": "Eje Cafetero",
+      "color": "#D93A96"
+    },
+    {
+      "id": "antioquia",
+      "name": "Antioquia",
+      "color": "#F7941D"
+    },
+    {
+      "id": "caribe",
+      "name": "Caribe",
+      "color": "#ED1B24"
+    },
+    {
+      "id": "valle",
+      "name": "Valle",
+      "color": "#FEF200"
+    },
+    {
+      "id": "llanos",
+      "name": "Llanos",
+      "color": "#1FB25A"
+    },
+    {
+      "id": "capitales",
+      "name": "Capitales",
+      "color": "#0072BB"
+    }
+  ],
+  "squares": [
+    {
+      "type": "start",
+      "name": "Estación Santa Fe"
+    },
+    {
+      "type": "property",
+      "name": "Tópaga",
+      "group": "boyaca",
+      "price": 600,
+      "rents": [
+        20,
+        100,
+        300,
+        900,
+        2500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Mongua",
+      "group": "boyaca",
+      "price": 600,
+      "rents": [
+        40,
+        200,
+        600,
+        1800,
+        4500
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Lotería",
+      "deck": "A"
+    },
+    {
+      "type": "property",
+      "name": "Ráquira",
+      "group": "boyaca",
+      "price": 600,
+      "rents": [
+        40,
+        200,
+        600,
+        1800,
+        4500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Villa de Leyva",
+      "group": "boyaca",
+      "price": 1000,
+      "rents": [
+        60,
+        300,
+        900,
+        2700,
+        5500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Guane",
+      "group": "santander",
+      "price": 1000,
+      "rents": [
+        60,
+        300,
+        900,
+        2700,
+        5500
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Sorpresa",
+      "deck": "B"
+    },
+    {
+      "type": "property",
+      "name": "Zapatoca",
+      "group": "santander",
+      "price": 1000,
+      "rents": [
+        60,
+        300,
+        900,
+        2700,
+        5500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "San Gil",
+      "group": "santander",
+      "price": 1200,
+      "rents": [
+        80,
+        400,
+        1000,
+        3000,
+        6000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Barichara",
+      "group": "santander",
+      "price": 1400,
+      "rents": [
+        100,
+        500,
+        1500,
+        4500,
+        7500
+      ]
+    },
+    {
+      "type": "rest",
+      "name": "Mirador"
+    },
+    {
+      "type": "property",
+      "name": "Marsella",
+      "group": "cafe",
+      "price": 1400,
+      "rents": [
+        100,
+        500,
+        1500,
+        4500,
+        7500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Filandia",
+      "group": "cafe",
+      "price": 1400,
+      "rents": [
+        100,
+        500,
+        1500,
+        4500,
+        7500
+      ]
+    },
+    {
+      "type": "tax",
+      "name": "Tierra del Futuro",
+      "fixed": 1500,
+      "percent": 0,
+      "perHotel": 200
+    },
+    {
+      "type": "property",
+      "name": "Salento",
+      "group": "cafe",
+      "price": 1600,
+      "rents": [
+        120,
+        600,
+        1800,
+        5000,
+        9000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Manizales",
+      "group": "cafe",
+      "price": 1600,
+      "rents": [
+        120,
+        600,
+        1800,
+        5000,
+        9000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Jericó",
+      "group": "antioquia",
+      "price": 1800,
+      "rents": [
+        140,
+        700,
+        2000,
+        5500,
+        9500
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Lotería",
+      "deck": "A"
+    },
+    {
+      "type": "property",
+      "name": "Jardín",
+      "group": "antioquia",
+      "price": 1800,
+      "rents": [
+        140,
+        700,
+        2000,
+        5500,
+        9500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Guatapé",
+      "group": "antioquia",
+      "price": 1800,
+      "rents": [
+        140,
+        700,
+        2000,
+        5500,
+        9500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Rionegro",
+      "group": "antioquia",
+      "price": 2000,
+      "rents": [
+        160,
+        800,
+        2200,
+        6000,
+        10000
+      ]
+    },
+    {
+      "type": "rest",
+      "name": "Hamaca"
+    },
+    {
+      "type": "property",
+      "name": "Ciénaga",
+      "group": "caribe",
+      "price": 2200,
+      "rents": [
+        180,
+        900,
+        2500,
+        7000,
+        10500
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Sorpresa",
+      "deck": "B"
+    },
+    {
+      "type": "property",
+      "name": "Mompox",
+      "group": "caribe",
+      "price": 2200,
+      "rents": [
+        180,
+        900,
+        2500,
+        7000,
+        10500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Santa Marta",
+      "group": "caribe",
+      "price": 2200,
+      "rents": [
+        180,
+        900,
+        2500,
+        7000,
+        10500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Barranquilla",
+      "group": "caribe",
+      "price": 2400,
+      "rents": [
+        200,
+        1000,
+        3000,
+        7500,
+        11000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Tuluá",
+      "group": "valle",
+      "price": 2600,
+      "rents": [
+        220,
+        1100,
+        3300,
+        8000,
+        11500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Buga",
+      "group": "valle",
+      "price": 2600,
+      "rents": [
+        220,
+        1100,
+        3300,
+        8000,
+        11500
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Lotería",
+      "deck": "A"
+    },
+    {
+      "type": "property",
+      "name": "Palmira",
+      "group": "valle",
+      "price": 2600,
+      "rents": [
+        220,
+        1100,
+        3300,
+        8000,
+        11500
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Cali",
+      "group": "valle",
+      "price": 2800,
+      "rents": [
+        240,
+        1200,
+        3600,
+        8500,
+        12000
+      ]
+    },
+    {
+      "type": "tax",
+      "name": "Tierra de la Aventura",
+      "fixed": 1800,
+      "percent": 0,
+      "perHotel": 0
+    },
+    {
+      "type": "property",
+      "name": "Puerto Gaitán",
+      "group": "llanos",
+      "price": 2800,
+      "rents": [
+        240,
+        1200,
+        3600,
+        8500,
+        12000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Yopal",
+      "group": "llanos",
+      "price": 3000,
+      "rents": [
+        260,
+        1300,
+        3900,
+        9000,
+        12750
+      ]
+    },
+    {
+      "type": "card",
+      "name": "Sorpresa",
+      "deck": "B"
+    },
+    {
+      "type": "property",
+      "name": "Leticia",
+      "group": "llanos",
+      "price": 3000,
+      "rents": [
+        260,
+        1300,
+        3900,
+        9000,
+        12750
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Villavicencio",
+      "group": "llanos",
+      "price": 3000,
+      "rents": [
+        260,
+        1300,
+        3900,
+        9000,
+        12750
+      ]
+    },
+    {
+      "type": "tax",
+      "name": "Tierra de la Frontera",
+      "fixed": 2000,
+      "percent": 0,
+      "perHotel": 0
+    },
+    {
+      "type": "property",
+      "name": "San Andrés",
+      "group": "capitales",
+      "price": 3200,
+      "rents": [
+        280,
+        1500,
+        4500,
+        10000,
+        14000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Cartagena",
+      "group": "capitales",
+      "price": 3500,
+      "rents": [
+        350,
+        1750,
+        5000,
+        11000,
+        15000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Medellín",
+      "group": "capitales",
+      "price": 3500,
+      "rents": [
+        350,
+        1750,
+        5000,
+        11000,
+        15000
+      ]
+    },
+    {
+      "type": "property",
+      "name": "Bogotá",
+      "group": "capitales",
+      "price": 4000,
+      "rents": [
+        500,
+        2000,
+        6000,
+        14000,
+        20000
+      ]
+    }
+  ],
+  "rules": {
+    "minPlayers": 2,
+    "maxPlayers": 6,
+    "startingMoney": 26400,
+    "salary": 2000,
+    "startTieRule": "REROLL_TIED",
+    "doublesRollAgain": true,
+    "doublesToJail": 0,
+    "jail": false,
+    "jailFine": 0,
+    "jailMaxTurns": 3,
+    "auctionPriceDiscount": 200,
+    "unsoldStaysWithBank": true,
+    "rentWhileMortgaged": true,
+    "mortgageValue": "HALF_TOTAL",
+    "mortgageWithBuildings": true,
+    "unmortgageFee": {
+      "percent": 0,
+      "fixed": 200
+    },
+    "percentRounding": "UP",
+    "buildOnlyWhenLanding": true,
+    "maxHouses": 3,
+    "evenBuild": false,
+    "housePrice": 1000,
+    "hotelPrice": 2000,
+    "hotelReturnsHouses": true,
+    "houseStock": 30,
+    "hotelStock": 10,
+    "groupDoubleRent": true,
+    "hotelGroupDoubleRent": true,
+    "sellBuildingsToBank": true,
+    "tradeBuildings": true,
+    "tradeFee": 200,
+    "mortgagedTradeInterest": 0,
+    "bankUnlimited": true,
+    "rentMustBeClaimed": false,
+    "freeParkingPot": false,
+    "endCondition": "LAST_STANDING",
+    "startingDeeds": 0,
+    "bankruptcyInterest": 10
+  },
+  "cards": [
+    {
+      "deck": "A",
+      "text": "Avance hasta la Estación Santa Fe. Cobre $2000.",
+      "effect": {
+        "type": "moveTo",
+        "square": 0
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta Bogotá. Si pasa por la Estación Santa Fe, cobre $2000.",
+      "effect": {
+        "type": "moveTo",
+        "square": 43
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta Ciénaga. Si pasa por la Estación Santa Fe, cobre $2000.",
+      "effect": {
+        "type": "moveTo",
+        "square": 23
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Avance hasta Marsella. Si pasa por la Estación Santa Fe, cobre $2000.",
+      "effect": {
+        "type": "moveTo",
+        "square": 12
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Retroceda 3 casillas.",
+      "effect": {
+        "type": "moveBy",
+        "steps": -3
+      }
+    },
+    {
+      "deck": "A",
+      "text": "¡Ganó la lotería! Cobre $1000.",
+      "effect": {
+        "type": "collect",
+        "amount": 1000
+      }
+    },
+    {
+      "deck": "A",
+      "text": "El Banco le paga un dividendo de $500.",
+      "effect": {
+        "type": "collect",
+        "amount": 500
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Vence su préstamo de construcción: cobre $1500.",
+      "effect": {
+        "type": "collect",
+        "amount": 1500
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Multa por exceso de velocidad: pague $150.",
+      "effect": {
+        "type": "pay",
+        "amount": 150
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Reparaciones generales: pague $250 por cada casa y $1000 por cada castillo.",
+      "effect": {
+        "type": "repairs",
+        "perHouse": 250,
+        "perHotel": 1000
+      }
+    },
+    {
+      "deck": "A",
+      "text": "Lo nombraron presidente de la junta: pague $500 a cada jugador.",
+      "effect": {
+        "type": "payEach",
+        "amount": 500
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Avance hasta la Estación Santa Fe. Cobre $2000.",
+      "effect": {
+        "type": "moveTo",
+        "square": 0
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Error del Banco a su favor: cobre $2000.",
+      "effect": {
+        "type": "collect",
+        "amount": 2000
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Consulta médica: pague $500.",
+      "effect": {
+        "type": "pay",
+        "amount": 500
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Vende sus acciones: cobre $500.",
+      "effect": {
+        "type": "collect",
+        "amount": 500
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Vence su fondo de vacaciones: cobre $1000.",
+      "effect": {
+        "type": "collect",
+        "amount": 1000
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Devolución de impuestos: cobre $200.",
+      "effect": {
+        "type": "collect",
+        "amount": 200
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Es su cumpleaños: cobre $100 de cada jugador.",
+      "effect": {
+        "type": "collectFromEach",
+        "amount": 100
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Vence su seguro de vida: cobre $1000.",
+      "effect": {
+        "type": "collect",
+        "amount": 1000
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Cuenta del hospital: pague $1000.",
+      "effect": {
+        "type": "pay",
+        "amount": 1000
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Arreglo de caminos: pague $400 por cada casa y $1150 por cada castillo.",
+      "effect": {
+        "type": "repairs",
+        "perHouse": 400,
+        "perHotel": 1150
+      }
+    },
+    {
+      "deck": "B",
+      "text": "Recibe una herencia: cobre $1000.",
+      "effect": {
+        "type": "collect",
+        "amount": 1000
+      }
+    }
+  ]
+}

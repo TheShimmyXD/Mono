@@ -205,7 +205,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 | El editor permite tableros o reglas incoherentes | Validador en el motor (F2.7) antes del editor (F4) |
 | Dos teléfonos con estados distintos tras una desconexión | Motor determinista (D-03), anfitrión que decide, acciones numeradas (F5.2, F5.5) |
 | El autor conoce poco Kotlin y Android | El agente explica en una línea cada decisión de Android o Compose al tomarla |
-| Marcas registradas si algún día se publica | Presets con nombres propios; nada de arte de Hasbro (P3 pendiente) |
+| Marcas registradas si algún día se publica | Presets con nombres propios; nada de arte de Hasbro (D-18) |
 
 ---
 
@@ -215,7 +215,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - **Reglamentos:** «tienes los dos en mi carpeta de Descargas» → `Monopoly(Spanish).pdf` y `tio_rico.pdf` (escaneos; H4).
 - **P1** Jugadores: 2-6 (D-05).
 - **P2** Tablero: anillo de N casillas (D-05; el rango exacto de N sale de F1.4).
-- **P3** ¿Se publicará algún día? → **pendiente** (decide cómo se nombran los presets).
+- **P3** ¿Se publicará algún día? → **resuelta para los presets** (2026-10-06): nombres propios, sin los de terceros (D-18).
 - **P4** Segundo Android: no hay → el Bluetooth se prueba con el teléfono de un amigo, y el protocolo, en la JVM.
 - **P5** Kotlin y Android: los conoce poco → el agente explica sus decisiones al tomarlas.
 - **P6** Nombre visible de la app en el teléfono → **pendiente** («Mono» mientras tanto).

@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 /**
- * Una carta de un mazo (R-18): `text` es lo que lee el jugador (lo escribe el autor, F2.8) y
+ * Una carta de un mazo (R-18): `text` es lo que lee el jugador (en los presets, D-17) y
  * `effect`, lo que hace el motor. Los efectos son los del juego clásico (D-14).
  */
 @Serializable
