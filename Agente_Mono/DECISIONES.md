@@ -256,3 +256,12 @@
 - **Extras de prueba:** las partidas abiertas con extras no se guardan, para no pisar la del autor.
 - **Cómo se revierte:** quitar `onState` en `MainActivity` y el botón del menú.
 - **Estado:** vigente.
+
+### D-27 · Fase FA «Arte y acabado» antes de F4
+
+- **Pregunta:** el autor pide quitar los emojis, abrir una tarjeta al tocar una casilla y dar arte propio a cada lugar de Colombia: dónde va en la hoja de ruta y quién hace el arte.
+- **Opciones:** ahora antes de F4 · tras el hito F4.5 · solo estilo, íconos y tarjeta ahora; arte dibujado por el agente en vector · imágenes que trae el autor · mezcla.
+- **Elección (del autor, 2026-10-06):** fase FA ahora, antes de F4; el arte lo dibuja el agente en vector.
+- **Del agente:** la fase se llama FA (con letra) para no renumerar F4 y F5, que ya se citan en fichas y referencias. Fuente de cada dibujo en SVG dentro del repo; en la app, VectorDrawable (el formato vectorial de Android: nítido a cualquier tamaño y liviano). Dibujo propio y estilizado, sin calcar fotos ni logos.
+- **Cómo se revierte:** quitar la sección FA del plan; los emojis siguen en el historial de Git.
+- **Estado:** vigente.

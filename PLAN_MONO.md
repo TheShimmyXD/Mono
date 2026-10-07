@@ -154,6 +154,16 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **F3.5** Nueva partida: preset, 2-6 jugadores y nombres. *Terminado:* partida de 3 jugadores empezada desde el menú.
 - [x] **F3.6** Guardar y retomar. *Terminado:* tras cerrar la app a mitad de partida, vuelve igual.
 
+### FA · Arte y acabado
+
+*Pedida por el autor el 2026-10-06, antes de F4 (D-27): fuera los emojis, tarjeta al tocar una casilla y arte propio de cada lugar de Colombia, dibujado en vector.*
+
+- [ ] **FA.1** Estilo artístico: 3 estilos para las mismas casillas (un pueblo, una ciudad y un barrio de Bogotá), en SVG convertido a VectorDrawable, vistos en el Redmi. *Terminado:* el autor elige; D-## con paleta, trazo, encuadre y flujo SVG → `res/drawable`.
+- [ ] **FA.2** Íconos propios en vez de emojis (casas, hotel, dados, salida, cárcel, estaciones, servicios, impuestos, cartas, descansos) en el estilo de FA.1. *Terminado:* ningún emoji en `app/src/main` (grep vacío); captura del tablero aprobada.
+- [ ] **FA.3** Tarjeta de la casilla al tocarla en el tablero: arte, nombre, grupo, precio, alquileres con casas y hotel, hipoteca, dueño, casas y si está hipotecada (datos del motor). 2-3 maquetas antes. *Terminado:* en el Redmi, tocar una casilla propia, una ajena y una libre abre su tarjeta con sus datos; captura aprobada.
+- [ ] **FA.4** Arte de Tío Rico: los 32 pueblos y ciudades (por grupos, sub-pasos) y sus especiales (Estación Santa Fe, Tierras, Mirador, Hamaca, Lotería, Sorpresa). *Terminado:* cada casilla de Tío Rico con su arte en el tablero y en la tarjeta; captura aprobada.
+- [ ] **FA.5** Arte del Clásico: los 22 barrios y calles de Bogotá, estaciones, servicios y especiales. *Terminado:* cada casilla del Clásico con su arte en el tablero y en la tarjeta; captura aprobada.
+
 ### F4 · Editor y hito «Primera quiebra»
 
 - [ ] **F4.1** Editor de casillas: nombre, precio, grupo y alquileres. *Terminado:* una casilla editada se ve en el tablero y en el cobro del alquiler.
@@ -206,6 +216,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 | Dos teléfonos con estados distintos tras una desconexión | Motor determinista (D-03), anfitrión que decide, acciones numeradas (F5.2, F5.5) |
 | El autor conoce poco Kotlin y Android | El agente explica en una línea cada decisión de Android o Compose al tomarla |
 | Marcas registradas si algún día se publica | Presets con nombres propios; nada de arte de Hasbro (D-18) |
+| Arte de lugares reales copiado de fotos o de terceros | Dibujo vectorial propio y estilizado, sin calcar fotos ni logos; fuentes SVG en el repo (D-27) |
 
 ---
 
