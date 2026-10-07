@@ -8,7 +8,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
-/** Editor de casillas (F4.1, D-39) en `propertyBoard`: lo editado es lo que cobra el motor. */
+/** Editor de casillas y reglas (F4.1, F4.2; D-39, D-40) en `propertyBoard`: lo editado es lo que cobra el motor. */
 class EditorTest {
 
     private val board = propertyBoard()
@@ -44,6 +44,26 @@ class EditorTest {
         val errors = validate(edited)
         assertTrue(ConfigError.NameLength(3) in errors)
         assertTrue(errors.any { it is ConfigError.RentCount && it.square == 3 })
+    }
+
+    @Test
+    fun `R-10 el Clasico con el salario editado cobra el nuevo al pasar por la salida`() {
+        val clasico = Preset.CLASSIC.load()
+        val edited = clasico.withRules(clasico.rules.copy(salary = 300))
+        val result = Engine.roll(edited, twoPlayers(edited, position = 38), Dice(1, 2))
+        assertEquals(1, result.state.players[0].position)
+        assertEquals(1800, result.state.players[0].money)
+        assertEquals(listOf(Event.SalaryPaid(0, 300)), result.events.filterIsInstance<Event.SalaryPaid>())
+        assertEquals(clasico.squares, edited.squares)
+    }
+
+    @Test
+    fun `D-09 una regla editada fuera de rango la marca el validador`() {
+        val clasico = Preset.CLASSIC.load()
+        val edited = clasico.withRules(clasico.rules.copy(salary = 100_000, maxHouses = 5))
+        val errors = validate(edited)
+        assertTrue(errors.any { it is ConfigError.RuleRange && it.field == RuleField.SALARY })
+        assertTrue(errors.any { it is ConfigError.RuleRange && it.field == RuleField.MAX_HOUSES })
     }
 
     @Test

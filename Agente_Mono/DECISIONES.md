@@ -406,3 +406,17 @@
 - **Captura:** `capturas/F4.1_editor.png`.
 - **Cómo se revierte:** quitar el botón del menú y `editing` en `MainActivity`; `art` y `withSquare` no estorban.
 - **Estado:** vigente.
+
+### D-40 · Editor de reglas: pestañas por tema, dentro del editor (F4.2)
+
+- **Pregunta:** cómo se ve el editor de reglas y desde dónde se entra.
+- **Del autor:** maqueta **B**, pestañas por tema con una calcomanía por regla y una línea que la explica (`capturas/F4.2_maquetas.png`; descartadas A, lista larga, y C, seis fichas grandes y «Más reglas»; las tres en `fd493f7`). Se entra por una pestaña «Casillas | Reglas» dentro del editor, no por otro botón del menú (que pasa a «Editar casillas y reglas»).
+- **Del agente:**
+  - *Motor:* `GameConfig.withRules(reglas)` (`engine/Editor.kt`); el ViewModel valida como en D-39 (solo se guarda si no añade errores). `EditorTest`: el Clásico con salario $300 cobra $300 al pasar la Salida (R-10); salario 100 000 y 5 casas los marca el validador.
+  - *Qué se edita* (`game/RuleRows.kt`, 28 filas en 6 temas: Dinero, Dados, Casas, Alquiler, Hipotecas, Fin): las opciones de F1.3 que el juego ya usa. Fuera: jugadores (se eligen en el menú), tratos entre jugadores (`tradeBuildings`, `tradeFee`, `mortgagedTradeInterest`: el motor aún no tiene `Trade`), fin por tiempo (no hay reloj), reclamar el alquiler y el bote de Parada Libre (el validador los rechaza, D-12, D-13), `bankUnlimited` y `unsoldStaysWithBank` (el motor no los distingue) y si hay Cárcel (depende del tablero; F4.3).
+  - *Cifras con − / +:* dinero de $10 bajo $100, de $50 bajo $1000, de $100 bajo $10 000 y de $1000 desde ahí; porcentajes de 5 en 5; conteos de 1 en 1; los dobles a la Cárcel saltan entre Nunca, 2..5. Precio fijo de casa y hotel y la subasta: «De cada casilla / Fijo» (o «Cualquier precio / Precio −»), que es el null de `RuleOptions`. Los rangos los pone el validador (D-09).
+  - *Marcas:* lo que difiere de la caja dice «antes $200» en rojo (`preset` en el ViewModel). Textos `rules_*` en `strings.xml` (los `rule_*` son del validador).
+  - *Extra de prueba:* `--es reglas <tema>` abre la pestaña Reglas en ese tema.
+- **Captura:** `capturas/F4.2_editor.png`.
+- **Cómo se revierte:** quitar la fila «Casillas | Reglas» de `EditorScreen` y `RulesPane`; `withRules` no estorba.
+- **Estado:** vigente.

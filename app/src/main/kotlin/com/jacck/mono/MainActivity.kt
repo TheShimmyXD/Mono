@@ -25,6 +25,7 @@ import com.jacck.mono.engine.model.MonoJson
 import com.jacck.mono.engine.model.SavedGame
 import com.jacck.mono.game.EditorScreen
 import com.jacck.mono.game.EditorViewModel
+import com.jacck.mono.game.RuleTab
 import com.jacck.mono.game.GameScreen
 import com.jacck.mono.game.GameViewModel
 import com.jacck.mono.game.NewGameScreen
@@ -41,7 +42,7 @@ const val LOG_TAG = "Mono"
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
  * `deuda`, `fin`) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
- * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39). La partida del menú se guarda tras cada jugada
+ * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
@@ -75,7 +76,7 @@ class MainActivity : ComponentActivity() {
                         var chosen by rememberSaveable { mutableStateOf(if (direct) Triple(preset, names, emptyList<String>()) else null) }
                         var resumed by rememberSaveable { mutableStateOf(false) }
                         // Tablero que se edita y los editados (JSON por preset); viven mientras la app esté abierta (F4.4 los guardará).
-                        var editing by rememberSaveable { mutableStateOf(if (intent.hasExtra("editor")) Preset.CLASSIC else null) }
+                        var editing by rememberSaveable { mutableStateOf(if (intent.hasExtra("editor") || intent.hasExtra("reglas")) Preset.CLASSIC else null) }
                         var edits by rememberSaveable { mutableStateOf(mapOf<Preset, String>()) }
                         val menuState = rememberSaveableStateHolder()
                         val saved = remember {
@@ -85,8 +86,10 @@ class MainActivity : ComponentActivity() {
                         val game = chosen
                         val ed = editing
                         if (game == null && resume == null && ed != null) {
-                            val evm = viewModel(key = "editor-$ed") { EditorViewModel(edits[ed]?.let(MonoJson::decodeConfig) ?: ed.load())
+                            val evm = viewModel(key = "editor-$ed") { EditorViewModel(edits[ed]?.let(MonoJson::decodeConfig) ?: ed.load(), preset = ed.load().rules)
                                 .also { vm -> intent.getIntExtra("editor", -1).takeIf { it in vm.config.squares.indices }?.let(vm::select) }
+                                .also { vm -> RuleTab.entries.firstOrNull { it.name.equals(intent.getStringExtra("reglas"), ignoreCase = true) }
+                                    ?.let { vm.showRules = true; vm.ruleTab = it } }
                             }
                             EditorScreen(evm) {
                                 if (evm.config != ed.load()) edits = edits + (ed to MonoJson.encodeConfig(evm.config))

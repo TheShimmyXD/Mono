@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import com.jacck.mono.BotonChiva
 import com.jacck.mono.Calcomania
 import com.jacck.mono.Chiva
+import com.jacck.mono.OpcionChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import com.jacck.mono.board.Board
@@ -51,8 +52,9 @@ import com.jacck.mono.engine.model.Utility
 import com.jacck.mono.message
 
 /**
- * El editor de casillas (F4.1, D-39, maqueta B): el tablero en anillo arriba (se toca la casilla) y
- * su ficha debajo. «Listo» (o atrás) vuelve al menú con lo guardado; lo no guardado se pierde.
+ * El editor (F4.1, F4.2; D-39, D-40), con dos pestañas: «Casillas», el tablero en anillo arriba (se
+ * toca la casilla) y su ficha debajo, y «Reglas» (`RulesPane`). «Listo» (o atrás) vuelve al menú
+ * con lo guardado; lo no guardado se pierde.
  */
 @Composable
 fun EditorScreen(vm: EditorViewModel, onDone: () -> Unit) {
@@ -62,14 +64,18 @@ fun EditorScreen(vm: EditorViewModel, onDone: () -> Unit) {
     val state = remember(config) { Engine.newGame(config, listOf("", ""), seed = 0).state }
     val res = LocalContext.current.resources
     PantallaChiva {
-        Column(
+        Text(
+            stringResource(R.string.editor_title, config.name), fontSize = 22.sp, textAlign = TextAlign.Center,
+            modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 6.dp),
+        )
+        Row(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            OpcionChiva(stringResource(R.string.editor_tab_squares), !vm.showRules, { vm.showRules = false }, Modifier.weight(1f))
+            OpcionChiva(stringResource(R.string.editor_tab_rules), vm.showRules, { vm.showRules = true }, Modifier.weight(1f))
+        }
+        if (vm.showRules) RulesPane(vm, Modifier.weight(1f)) else Column(
             Modifier.weight(1f).imePadding().verticalScroll(rememberScrollState()).padding(bottom = 10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Text(
-                stringResource(R.string.editor_title, config.name), fontSize = 22.sp, textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-            )
             Board(
                 config, state, Modifier.fillMaxWidth().aspectRatio(1f).padding(horizontal = 6.dp),
                 onSquare = vm::select, highlight = vm.selected, showTokens = false,
@@ -92,7 +98,11 @@ fun EditorScreen(vm: EditorViewModel, onDone: () -> Unit) {
             }
         }
         Row(Modifier.padding(start = 16.dp, end = 19.dp, bottom = 14.dp, top = 4.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            BotonChiva(stringResource(R.string.editor_save), vm::save, Modifier.weight(1f), enabled = vm.changed)
+            if (vm.showRules) {
+                BotonChiva(stringResource(R.string.rules_save), vm::saveRules, Modifier.weight(1f), enabled = vm.rulesChanged)
+            } else {
+                BotonChiva(stringResource(R.string.editor_save), vm::save, Modifier.weight(1f), enabled = vm.changed)
+            }
             BotonChiva(stringResource(R.string.editor_done), onDone, Modifier.weight(1f), principal = false)
         }
     }
