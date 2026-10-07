@@ -236,3 +236,13 @@
 - **Extras de prueba:** `propiedades` (`demo/SampleProperties.kt`: quien empieza tiene los marrones con 2 casas, los celestes y la Sabana hipotecada; solo para el Clásico) y `hoja` (la abre al arrancar), porque adb no toca la pantalla (D-23).
 - **Cómo se revierte:** la hoja es `PropertiesSheet`/`PropertyRow` en `GameScreen.kt`; `tryApply` no cambia `apply`.
 - **Estado:** vigente.
+
+### D-25 · Menú de nueva partida: todo en una pantalla (F3.5)
+
+- **Pregunta:** cómo se elige preset, cuántos juegan y sus nombres antes de la partida.
+- **Opciones vistas en el Redmi:** A todo en una pantalla, B asistente en 3 pasos, C mesa de jugadores con tarjetas para añadir y quitar (`capturas/F3.5_maqueta_{A,B,C}.png`).
+- **Elección (del autor):** A. `NewGameScreen` (`app/…/game/`): botones Clásico / Tío Rico, botones 2..6 (3 de entrada), un campo por jugador con su color de ficha y «Empezar».
+- **Nombres (del agente; no son reglas del juego):** campo vacío = nombre de muestra de esa posición (Ana, Beto…, en gris); se recortan los espacios; 12 caracteres como máximo (caben en el panel); dos nombres iguales, sin distinguir mayúsculas, se marcan «Ese nombre ya está» y no dejan empezar. `playerNames`/`repeatedNames` en `NewGameForm.kt` (5 pruebas).
+- **Arranque:** `MainActivity` abre el menú; con cualquiera de los extras de prueba (`jugadores`, `tio_rico`, `semilla`, `propiedades`, `hoja`) va directo a la partida como antes, para adb. Lo elegido sobrevive a que Android recree la pantalla (`rememberSaveable`). No hay vuelta al menú desde la partida (llega con el guardado, F3.6).
+- **Cómo se revierte:** quitar la rama del menú en `MainActivity`; el motor no cambia.
+- **Estado:** vigente.

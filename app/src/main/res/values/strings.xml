@@ -112,6 +112,13 @@
     <string name="game_over">Fin de la partida</string>
     <string name="winners">Gana %1$s.</string>
     <string name="new_game">Otra partida</string>
+    <string name="menu_title">Nueva partida</string>
+    <string name="menu_game">Juego</string>
+    <string name="menu_players">Jugadores</string>
+    <string name="menu_repeated">Ese nombre ya está</string>
+    <string name="menu_start">Empezar</string>
+    <string name="preset_classic">Clásico</string>
+    <string name="preset_tio_rico">Tío Rico</string>
     <string name="what_happened">Lo que pasó</string>
     <string name="rejected">El motor no lo permite: %1$s</string>
     <string name="deed_price">Precio: %1$s</string>
