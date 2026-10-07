@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -59,7 +58,7 @@ class MainActivity : ComponentActivity() {
         val names = resources.getStringArray(R.array.default_names).take(players)
         Log.i(LOG_TAG, "MainActivity creada: ${demo?.let { "muestra de $it" } ?: "$preset"}, $players jugadores, semilla $seed")
         setContent {
-            MaterialTheme {
+            ChivaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     if (mockup != null) {
                         Maqueta(mockup)

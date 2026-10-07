@@ -42,6 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jacck.mono.BotonChiva
+import com.jacck.mono.Calcomania
+import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import com.jacck.mono.board.Board
 import com.jacck.mono.board.BuildingIcons
@@ -75,8 +78,8 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
     val state = vm.state
     var showProperties by remember { mutableStateOf(openProperties) }
     var shownSquare by remember { mutableStateOf(openSquare) }
-    Box(Modifier.fillMaxSize().background(Color(0xFF2E5E4E)).safeDrawingPadding()) {
-        Board(vm.config, state, Modifier.fillMaxSize().padding(2.dp), onSquare = { shownSquare = it }) {
+    PantallaChiva {
+        Board(vm.config, state, Modifier.fillMaxSize().padding(4.dp), onSquare = { shownSquare = it }) {
             Center(vm) { showProperties = true }
         }
     }
@@ -109,28 +112,29 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
 private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
     val state = vm.state
     val player = state.players[state.current]
-    Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
-        Text(
-            stringResource(R.string.turn_of, player.name), fontSize = 18.sp, fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-        )
-        vm.lastDice?.let { DiceRow(it) }
-        PlayersPanel(state)
-        vm.error?.let {
-            Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp)
+    Column(Modifier.fillMaxSize().padding(2.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
+        Calcomania {
+            Text(
+                stringResource(R.string.turn_of, player.name), fontSize = 22.sp, textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+            )
+            vm.lastDice?.let { DiceRow(it) }
+            PlayersPanel(state, Modifier.padding(horizontal = 10.dp).padding(top = 4.dp, bottom = 8.dp))
+            vm.error?.let {
+                Text(
+                    stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp,
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
+                )
+            }
         }
         if (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn) {
-            OutlinedButton(onClick = onProperties, modifier = Modifier.fillMaxWidth()) {
-                IconImage(Icon.CASA, 20.dp)
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.my_properties))
-            }
+            BotonChiva(stringResource(R.string.my_properties), onProperties, principal = false, icono = Icon.CASA)
         }
         when {
             state.phase == TurnPhase.Roll && player.jailTurns == null ->
-                Button(onClick = { vm.act(Action.Roll) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.roll)) }
+                BotonChiva(stringResource(R.string.roll), { vm.act(Action.Roll) })
             state.phase == TurnPhase.EndOfTurn ->
-                Button(onClick = { vm.act(Action.EndTurn) }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.end_turn)) }
+                BotonChiva(stringResource(R.string.end_turn), { vm.act(Action.EndTurn) })
         }
     }
 }
@@ -138,12 +142,12 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
 @Composable
 private fun DiceRow(dice: Dice) {
     Row(
-        Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
+        Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconImage(Icon.dado(dice.first), 52.dp)
-        IconImage(Icon.dado(dice.second), 52.dp)
-        Text("= ${dice.total}", fontSize = 22.sp, fontWeight = FontWeight.Bold)
+        IconImage(Icon.dado(dice.first), 48.dp)
+        IconImage(Icon.dado(dice.second), 48.dp)
+        Text("= ${dice.total}", fontSize = 24.sp)
     }
 }
 

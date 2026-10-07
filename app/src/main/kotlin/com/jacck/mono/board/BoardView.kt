@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -31,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.jacck.mono.Chiva
 import com.jacck.mono.R
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
@@ -42,8 +42,6 @@ import com.jacck.mono.engine.model.Square
 /** Color de la ficha de cada jugador (2-6, D-05). */
 val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E24AA, 0xFF00ACC1).map { Color(it) }
 
-private val BoardBg = Color(0xFFF4EFE1)
-
 /**
  * El tablero en anillo (D-20) dibujado desde la configuración y el estado de la partida, para
  * cualquier N; [center] va dentro del anillo (dados, casilla, jugadores, botones).
@@ -53,7 +51,7 @@ fun Board(
     config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
     center: @Composable () -> Unit,
 ) {
-    BoxWithConstraints(modifier.background(BoardBg)) {
+    BoxWithConstraints(modifier) {
         val n = config.squares.size
         val grid = remember(n, maxWidth, maxHeight) { RingGrid.fit(n, maxWidth.value, maxHeight.value) }
         val cw = maxWidth / grid.cols
@@ -85,10 +83,10 @@ private fun SquareCell(
     val token = minOf(12.dp, (width - 6.dp) / 6)
     Column(
         modifier
-            .border(if (highlighted) 2.dp else 0.5.dp, if (highlighted) Color.Black else Color.Gray)
-            .background(BoardBg),
+            .background(if (highlighted) Chiva.Turno else Color.White)
+            .border(if (highlighted) 3.dp else 1.5.dp, Chiva.Tinta),
     ) {
-        groupColor(config, square)?.let { Box(Modifier.fillMaxWidth().height(width / 6).background(it)) }
+        groupColor(config, square)?.let { Box(Modifier.fillMaxWidth().height(width / 6).background(it).border(0.75.dp, Chiva.Tinta)) }
         Column(
             Modifier.weight(1f).fillMaxWidth().padding(horizontal = 2.dp).alpha(if (holding?.mortgaged == true) 0.35f else 1f),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -129,23 +127,21 @@ fun Token(color: Color, size: Dp) {
     Box(Modifier.padding(horizontal = 1.dp).size(size).background(color, CircleShape).border(1.dp, Color.Black, CircleShape))
 }
 
-/** Jugadores con su ficha y su dinero; el de turno, marcado. */
+/** Jugadores con su ficha y su dinero; el de turno, marcado. Va dentro del panel del centro (D-33). */
 @Composable
 fun PlayersPanel(state: GameState, modifier: Modifier = Modifier) {
-    Card(modifier.fillMaxWidth()) {
-        Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-            state.players.forEachIndexed { k, p ->
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.alpha(if (p.bankrupt) 0.4f else 1f)) {
-                    Token(PlayerColors[k], 12.dp)
-                    Spacer(Modifier.width(6.dp))
-                    if (k == state.current) IconImage(Icon.TURNO, 12.dp, Modifier.padding(end = 3.dp))
-                    Text(
-                        p.name,
-                        fontWeight = if (k == state.current) FontWeight.Bold else FontWeight.Normal,
-                        modifier = Modifier.weight(1f), fontSize = 14.sp,
-                    )
-                    Text(stringResource(R.string.money, p.money), fontSize = 14.sp)
-                }
+    Column(modifier.fillMaxWidth()) {
+        state.players.forEachIndexed { k, p ->
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 1.dp).alpha(if (p.bankrupt) 0.4f else 1f)) {
+                Token(PlayerColors[k], 14.dp)
+                Spacer(Modifier.width(6.dp))
+                if (k == state.current) IconImage(Icon.TURNO, 14.dp, Modifier.padding(end = 3.dp))
+                Text(
+                    p.name,
+                    fontWeight = if (k == state.current) FontWeight.Bold else FontWeight.Normal,
+                    modifier = Modifier.weight(1f), fontSize = 15.sp,
+                )
+                Text(stringResource(R.string.money, p.money), fontSize = 15.sp)
             }
         }
     }

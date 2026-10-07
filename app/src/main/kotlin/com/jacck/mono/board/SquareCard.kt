@@ -32,6 +32,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.jacck.mono.FranjaChiva
 import com.jacck.mono.R
 import com.jacck.mono.engine.Dice
 import com.jacck.mono.engine.model.GameConfig
@@ -49,7 +50,6 @@ import java.text.Normalizer
 private val Ink = Color(0xFF1B1B1B)
 private val Sky = Color(0xFF38C6F4)
 private val Now = Color(0xFFFFE08A)
-private val Stripe = listOf(0xFFE63946, 0xFFFFC21A, 0xFF1D7BEF, 0xFF2BB04A, 0xFFE5007E).map { Color(it) }
 
 /** Clave del arte de un lugar: el nombre sin tildes, en minúsculas y con `_` (como en `arte/arte.py`). */
 fun artKey(name: String): String =
@@ -70,7 +70,7 @@ fun SquareCard(config: GameConfig, state: GameState, square: Int, onClose: () ->
     Dialog(onDismissRequest = onClose) {
         Card(Modifier.fillMaxWidth().border(3.dp, Ink, RoundedCornerShape(16.dp)), shape = RoundedCornerShape(16.dp)) {
             Column(Modifier.verticalScroll(rememberScrollState())) {
-                ChivaStripe()
+                FranjaChiva(8.dp)
                 Box(Modifier.fillMaxWidth().background(band).padding(8.dp), contentAlignment = Alignment.Center) {
                     Text(sq.name.uppercase(), color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp, textAlign = TextAlign.Center)
                 }
@@ -81,7 +81,7 @@ fun SquareCard(config: GameConfig, state: GameState, square: Int, onClose: () ->
                 } else if (icon != null) {
                     Box(Modifier.fillMaxWidth().height(120.dp).background(Sky), contentAlignment = Alignment.Center) { IconImage(icon, 88.dp) }
                 }
-                if (art != null || icon != null) ChivaStripe()
+                if (art != null || icon != null) FranjaChiva(8.dp)
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     when (sq) {
                         is OwnableSquare -> OwnableDetails(config, state, square, sq, holding, group?.name)
@@ -89,7 +89,7 @@ fun SquareCard(config: GameConfig, state: GameState, square: Int, onClose: () ->
                         else -> Unit
                     }
                 }
-                ChivaStripe()
+                FranjaChiva(8.dp)
             }
         }
     }
@@ -170,13 +170,5 @@ private fun RentLine(label: String, amount: String, now: Boolean, icon: @Composa
         icon()
         Text(label, Modifier.weight(1f).padding(start = 4.dp), fontSize = 14.sp)
         Text(amount, fontWeight = if (now) FontWeight.Bold else FontWeight.Normal, fontSize = 14.sp)
-    }
-}
-
-/** Franja de chiva: dientes de colores sobre negro (D-28). */
-@Composable
-private fun ChivaStripe() {
-    Row(Modifier.fillMaxWidth().height(8.dp).background(Ink)) {
-        repeat(20) { Box(Modifier.weight(1f).fillMaxSize().padding(horizontal = 1.dp, vertical = 2.dp).background(Stripe[it % Stripe.size])) }
     }
 }

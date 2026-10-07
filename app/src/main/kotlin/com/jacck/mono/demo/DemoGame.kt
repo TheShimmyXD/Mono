@@ -18,6 +18,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jacck.mono.board.Board
+import com.jacck.mono.Calcomania
+import com.jacck.mono.PantallaChiva
 import com.jacck.mono.board.PlayersPanel
 import com.jacck.mono.engine.Engine
 import com.jacck.mono.engine.Preset
@@ -40,14 +42,14 @@ import com.jacck.mono.engine.model.Start
 fun DemoBoardScreen(n: Int, players: Int) {
     val config = remember(n) { demoConfig(n) }
     val state = remember(config, players) { demoState(config, players) }
-    Box(Modifier.fillMaxSize().background(Color(0xFF2E5E4E)).safeDrawingPadding()) {
+    PantallaChiva {
         Board(config, state, Modifier.fillMaxSize().padding(2.dp)) {
             Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
                 Text(
                     "${config.name} · ${config.squares.size}", fontSize = 18.sp, fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
-                PlayersPanel(state)
+                Calcomania { PlayersPanel(state, Modifier.padding(8.dp)) }
             }
         }
     }
