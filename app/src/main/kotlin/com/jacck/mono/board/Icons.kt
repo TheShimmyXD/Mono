@@ -36,7 +36,7 @@ enum class Icon(@DrawableRes val res: Int) {
     IMPUESTO(R.drawable.ic_impuesto), CASUALIDAD(R.drawable.ic_casualidad), ARCA(R.drawable.ic_arca),
     LOTERIA(R.drawable.ic_loteria), SORPRESA(R.drawable.ic_sorpresa), PARADA_LIBRE(R.drawable.ic_parada_libre),
     MIRADOR(R.drawable.ic_mirador), HAMACA(R.drawable.ic_hamaca), TURNO(R.drawable.ic_turno),
-    ENLACE(R.drawable.ic_enlace), PROPIO(R.drawable.ic_propio);
+    ENLACE(R.drawable.ic_enlace), PROPIO(R.drawable.ic_propio), MAQUINA(R.drawable.ic_maquina);
 
     companion object {
         /** La cara del dado que muestra [n] (1-6). */

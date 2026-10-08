@@ -84,7 +84,7 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
         SquareCard(vm.config, state, it) { shownSquare = null }
         return
     }
-    if (showProperties && vm.waitingFor == null && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
+    if (showProperties && vm.waitingFor == null && vm.machineTurn == null && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
         PropertiesSheet(vm) { showProperties = false }
         return
     }
@@ -93,8 +93,8 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
         NoticesDialog(lines, vm::dismissNotices)
         return
     }
-    // Decide el otro teléfono (F5.4): aquí solo se mira el tablero y el letrero del centro.
-    if (vm.waitingFor != null) return
+    // Decide el otro teléfono (F5.4) o la máquina (F5.8b): aquí solo se mira el tablero y el letrero.
+    if (vm.waitingFor != null || vm.machineTurn != null) return
     when (val phase = state.phase) {
         is TurnPhase.Roll -> if (state.players[state.current].jailTurns != null) JailDialog(vm)
         is TurnPhase.Buy -> BuyDialog(vm, phase.square)
@@ -134,6 +134,15 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
                     stringResource(if (vm.remote?.connected == false) R.string.waiting_cut else R.string.waiting_remote, waiting),
                     fontSize = 20.sp, textAlign = TextAlign.Center,
                 )
+            }
+            return@Column
+        }
+        val machine = vm.machineTurn
+        if (machine != null) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                IconImage(Icon.MAQUINA, 28.dp)
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.machine_playing, machine), fontSize = 20.sp, textAlign = TextAlign.Center)
             }
             return@Column
         }

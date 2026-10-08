@@ -49,11 +49,11 @@ const val LOG_TAG = "Mono"
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
  * `deuda`, `fin`) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
- * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). La partida del menú se guarda tras cada jugada
+ * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). Con `maquina` (índices, `--es maquina 1+2`) la partida abre con esos jugadores en manos de la máquina (F5.8b, D-55). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
-private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "casilla", "fase")
+private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "casilla", "fase", "maquina")
 
 class MainActivity : ComponentActivity() {
 
@@ -69,6 +69,7 @@ class MainActivity : ComponentActivity() {
         val mockup = intent.getStringExtra("maqueta")
         val phase = intent.getStringExtra("fase")
         val link = intent.getStringExtra("enlace")
+        val machineSeats = intent.getStringExtra("maquina")?.split(Regex("\\D+"))?.filter { it.isNotEmpty() }?.map { it.toInt() }?.filter { it < players }.orEmpty()
         val direct = GAME_EXTRAS.any(intent::hasExtra)
         val saveFile = SaveFile(filesDir)
         val shelf = BoardShelf(filesDir)
@@ -78,7 +79,7 @@ class MainActivity : ComponentActivity() {
             ChivaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     if (link == "sala") {
-                        LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), seed) { finish() }
+                        LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), emptySet(), seed) { finish() }
                     } else if (link == "unirme") {
                         GuestScreen { finish() }
                     } else if (mockup != null) {
@@ -90,6 +91,7 @@ class MainActivity : ComponentActivity() {
                         var resumed by rememberSaveable { mutableStateOf(false) }
                         // Jugadores del otro teléfono (F5.3, D-47): con alguno, la partida espera en la sala.
                         var seats by rememberSaveable { mutableStateOf(emptyList<Int>()) }
+                        var bots by rememberSaveable { mutableStateOf(machineSeats) } // los de la máquina (F5.8b)
                         var joining by rememberSaveable { mutableStateOf(false) }
                         var rooms by rememberSaveable { mutableStateOf(0) } // una sala nueva cada vez (su ViewModel)
                         // Tableros (F4.4, D-42): los originales y los propios de `files/tableros`; `selected` y
@@ -152,29 +154,32 @@ class MainActivity : ComponentActivity() {
                                         own = shelf.list()
                                         selected = Preset.CLASSIC.name
                                     },
-                                ) { n, t, s ->
-                                    Log.i(LOG_TAG, "menú: ${board.key} ${board.config.name} (${board.config.squares.size} casillas) con ${n.size} jugadores, personajes $t, otro teléfono $s")
+                                ) { n, t, s, b ->
+                                    Log.i(LOG_TAG, "menú: ${board.key} ${board.config.name} (${board.config.squares.size} casillas) con ${n.size} jugadores, personajes $t, otro teléfono $s, máquina $b")
                                     seats = s.sorted()
+                                    bots = b.sorted()
                                     chosen = Triple(board.key, n, t)
                                 }
                             }
                         } else if (game != null && resume == null && seats.isNotEmpty()) {
                             val config = boards.firstOrNull { it.key == game.first }?.config ?: Preset.CLASSIC.load()
-                            LinkedGame("sala-$rooms", config, game.second, game.third, seats.toSet(), seed) {
+                            LinkedGame("sala-$rooms", config, game.second, game.third, seats.toSet(), bots.toSet(), seed) {
                                 Log.i(LOG_TAG, "sala: vuelve al menú")
                                 chosen = null
                                 seats = emptyList()
+                                bots = emptyList()
                                 rooms++
                             }
                         } else {
+                            val machines = resume?.bots ?: bots.toSet()
                             val keep: (GameConfig, GameState) -> Unit = if (direct) { _, _ -> } else { c, s ->
-                                saveFile.write(SavedGame(c, s))
+                                saveFile.write(SavedGame(c, s, machines))
                                 Log.i(LOG_TAG, "guardada: turno ${s.turn}, ${s.phase::class.simpleName}")
                             }
                             val vm = viewModel {
                                 if (resume != null) {
                                     Log.i(LOG_TAG, "sigue la partida guardada: turno ${resume.state.turn}, ${resume.state.players.map { it.name to it.money }}")
-                                    GameViewModel(resume.config, resume.state.players.map { it.name }, seed, resumed = resume.state, onState = keep)
+                                    GameViewModel(resume.config, resume.state.players.map { it.name }, seed, resumed = resume.state, onState = keep, bots = machines)
                                 } else {
                                     val (p, n, t) = requireNotNull(game)
                                     val config = boards.firstOrNull { it.key == p }?.config ?: Preset.CLASSIC.load()
@@ -183,7 +188,7 @@ class MainActivity : ComponentActivity() {
                                         sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t).also { if (phase != null) it.dismissNotices() }
+                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines).also { if (phase != null) it.dismissNotices() }
                                 }
                             }
                             GameScreen(vm, openProperties = sheet, openSquare = square) { System.currentTimeMillis() }

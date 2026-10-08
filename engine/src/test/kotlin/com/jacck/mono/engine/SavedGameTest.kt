@@ -56,4 +56,15 @@ class SavedGameTest {
         back.players.forEach { assertNull(it.token) }
         assertEquals(state.players.map { it.copy(token = null) }, back.players)
     }
+
+    @Test
+    fun `F5-8b quien juega la maquina se guarda con la partida y una vieja carga sin maquinas`() {
+        val config = Preset.CLASSIC.load()
+        val state = Engine.newGame(config, listOf("Ana", "Beto", "Caro"), 7).state
+        val json = MonoJson.encodeSaved(SavedGame(config, state, bots = setOf(1, 2)))
+        assertEquals(setOf(1, 2), MonoJson.decodeSaved(json).bots)
+        val old = MonoJson.encodeSaved(SavedGame(config, state, bots = setOf(1))).replace(Regex(",\\s*\"bots\":\\s*\\[[^\\]]*]"), "")
+        assertTrue("\"bots\"" !in old, "el JSON viejo no trae máquinas")
+        assertEquals(emptySet<Int>(), MonoJson.decodeSaved(old).bots)
+    }
 }

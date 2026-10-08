@@ -1,6 +1,7 @@
 package com.jacck.mono.game
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -9,7 +10,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -22,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.semantics.Role
@@ -58,7 +62,7 @@ import com.jacck.mono.engine.model.GameState
 fun NewGameScreen(
     saved: GameState?, onResume: () -> Unit, boards: List<BoardChoice>, selected: String, onSelect: (String) -> Unit,
     broken: Set<String>, onEdit: () -> Unit, onDuplicate: () -> Unit, onRename: (String) -> Unit, onDelete: () -> Unit,
-    onJoin: () -> Unit, onStart: (List<String>, List<String>, Set<Int>) -> Unit,
+    onJoin: () -> Unit, onStart: (List<String>, List<String>, Set<Int>, Set<Int>) -> Unit,
 ) {
     val defaults = stringArrayResource(R.array.default_names).toList()
     val board = boards.firstOrNull { it.key == selected } ?: boards.first()
@@ -69,7 +73,10 @@ fun NewGameScreen(
     var picks by rememberSaveable { mutableStateOf(List(defaults.size) { it }) }
     // Quién juega en el otro teléfono (F5.3, D-47, D-48); con alguno, «Empezar» abre la sala.
     var remote by rememberSaveable { mutableStateOf(List(defaults.size) { false }) }
-    val seats = (0 until count).filter { remote[it] }.toSet()
+    // Quién juega la máquina (F5.8b, maqueta B, D-55): el robot junto al nombre.
+    var machine by rememberSaveable { mutableStateOf(List(defaults.size) { false }) }
+    val bots = (0 until count).filter { machine[it] }.toSet()
+    val seats = (0 until count).filter { remote[it] && !machine[it] }.toSet()
     val tokens = playerTokens(picks, count, Personajes.size)
     val names = playerNames(typed, defaults, count)
     val repeated = repeatedNames(names)
@@ -143,16 +150,26 @@ fun NewGameScreen(
                     }
                     (0 until count).forEach { i ->
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                            OutlinedTextField(
-                                value = typed[i],
-                                onValueChange = { v -> typed = typed.toMutableList().also { it[i] = v.take(MAX_NAME) } },
-                                placeholder = { Text(defaults[i]) },
-                                singleLine = true,
-                                isError = i in repeated,
-                                supportingText = if (i in repeated) ({ Text(stringResource(R.string.menu_repeated)) }) else null,
-                                colors = fieldColors,
-                                modifier = Modifier.fillMaxWidth(),
-                            )
+                            Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                OutlinedTextField(
+                                    value = typed[i],
+                                    onValueChange = { v -> typed = typed.toMutableList().also { it[i] = v.take(MAX_NAME) } },
+                                    placeholder = { Text(defaults[i]) },
+                                    singleLine = true,
+                                    isError = i in repeated,
+                                    supportingText = if (i in repeated) ({ Text(stringResource(R.string.menu_repeated)) }) else null,
+                                    colors = fieldColors,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                val forma = RoundedCornerShape(10.dp)
+                                Box(
+                                    Modifier.padding(top = 4.dp).size(52.dp).clip(forma).background(Color.White).border(2.dp, Chiva.Tinta, forma)
+                                        .clickable(role = Role.Switch, onClickLabel = stringResource(R.string.menu_machine)) {
+                                            machine = machine.toMutableList().also { it[i] = !it[i] }
+                                        },
+                                    contentAlignment = Alignment.Center,
+                                ) { IconImage(Icon.MAQUINA, 34.dp, Modifier.alpha(if (machine[i]) 1f else 0.35f)) }
+                            }
                             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
                                 Personajes.forEachIndexed { k, (_, pj) ->
                                     val owner = tokens.indexOf(k)
@@ -163,7 +180,8 @@ fun NewGameScreen(
                                     )
                                 }
                             }
-                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            if (machine[i]) Text(stringResource(R.string.menu_machine_note), fontSize = 15.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
+                            else Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 OpcionChiva(stringResource(R.string.menu_here), !remote[i], { remote = remote.toMutableList().also { it[i] = false } }, Modifier.weight(1f))
                                 OpcionChiva(stringResource(R.string.menu_remote), remote[i], { remote = remote.toMutableList().also { it[i] = true } }, Modifier.weight(1.4f), Icon.ENLACE)
                             }
@@ -174,8 +192,8 @@ fun NewGameScreen(
         }
         Box(Modifier.padding(start = 16.dp, end = 19.dp, bottom = 14.dp, top = 4.dp)) {
             BotonChiva(
-                stringResource(if (seats.isEmpty()) R.string.menu_start else R.string.menu_wait), { onStart(names, tokens.map { Personajes[it].first }, seats) },
-                enabled = repeated.isEmpty() && board.key !in broken && seats.size < count, // alguien juega aquí
+                stringResource(if (seats.isEmpty()) R.string.menu_start else R.string.menu_wait), { onStart(names, tokens.map { Personajes[it].first }, seats, bots) },
+                enabled = repeated.isEmpty() && board.key !in broken && seats.size + bots.size < count, // alguien juega aquí
             )
         }
     }

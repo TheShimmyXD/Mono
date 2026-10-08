@@ -5,6 +5,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.jacck.mono.LOG_TAG
 import com.jacck.mono.engine.Dice
 import com.jacck.mono.engine.Engine
@@ -15,6 +16,10 @@ import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.TurnPhase
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 /**
  * La partida en curso (F3.3): guarda el estado del motor y le pasa cada acción (D-02). Un ViewModel
@@ -24,6 +29,8 @@ import com.jacck.mono.engine.model.TurnPhase
  * `tokens`: el personaje de cada jugador, escogido en el menú (FB.4, D-36).
  * Con `remote` la partida está enlazada con otro teléfono (F5.4, D-51): las jugadas de aquí van por
  * `remote.play`, las de allá llegan por `remote.listen`, y no se guarda ni se vuelve a empezar.
+ * Los jugadores de `bots` los juega la máquina (F5.8b, D-55): cuando le toca, su jugada (`Machine`)
+ * después de `pause` ms, y lo que hizo va entero a «Lo que pasó», como lo del otro teléfono.
  */
 class GameViewModel(
     val config: GameConfig,
@@ -34,6 +41,8 @@ class GameViewModel(
     private val onState: (GameConfig, GameState) -> Unit = { _, _ -> },
     private val tokens: List<String> = emptyList(),
     val remote: Remote? = null,
+    val bots: Set<Int> = emptySet(),
+    private val pause: Long = 900,
 ) : ViewModel() {
 
     private val first = resumed?.let { Result(it, emptyList()) } ?: start(seed)
@@ -66,6 +75,13 @@ class GameViewModel(
             return decider(state).takeIf { it in r.seats }?.let { state.players[it].name }
         }
 
+    /** El nombre del jugador de la máquina que tiene que decidir; null si decide una persona. */
+    val machineTurn: String?
+        get() = if (state.phase is TurnPhase.Over) null else decider(state).takeIf { it in bots }?.let { state.players[it].name }
+
+    private val random = Random(seed)
+    private var machine: Job? = null
+
     init {
         onState(config, state)
         remote?.listen { n, result ->
@@ -74,15 +90,29 @@ class GameViewModel(
                 show(null, result)
             }
         }
+        playMachine()
     }
 
     /** La partida nueva; `prepare` reparte propiedades de prueba (extra `propiedades`, F3.4). */
     private fun start(seed: Long) = Engine.newGame(config, names, seed, tokens).let { it.copy(state = prepare(it.state)) }
 
-    fun act(action: Action) {
+    fun act(action: Action) = play(action, byMachine = false)
+
+    /** Si decide la máquina, su jugada después de la pausa; una a la vez. */
+    private fun playMachine() {
+        if (machineTurn == null || machine?.isActive == true) return
+        machine = viewModelScope.launch {
+            delay(pause)
+            machine = null
+            val action = Machine.next(config, state, bots, random)
+            if (action != null) play(action, byMachine = true) else Log.w(LOG_TAG, "la máquina no tiene jugada en ${state.phase}")
+        }
+    }
+
+    private fun play(action: Action, byMachine: Boolean) {
         try {
             val result = remote?.play(action)?.let { (n, r) -> seen = n; r } ?: Engine.apply(config, state, action)
-            show(action, result)
+            show(action, result, byMachine)
         } catch (e: IllegalActionException) {
             Log.w(LOG_TAG, "rechazada: $action (${e.message})")
             error = e.message
@@ -93,14 +123,16 @@ class GameViewModel(
     }
 
     /** Muestra lo que dejó una jugada; [action] es null si vino del otro teléfono. */
-    private fun show(action: Action?, result: Result) {
-        Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[state.current].name}: ${action ?: "otro teléfono"} → ${result.events}")
+    private fun show(action: Action?, result: Result, byMachine: Boolean = false) {
+        val who = if (byMachine) " (máquina)" else ""
+        Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[state.current].name}$who: ${action ?: "otro teléfono"} → ${result.events}")
         state = result.state
         onState(config, state)
         // Lo del otro teléfono no se vio aquí: se cuenta todo, no solo lo notable (D-51).
-        if (action == null || result.events.any { it.isNotable() }) notices = notices + result.events
+        if (action == null || byMachine || result.events.any { it.isNotable() }) notices = notices + result.events
         result.events.filterIsInstance<Event.DiceRolled>().lastOrNull()?.let { lastDice = it.dice }
         error = null
+        playMachine()
     }
 
     fun dismissNotices() {
@@ -116,6 +148,7 @@ class GameViewModel(
         notices = fresh.events
         lastDice = null
         error = null
+        playMachine()
     }
 
     override fun onCleared() {

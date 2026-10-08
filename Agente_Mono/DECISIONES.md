@@ -557,3 +557,12 @@
 - **Medido:** `BotsTest`: 10 partidas cortas ($300, salario $0, 2 jugadores, asientos alternados, semillas 1-10): la lista gana 10/10, todas terminan, turnos 17-73 (mediana 28,5). La ventaja grande es la subasta: la simple siempre pasa.
 - **Cómo se revierte:** `mono-pc` vuelve a su `choose` propio y se borra `bot/`.
 - **Estado:** vigente.
+
+### D-55 · F5.8b: «Máquina» es el robot junto al nombre (maqueta B) y la juega el `GameViewModel` con pausa
+
+- **Del autor (2026-10-07):** de las maquetas A (tercera opción «Aquí · Otro · Máquina»), B (botón con el robot junto al nombre) y C (contador «Máquinas»), eligió la **B** (`capturas/f5_8b_maquetas.png`).
+- **Decisión:** ícono `maquina` en `arte.py` (cabeza de robot, `Icon.MAQUINA`, K18). En el menú, el robot apagado (35 %) junto a cada nombre; prendido, cambia «Aquí / Otro teléfono» por «Juega la máquina»; «Empezar» pide que alguien juegue aquí. `game/Machine.kt` (sin Android): si `decider` es de `bots`, la jugada de `SmartBot` (o la de `SimpleBot` si la lista no tiene). El `GameViewModel` la juega con `viewModelScope` tras `pause` = 900 ms, una a la vez; lo que hizo va entero a «Lo que pasó» (como lo del otro teléfono, D-51) y en su turno no hay botones, sino el robot y «Juega X». `SavedGame.bots` guarda quién es máquina (una partida vieja carga sin máquinas); también vale en la sala del enlace. Extra de prueba `maquina` (`--es maquina 1+2`).
+- **Medido:** `MachineTest`: 5 partidas cortas de 3 máquinas terminan; en el Redmi (`--es maquina 1 --el semilla 7`), Beto tiró, sacó carta, compró la Estación de la Sabana y pasó el turno, con 903 ms entre jugadas (log) (`capturas/f5_8b_maquina_juega.png`).
+- **Ojo:** el aviso «Lo que pasó» tapa el letrero «Juega X» casi siempre (la máquina sigue jugando debajo); se juzga en F5.8c.
+- **Cómo se revierte:** se quitan `bots` del `GameViewModel`, del menú y de `SavedGame`, y `Machine.kt`.
+- **Estado:** vigente.

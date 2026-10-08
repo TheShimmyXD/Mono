@@ -2412,12 +2412,21 @@ def propio():
     return [("bolt", star(12, 12.6, 10.5, 4.6))]
 
 
+def maquina():
+    """Jugador que juega solo (F5.8, D-52): cabeza de robot con antena."""
+    return [("slate", rect(2, 11, 2.5, 5)), ("slate", rect(19.5, 11, 2.5, 5)),
+            ("ink", lines([(12, 7, 12, 4)])), ("roof", circle(12, 3, 2)),
+            ("stone", rrect(4, 7, 16, 14, 3.5)),
+            ("bolt", circle(8.7, 12.5, 2.1)), ("bolt", circle(15.3, 12.5, 2.1)),
+            ("pip", rect(8, 16.5, 8, 1.8))]
+
+
 ICONOS = {"casa": casa, "hotel": hotel, **{f"dado_{n}": (lambda n=n: dado(n)) for n in range(1, 7)},
           "salida": salida, "carcel": carcel, "vayase_carcel": vayase_carcel, "estacion": estacion,
           "energia": energia, "acueducto": acueducto, "impuesto": impuesto, "casualidad": casualidad,
           "arca": arca, "loteria": loteria, "sorpresa": sorpresa, "parada_libre": parada_libre,
           "mirador": mirador, "hamaca": hamaca, "turno": turno,
-          "enlace": enlace, "propio": propio}
+          "enlace": enlace, "propio": propio, "maquina": maquina}
 ICONO_ANCHO = 1.1
 
 # ---------- personajes (FB.3): lienzo 48 x 48, sin fondo ----------

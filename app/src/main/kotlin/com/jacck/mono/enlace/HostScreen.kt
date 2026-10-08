@@ -46,11 +46,11 @@ fun clock(seconds: Long): String = "%d:%02d".format(seconds / 60, seconds % 60)
  * la sala hasta que llega el saludo del invitado y entonces la partida. [onCancel] = salir de la sala.
  */
 @Composable
-fun LinkedGame(key: String, config: GameConfig, names: List<String>, tokens: List<String>, seats: Set<Int>, seed: Long, onCancel: () -> Unit) {
+fun LinkedGame(key: String, config: GameConfig, names: List<String>, tokens: List<String>, seats: Set<Int>, bots: Set<Int>, seed: Long, onCancel: () -> Unit) {
     val context = LocalContext.current
     val vm = viewModel(key = key) {
         val host = Host(config, Engine.newGame(config, names, seed, tokens).state, seats)
-        GameViewModel(config, names, seed, resumed = host.state, tokens = tokens, remote = HostRoom(context, host))
+        GameViewModel(config, names, seed, resumed = host.state, tokens = tokens, remote = HostRoom(context, host), bots = bots)
     }
     val room = vm.remote as HostRoom
     if (room.started) {
