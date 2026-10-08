@@ -2,7 +2,6 @@ package com.jacck.mono.board
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,10 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Card
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -31,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import com.jacck.mono.FranjaChiva
 import com.jacck.mono.R
 import com.jacck.mono.engine.Dice
@@ -57,20 +51,10 @@ fun artKey(name: String): String =
         .replace(Regex("[^a-z0-9]+"), "_").trim('_')
 
 /**
- * Carta de chiva de una casilla (FA.3, D-30): se abre al tocarla en el tablero y se cierra tocando
- * fuera. Arte del lugar (si ya lo tiene) o su ícono, nombre en la franja del grupo, alquileres con
- * la fila que corresponde ahora resaltada, precios, hipoteca y dueño. Cifras del motor.
+ * Carta de chiva de una casilla (FA.3, D-30), en la ventana al tocarla en el tablero (FD.6, D-72).
+ * Arte del lugar (si ya lo tiene) o su ícono, nombre en la franja del grupo, alquileres con la fila
+ * que corresponde ahora resaltada, precios, hipoteca y dueño. Cifras del motor.
  */
-@Composable
-fun SquareCard(config: GameConfig, state: GameState, square: Int, onClose: () -> Unit) {
-    Dialog(onDismissRequest = onClose) {
-        Card(Modifier.fillMaxWidth().border(3.dp, Ink, RoundedCornerShape(16.dp)), shape = RoundedCornerShape(16.dp)) {
-            SquareFace(config, state, square, Modifier.verticalScroll(rememberScrollState()))
-        }
-    }
-}
-
-/** Lo que lleva la carta de una casilla, sin la ventana que la contiene: franjas, nombre, arte y cifras. */
 @Composable
 fun SquareFace(config: GameConfig, state: GameState, square: Int, modifier: Modifier = Modifier) {
     val sq = config.squares[square]

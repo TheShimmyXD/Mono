@@ -18,12 +18,25 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.foundation.text.TextAutoSize
-import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.animation.core.animate
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Velocity
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,7 +78,7 @@ import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
 import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.board.PlayersRow
-import com.jacck.mono.board.SquareCard
+import com.jacck.mono.board.SquareFace
 import com.jacck.mono.board.PlayerToken
 import com.jacck.mono.engine.Dice
 import com.jacck.mono.engine.Event
@@ -74,7 +87,6 @@ import com.jacck.mono.engine.mortgageValue
 import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
-import com.jacck.mono.engine.model.Holding
 import com.jacck.mono.engine.model.OwnableSquare
 import com.jacck.mono.engine.model.Property
 import com.jacck.mono.engine.model.Station
@@ -85,11 +97,11 @@ import com.jacck.mono.engine.model.Utility
  * La partida en el tablero (F3.3, D-22): bajo los íconos, el letrero del turno con lo que toca y sus
  * botones (FD.4, D-69, D-70); en el centro, los dados y lo que hace falta para decidir (la escritura,
  * la subasta, lo que hizo la máquina). Arriba, los
- * íconos de los jugadores con su dinero ([hideMoney] lo abre oculto, extra `oculto`, D-66); un toque abre
- * su tarjeta y marca sus casillas (FC.3, D-60).
- * Las propiedades de cada uno van en una hoja que sube desde abajo (F3.4, D-24): la propia, en su
- * turno, con sus jugadas; la de otro, solo para mirar. Con [onMenu], «atrás» pregunta si se vuelve al
- * menú y el final de la partida lo ofrece (D-63).
+ * íconos de los jugadores con su dinero ([hideMoney] lo abre oculto, extra `oculto`, D-66).
+ * Tocar una casilla o un ícono pone su detalle en la ventana (FD.6, D-72): la carta de la casilla, o
+ * el jugador con sus propiedades (marcadas en el tablero; las propias, en su turno, con sus jugadas);
+ * deslizarlo hacia arriba lo saca volando. El final de la partida también va en la ventana. Solo
+ * «¿Volver al menú?» ([onMenu], con «atrás», D-63) y el «¿Seguro?» de la quiebra van encima (D-67).
  */
 @Composable
 fun GameScreen(
@@ -97,15 +109,22 @@ fun GameScreen(
     openCard: Int? = null, onMenu: (() -> Unit)? = null, openMenu: Boolean = false, hideMoney: Boolean = false, newSeed: () -> Long,
 ) {
     val state = vm.state
-    // Hoja abierta: la de quién (null, ninguna). La del extra `hoja` es la de `tarjeta` o, sin ella, la de quien juega.
-    var sheetOf by remember { mutableStateOf(if (openProperties) openCard?.takeIf { it in state.players.indices } ?: state.current else null) }
-    var cardOf by rememberSaveable { mutableStateOf(openCard?.takeIf { it in state.players.indices }) }
+    // Lo tocado en la ventana (null, nada). Los extras `casilla`, `tarjeta` y `hoja` lo abren (sin `tarjeta`, quien juega).
+    var detail by remember {
+        mutableStateOf(
+            openSquare?.takeIf { it in vm.config.squares.indices }?.let { Shown.Square(it) }
+                ?: (openCard?.takeIf { it in state.players.indices } ?: state.current.takeIf { openProperties })?.let { Shown.Player(it) },
+        )
+    }
+    val cardOf = (detail as? Shown.Player)?.player
     var showMoney by rememberSaveable { mutableStateOf(!hideMoney) }
     var askMenu by remember { mutableStateOf(openMenu) }
     BackHandler(enabled = onMenu != null) { askMenu = true }
-    var shownSquare by remember { mutableStateOf(openSquare) }
     // El «¿Seguro?» de la quiebra en una deuda: es del teléfono, va en ventana (D-67); `seguro` lo abre.
     var confirmDebt by remember { mutableStateOf(askBankruptcy && state.phase is TurnPhase.Debt) }
+    // «Declararme en quiebra» desde el jugador en la ventana; `hoja` y `seguro` lo abren.
+    var confirmMe by remember { mutableStateOf(askBankruptcy && openProperties && state.phase !is TurnPhase.Debt) }
+    val localTurn = vm.waitingFor == null && vm.machineTurn == null
     // La ficha camina con un saltito por casilla (FC.1, D-59): `steps` va de 0 al largo del recorrido.
     // La casilla comprada vuela al ícono (FD.1, D-65) y los billetes de un pago van de un ícono a otro
     // (FD.2, D-66): `steps` va de 0 a 1. `playing` dice a cuál ya se le puso `steps` en 0.
@@ -153,7 +172,7 @@ fun GameScreen(
     val f = if (playing == vm.moved) steps.value.coerceIn(0f, 1f) else 0f
     PantallaChiva {
         Board(
-            vm.config, state, Modifier.fillMaxSize().padding(4.dp), onSquare = { shownSquare = it },
+            vm.config, state, Modifier.fillMaxSize().padding(4.dp), onSquare = { detail = tapped(detail, Shown.Square(it)) },
             highlight = if (walk == null) state.players[state.current].position else null, hops = hops,
             marks = cardOf?.let { k -> state.holdings.filterValues { it.owner == k }.keys }.orEmpty(),
             markColor = cardOf?.let { PlayerColors[it] } ?: Color.Unspecified,
@@ -165,7 +184,7 @@ fun GameScreen(
                 PlayersRow(
                     state, showMoney, Modifier.zIndex(1f), money = shownMoney(state.players.map { it.money }, vm.moving, f),
                     swing = pay?.deltas.orEmpty(), swingF = f,
-                    onTap = { cardOf = if (cardOf == it) null else it }, onLongPress = { showMoney = !showMoney },
+                    onTap = { detail = tapped(detail, Shown.Player(it)) }, onLongPress = { showMoney = !showMoney },
                     onPlaced = { k, c -> icons[k] = c },
                 )
                 turnBar(vm.config, state, vm.bots, vm.remote?.seats.orEmpty(), vm.held)?.let { bar ->
@@ -173,14 +192,22 @@ fun GameScreen(
                         when {
                             b.action != null -> vm.act(b.action)
                             b.kind == BarKind.NEXT -> vm.next()
-                            b.kind == BarKind.SELL_OR_MORTGAGE -> sheetOf = decider(state)
+                            b.kind == BarKind.SELL_OR_MORTGAGE -> detail = Shown.Player(decider(state))
                             b.kind == BarKind.BANKRUPTCY -> confirmDebt = true
                         }
                     }
                 }
-                val k = cardOf
                 Box(Modifier.weight(1f).padding(top = 10.dp), contentAlignment = Alignment.Center) {
-                    if (k != null) PlayerCard(state, k, onProperties = { sheetOf = k }) { cardOf = null } else Window(vm)
+                    val phase = state.phase
+                    if (phase is TurnPhase.Over) {
+                        OverWindow(vm, phase.winners, onMenu?.let { { vm.leave(); it() } }) { detail = null; vm.restart(newSeed()) }
+                    } else Window(vm)
+                    when (val top = shown(detail, phase)) {
+                        is Shown.Square, is Shown.Player -> DetailWindow(
+                            vm, top, manage = top is Shown.Player && canManage(state, top.player, localTurn), onBankrupt = { confirmMe = true },
+                        ) { detail = null }
+                        else -> Unit
+                    }
                 }
             }
         }
@@ -189,20 +216,14 @@ fun GameScreen(
         ConfirmMenu(linked = vm.remote != null, onCancel = { askMenu = false }) { vm.leave(); onMenu() }
         return
     }
-    if (motion != null) return // la decisión sale cuando la ficha llega y la casilla vuela
-    // La carta de una casilla (FA.3) va primero: los diálogos del turno vuelven al cerrarla.
-    shownSquare?.let {
-        SquareCard(vm.config, state, it) { shownSquare = null }
+    if (motion != null) return // el «¿Seguro?» sale cuando la ficha llega y la casilla vuela
+    if (confirmMe && cardOf != null && canManage(state, cardOf, localTurn)) {
+        ConfirmBankruptcy(vm, cardOf, null, onCancel = { confirmMe = false }) { confirmMe = false }
         return
     }
-    sheetOf?.let { k ->
-        PropertiesSheet(vm, k, canManage(state, k, vm.waitingFor == null && vm.machineTurn == null), askBankruptcy) { sheetOf = null }
-        return
-    }
-    // Las decisiones del turno van en el letrero (FD.4); el final de la partida, hasta FD.6, en ventana.
+    // Las decisiones del turno van en el letrero (FD.4) y el final, en la ventana (FD.6).
     when (val phase = state.phase) {
-        is TurnPhase.Over -> OverDialog(vm, phase.winners, onMenu?.let { { vm.leave(); it() } }) { vm.restart(newSeed()) }
-        is TurnPhase.Debt -> if (confirmDebt && vm.waitingFor == null && vm.machineTurn == null) {
+        is TurnPhase.Debt -> if (confirmDebt && localTurn) {
             ConfirmBankruptcy(vm, phase.debts.first().debtor, phase.debts.first().creditor, onCancel = { confirmDebt = false }) { confirmDebt = false }
         }
         else -> Unit
@@ -355,94 +376,6 @@ private fun DiceIcons(dice: Dice, size: Dp) {
     }
 }
 
-/**
- * Hoja de propiedades de [owner] (F3.4, D-24; FC.3, D-60): sus casillas en orden del anillo, con su
- * franja y sus edificios. Si [manage], un botón por cada jugada que el motor acepta ahora
- * (`propertyMoves`) y «Declararme en quiebra» (D-56); si no, solo se mira.
- */
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun PropertiesSheet(vm: GameViewModel, owner: Int, manage: Boolean, ask: Boolean, onClose: () -> Unit) {
-    val state = vm.state
-    val mine = state.holdings.filter { it.value.owner == owner }.toSortedMap()
-    var confirm by remember { mutableStateOf(ask && manage) }
-    if (confirm) {
-        ConfirmBankruptcy(vm, owner, null, onCancel = { confirm = false }) { onClose() }
-        return
-    }
-    ModalBottomSheet(
-        onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
-        containerColor = Chiva.Sol,
-    ) {
-        Column(
-            Modifier.padding(start = 14.dp, end = 17.dp).padding(bottom = 24.dp).verticalScroll(rememberScrollState()),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            Calcomania {
-                Row(Modifier.fillMaxWidth().background(Chiva.Techo).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    PlayerToken(state, owner, 30.dp)
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        stringResource(R.string.properties_title, state.players[owner].name), color = Color.White, fontSize = 20.sp,
-                        modifier = Modifier.weight(1f),
-                    )
-                    Text(money(state.players[owner].money), color = Color.White, fontSize = 20.sp)
-                }
-            }
-            if (manage) Rejected(vm)
-            if (mine.isEmpty()) Text(stringResource(R.string.properties_none), fontSize = 16.sp)
-            mine.forEach { (square, holding) -> PropertyRow(vm, square, holding, manage) }
-            if (manage) BotonChiva(stringResource(R.string.bankruptcy_me), { confirm = true }, principal = false)
-        }
-    }
-}
-
-/** Una propiedad en su tarjeta: franja del grupo, nombre, estado y edificios; debajo, sus jugadas. */
-@Composable
-private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding, manage: Boolean) {
-    val sq = vm.config.squares[square]
-    val band = (sq as? Property)?.let { p -> vm.config.groups.firstOrNull { it.id == p.group } }
-        ?.let { Color(android.graphics.Color.parseColor(it.color)) } ?: Color.LightGray
-    val status = when {
-        holding.mortgaged -> stringResource(R.string.mortgaged_short)
-        holding.hotel || holding.houses > 0 -> null
-        sq is Property -> stringResource(R.string.no_houses)
-        else -> null
-    }
-    val moves = if (manage) propertyMoves(vm.config, vm.state, square) else emptyList()
-    Calcomania(sombra = 3.dp, borde = 2.dp, forma = RoundedCornerShape(10.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(12.dp, 44.dp).background(band))
-            Column(Modifier.weight(1f).padding(horizontal = 10.dp, vertical = 6.dp)) {
-                Text(sq.name, fontSize = 16.sp)
-                status?.let { Text(it, fontSize = 13.sp) }
-                if (!holding.mortgaged) BuildingIcons(holding, 16.dp)
-            }
-        }
-        if (moves.isNotEmpty()) {
-            Row(Modifier.padding(start = 8.dp, end = 11.dp, bottom = 11.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                moves.forEach { move ->
-                    val amount = money(move.amount)
-                    val (text, main) = when (move.action) {
-                        is Action.Build -> stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount) to true
-                        is Action.SellBuilding -> stringResource(R.string.move_sell, amount) to false
-                        is Action.Mortgage -> stringResource(R.string.move_mortgage, amount) to false
-                        is Action.Unmortgage -> stringResource(R.string.move_unmortgage, amount) to true
-                        else -> null to false
-                    }
-                    if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), principal = main)
-                }
-            }
-        }
-    }
-}
-
-/** Motivo del último rechazo del motor, en rojo, dentro de un diálogo. */
-@Composable
-private fun Rejected(vm: GameViewModel) {
-    vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
-}
-
 /** «¿Volver al menú?» con «atrás» (D-63): la local queda guardada; la enlazada corta la conexión. */
 @Composable
 private fun ConfirmMenu(linked: Boolean, onCancel: () -> Unit, onYes: () -> Unit) {
@@ -476,19 +409,93 @@ private fun ConfirmBankruptcy(vm: GameViewModel, player: Int, creditor: Int?, on
     }
 }
 
+/** El final de la partida en la ventana (FD.6, D-67): quién gana, otra partida o el menú, y el último turno. */
 @Composable
-private fun OverDialog(vm: GameViewModel, winners: List<Int>, onMenu: (() -> Unit)?, onRestart: () -> Unit) {
-    DialogoChiva(
-        stringResource(R.string.game_over), color = Chiva.Verde,
-        botones = {
+private fun OverWindow(vm: GameViewModel, winners: List<Int>, onMenu: (() -> Unit)?, onRestart: () -> Unit) {
+    Calcomania(Modifier.fillMaxSize()) {
+        Text(
+            stringResource(R.string.game_over), Modifier.fillMaxWidth().background(Chiva.Verde).padding(horizontal = 10.dp, vertical = 4.dp),
+            color = Color.White, fontSize = 15.sp,
+        )
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Text(
+                stringResource(R.string.winners, winners.joinToString(" y ") { vm.state.players[it].name }), fontSize = 22.sp,
+                textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+            )
             if (vm.remote == null) BotonChiva(stringResource(R.string.new_game), onRestart)
             if (onMenu != null) BotonChiva(stringResource(R.string.to_menu), onMenu, principal = vm.remote != null)
+            vm.log.lastOrNull()?.let { TurnCard(vm, it, faded = true) }
+        }
+    }
+}
+
+/**
+ * Lo tocado en la ventana (FD.6, D-72, opción A): la franja azul dice qué es; debajo, la carta de la
+ * casilla o el jugador. Subirlo con el dedo (desde la franja, o desde abajo del todo) lo saca volando
+ * hacia arriba y deja ver lo que había debajo (`swipeCloses`); si no sube lo bastante, vuelve a su sitio.
+ */
+@Composable
+private fun DetailWindow(vm: GameViewModel, detail: Shown, manage: Boolean, onBankrupt: () -> Unit, onGone: () -> Unit) {
+    val density = LocalDensity.current.density
+    val scope = rememberCoroutineScope()
+    var lift by remember(detail) { mutableFloatStateOf(0f) }
+    var flying by remember(detail) { mutableStateOf(false) }
+    var height by remember { mutableIntStateOf(0) }
+    // Sube (o baja, sin pasar de su sitio) con el dedo; devuelve lo que usó.
+    fun drag(dy: Float): Float {
+        if (flying) return 0f
+        val next = (lift + dy).coerceAtMost(0f)
+        return (next - lift).also { lift = next }
+    }
+    fun release(speed: Float) {
+        if (flying) return
+        val out = swipeCloses(lift / density, speed / density)
+        flying = out
+        scope.launch {
+            val t0 = System.nanoTime()
+            animate(lift, if (out) -height * 1.2f else 0f, animationSpec = tween(if (out) SWIPE_MS else SWIPE_MS / 2)) { v, _ -> lift = v }
+            if (out) {
+                Log.i(LOG_TAG, "deslizar: $detail fuera en ${(System.nanoTime() - t0) / 1_000_000} ms")
+                onGone()
+            }
+        }
+    }
+    val connection = remember(detail) {
+        object : NestedScrollConnection {
+            override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
+                if (lift < 0f && available.y > 0f) Offset(0f, drag(available.y)) else Offset.Zero
+
+            override fun onPostScroll(consumed: Offset, available: Offset, source: NestedScrollSource): Offset =
+                if (available.y < 0f && source == NestedScrollSource.UserInput) Offset(0f, drag(available.y)) else Offset.Zero
+
+            override suspend fun onPreFling(available: Velocity): Velocity =
+                if (lift < 0f) available.also { release(it.y) } else Velocity.Zero
+        }
+    }
+    val title = when (detail) {
+        is Shown.Player -> vm.state.players[detail.player].name
+        else -> stringResource(R.string.win_square)
+    }
+    Calcomania(
+        Modifier.fillMaxSize().onSizeChanged { height = it.height }.graphicsLayer {
+            translationY = lift
+            alpha = 1f - 0.6f * (-lift / height.coerceAtLeast(1)).coerceIn(0f, 1f)
         },
     ) {
-        Text(
-            stringResource(R.string.winners, winners.joinToString(" y ") { vm.state.players[it].name }), fontSize = 20.sp,
-            textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
-        )
+        Column(Modifier.fillMaxWidth().draggable(rememberDraggableState { drag(it) }, Orientation.Vertical, onDragStopped = { release(it) })) {
+            Text(title, Modifier.fillMaxWidth().background(Chiva.Azul).padding(horizontal = 10.dp, vertical = 4.dp), color = Color.White, fontSize = 15.sp, maxLines = 1)
+            Column(Modifier.fillMaxWidth().padding(vertical = 3.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                Box(Modifier.size(44.dp, 5.dp).clip(RoundedCornerShape(3.dp)).background(Color.Gray))
+                Text(stringResource(R.string.win_swipe), fontSize = 11.sp, color = Color.Gray)
+            }
+        }
+        Column(Modifier.fillMaxSize().nestedScroll(connection).verticalScroll(rememberScrollState()).padding(start = 8.dp, end = 8.dp, bottom = 8.dp)) {
+            when (detail) {
+                is Shown.Square -> SquareFace(vm.config, vm.state, detail.square)
+                is Shown.Player -> PlayerDetail(vm, detail.player, manage, onBankrupt)
+                else -> Unit
+            }
+        }
     }
 }
 
