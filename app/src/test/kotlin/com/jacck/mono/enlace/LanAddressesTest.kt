@@ -21,4 +21,11 @@ class LanAddressesTest {
         )
         assertEquals(listOf("10.0.1.50", "192.168.43.1"), lanAddresses(found))
     }
+
+    @Test
+    fun `lee la direccion escrita a mano como la muestra la sala`() {
+        assertEquals("10.0.1.192" to 46199, parseAddress("10.0.1.192:46199"))
+        assertEquals("192.168.43.1" to 40123, parseAddress(" 192.168.43.1 : 40123 "))
+        listOf("", "10.0.1.192", "10.0.1:46199", "300.1.1.1:80", "10.0.0.1:70000", "redmi:80").forEach { assertEquals(null, parseAddress(it), it) }
+    }
 }
