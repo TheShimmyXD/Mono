@@ -683,4 +683,4 @@
 - **Medido:** `TurnBarTest` 7 pruebas en verde. En el Redmi: `capturas/fd4_fases.png` (compra, subasta, cárcel, impuesto, deuda), `fd4_fases2.png` (deuda con el peso nuevo), `fd4_seguir.png` («Botty 1 jugó · Seguir»; recorrido 1337 ms, pago $25 en 1543 ms, y la máquina quedó esperando).
 - **Cambio del autor (2026-10-08, tras su partida):** el «+$x/−$x» de un pago, que cuelga bajo el dinero, se montaba sobre el título del letrero: el letrero deja 26 dp arriba (la cifra es de 15 sp, ~20 dp; con 22 dp quedaban ~3 dp, `capturas/fd4_hueco_pago.png`).
 - **Cómo se revierte:** `git revert` del commit de FD.4: vuelven los cinco diálogos y la máquina sin espera.
-- **Estado:** vigente (pendiente de la partida del autor).
+- **Estado:** vigente (aprobada por el autor tras su partida contra la máquina, 2026-10-08).
