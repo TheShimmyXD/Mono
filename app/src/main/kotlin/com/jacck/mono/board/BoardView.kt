@@ -57,6 +57,11 @@ import com.jacck.mono.engine.model.Square
 import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.sin
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.lerp
 
 /** Color de la ficha de cada jugador (2-6, D-05). */
 val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E24AA, 0xFF00ACC1).map { Color(it) }
@@ -66,6 +71,17 @@ val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E
  * Con `from == to` está quieta ahí (espera su turno de caminar).
  */
 data class Hop(val from: Int, val to: Int, val f: Float = 0f)
+
+/**
+ * Casilla que vuela (FD.1, D-65): [square] pasa a [player]; [f] va de 0 a 1. Hasta [tint] toma el color
+ * del jugador; después se encoge y va hasta su ícono, donde se desvanece.
+ */
+data class Fly(val square: Int, val player: Int, val f: Float, val tint: Float)
+
+/** Dónde quedó dibujado el tablero, para llevar la casilla que vuela hasta el ícono (D-65). */
+private class Where {
+    var at: LayoutCoordinates? = null
+}
 
 /** Respiración de las casillas marcadas (D-62): ms en crecer (y otros tantos en volver) y cuánto crecen. */
 const val BREATH_MS = 1400
@@ -77,14 +93,18 @@ const val BREATH_SCALE = 0.12f
  * [hops] (por jugador) no van en su casilla del estado: se dibujan donde dice su [Hop] (FC.1, D-59).
  * Las casillas de [marks] llevan un marco de [markColor] (las de un jugador elegido, FC.3, D-60) y
  * respiran: se agrandan y vuelven, con una máscara translúcida de ese color encima (D-62).
+ * [flight] es la casilla que vuela al ícono de quien la compró (D-65); [iconOf] dice dónde quedó
+ * dibujado el ícono de cada jugador (`PlayersRow`, en [center]).
  */
 @Composable
 fun Board(
     config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
     highlight: Int? = state.players[state.current].position, showTokens: Boolean = true, hops: Map<Int, Hop> = emptyMap(),
-    marks: Set<Int> = emptySet(), markColor: Color = Chiva.Tinta, center: @Composable () -> Unit,
+    marks: Set<Int> = emptySet(), markColor: Color = Chiva.Tinta, flight: Fly? = null,
+    iconOf: (Int) -> LayoutCoordinates? = { null }, center: @Composable () -> Unit,
 ) {
-    BoxWithConstraints(modifier) {
+    val where = remember { Where() }
+    BoxWithConstraints(modifier.onGloballyPositioned { where.at = it }) {
         val n = config.squares.size
         val grid = remember(n, maxWidth, maxHeight) { RingGrid.fit(n, maxWidth.value, maxHeight.value) }
         val cw = maxWidth / grid.cols
@@ -121,6 +141,27 @@ fun Board(
             }
         }
         Box(Modifier.offset(cw, ch).size(cw * (grid.cols - 2), ch * (grid.rows - 2)).padding(6.dp)) { center() }
+        flight?.let { fly ->
+            val at = grid.cellOf(fly.square)
+            val color = PlayerColors[fly.player]
+            val t = (fly.f / fly.tint).coerceIn(0f, 1f)
+            val g = FastOutSlowInEasing.transform(((fly.f - fly.tint) / (1f - fly.tint)).coerceIn(0f, 1f))
+            // Del centro de la casilla al del ícono (si aún no se dibujó, se queda en su sitio).
+            val x0 = cw * at.col + cw / 2
+            val y0 = ch * at.row + ch / 2
+            val icon = where.at?.let { me ->
+                iconOf(fly.player)?.takeIf { it.isAttached }?.let { me.localPositionOf(it, Offset(it.size.width / 2f, it.size.height / 2f)) }
+            }
+            val (x1, y1) = with(LocalDensity.current) { icon?.let { it.x.toDp() to it.y.toDp() } ?: (x0 to y0) }
+            val k = (1f + 0.08f * t) * (1f - 0.75f * g)
+            Box(
+                Modifier.offset(lerp(x0, x1, g) - cw / 2, lerp(y0, y1, g) - ch / 2).size(cw, ch)
+                    .graphicsLayer { scaleX = k; scaleY = k; alpha = ((1f - g) / 0.2f).coerceIn(0f, 1f) },
+            ) {
+                SquareCell(config, state, config.squares[fly.square], state.holdings[fly.square], emptyList(), false, cw, Modifier.fillMaxSize())
+                Box(Modifier.fillMaxSize().background(color.copy(alpha = 0.85f * t)).border(4.dp, color))
+            }
+        }
         if (showTokens) hops.forEach { (k, hop) ->
             val size = minOf(30.dp, cw * 0.48f)
             val a = grid.cellOf(hop.from)
@@ -241,7 +282,7 @@ fun Medallon(pj: Int, color: Color, size: Dp, modifier: Modifier = Modifier) {
 @Composable
 fun PlayersRow(
     state: GameState, showMoney: Boolean, modifier: Modifier = Modifier, size: Dp = 46.dp,
-    onTap: (Int) -> Unit = {}, onLongPress: () -> Unit = {},
+    onTap: (Int) -> Unit = {}, onLongPress: () -> Unit = {}, onPlaced: (Int, LayoutCoordinates) -> Unit = { _, _ -> },
 ) {
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.Top) {
         state.players.forEachIndexed { k, p ->
@@ -254,7 +295,7 @@ fun PlayersRow(
                     Modifier.background(if (turn) Chiva.Turno else Color.Transparent, CircleShape)
                         .border(if (turn) 2.5.dp else 0.dp, if (turn) Chiva.Tinta else Color.Transparent, CircleShape).padding(4.dp),
                 ) {
-                    PlayerToken(state, k, if (turn) size * 1.15f else size)
+                    PlayerToken(state, k, if (turn) size * 1.15f else size, Modifier.onGloballyPositioned { onPlaced(k, it) })
                 }
                 if (showMoney) Text(stringResource(R.string.money, p.money), fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }

@@ -33,8 +33,9 @@ import kotlin.random.Random
  * `remote.play`, las de allá llegan por `remote.listen`, y no se guarda ni se vuelve a empezar.
  * Los jugadores de `bots` los juega la máquina (F5.8b, D-55): cuando le toca, su jugada (`Machine`)
  * después de `pause` ms, y lo que hizo va entero a «Lo que pasó», como lo del otro teléfono.
- * Cada jugada deja en `walking` los recorridos de las fichas (FC.1, D-59); la pantalla los anima uno
- * a uno y avisa con `walked`; la máquina no juega mientras queden.
+ * Cada jugada deja en `moving` los recorridos de las fichas (FC.1, D-59) y las casillas que vuelan al
+ * ícono de quien las compra (FD.1, D-65); la pantalla los anima uno a uno y avisa con `moved`; la
+ * máquina no juega mientras queden.
  */
 class GameViewModel(
     val config: GameConfig,
@@ -65,12 +66,12 @@ class GameViewModel(
     var error: String? by mutableStateOf(null)
         private set
 
-    /** Recorridos que la pantalla aún no ha animado, en orden (FC.1, D-59). */
-    var walking: List<Walk> by mutableStateOf(emptyList())
+    /** Recorridos y vuelos que la pantalla aún no ha animado, en orden (FC.1, D-59; FD.1, D-65). */
+    var moving: List<Motion> by mutableStateOf(emptyList())
         private set
 
-    /** Cuántos recorridos ya se animaron: la pantalla anima el siguiente cuando cambia. */
-    var walked: Int by mutableStateOf(0)
+    /** Cuántos ya se animaron: la pantalla anima el siguiente cuando cambia. */
+    var moved: Int by mutableStateOf(0)
         private set
 
     /** Número de la última jugada enlazada que se ve: una que llegue con número menor ya está incluida. */
@@ -115,7 +116,7 @@ class GameViewModel(
     private fun playMachine() {
         if (left || machineTurn == null || machine?.isActive == true) return
         machine = viewModelScope.launch {
-            snapshotFlow { walking.isEmpty() }.first { it } // que la ficha llegue antes de pensar
+            snapshotFlow { moving.isEmpty() }.first { it } // que la ficha llegue (y la casilla vuele) antes de pensar
             delay(pause)
             machine = null
             val action = Machine.next(config, state, bots, random)
@@ -140,7 +141,7 @@ class GameViewModel(
     private fun show(action: Action?, result: Result, byMachine: Boolean = false) {
         val who = if (byMachine) " (máquina)" else ""
         Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[state.current].name}$who: ${action ?: "otro teléfono"} → ${result.events}")
-        walking = walking + walks(result.events, config, state.players.map { it.position })
+        moving = moving + motions(result.events, config, state.players.map { it.position })
         state = result.state
         onState(config, state)
         // Lo del otro teléfono no se vio aquí: se cuenta todo, no solo lo notable (D-51).
@@ -150,10 +151,10 @@ class GameViewModel(
         playMachine()
     }
 
-    /** La pantalla terminó de animar el primer recorrido de `walking`. */
-    fun walkDone() {
-        walking = walking.drop(1)
-        walked++
+    /** La pantalla terminó de animar el primero de `moving`. */
+    fun motionDone() {
+        moving = moving.drop(1)
+        moved++
     }
 
     fun dismissNotices() {
@@ -167,7 +168,7 @@ class GameViewModel(
         state = fresh.state
         onState(config, state)
         notices = fresh.events
-        walking = emptyList()
+        moving = emptyList()
         lastDice = null
         error = null
         playMachine()

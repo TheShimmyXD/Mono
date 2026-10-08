@@ -53,6 +53,8 @@ import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import com.jacck.mono.board.Board
 import com.jacck.mono.board.Hop
+import com.jacck.mono.board.Fly
+import androidx.compose.ui.layout.LayoutCoordinates
 import com.jacck.mono.board.BuildingIcons
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
@@ -96,21 +98,32 @@ fun GameScreen(
     BackHandler(enabled = onMenu != null) { askMenu = true }
     var shownSquare by remember { mutableStateOf(openSquare) }
     // La ficha camina con un saltito por casilla (FC.1, D-59): `steps` va de 0 al largo del recorrido.
-    val walk = vm.walking.firstOrNull()
+    // La casilla comprada vuela al ícono (FD.1, D-65): `steps` va de 0 a 1.
+    val motion = vm.moving.firstOrNull()
+    val walk = motion as? Walk
     val steps = remember { Animatable(0f) }
-    LaunchedEffect(vm.walked, walk != null) {
-        val w = walk ?: return@LaunchedEffect
-        val n = w.path.size - 1
+    LaunchedEffect(vm.moved, motion != null) {
         val t0 = System.nanoTime()
         steps.snapTo(0f)
-        steps.animateTo(n.toFloat(), tween(w.hopMs * n, easing = LinearEasing))
-        val ms = (System.nanoTime() - t0) / 1_000_000
-        Log.i(LOG_TAG, "recorrido de ${state.players[w.player].name}: ${w.path.first()} → ${w.path.last()}, $n saltos en $ms ms (${ms / n} ms por salto)")
-        vm.walkDone()
+        when (val m = motion ?: return@LaunchedEffect) {
+            is Walk -> {
+                val n = m.path.size - 1
+                steps.animateTo(n.toFloat(), tween(m.hopMs * n, easing = LinearEasing))
+                val ms = (System.nanoTime() - t0) / 1_000_000
+                Log.i(LOG_TAG, "recorrido de ${state.players[m.player].name}: ${m.path.first()} → ${m.path.last()}, $n saltos en $ms ms (${ms / n} ms por salto)")
+            }
+            is Flight -> {
+                steps.animateTo(1f, tween(TINT_MS + FLY_MS, easing = LinearEasing))
+                val ms = (System.nanoTime() - t0) / 1_000_000
+                Log.i(LOG_TAG, "vuelo de ${vm.config.squares[m.square].name} a ${state.players[m.player].name}: $ms ms")
+            }
+        }
+        vm.motionDone()
     }
+    val icons = remember { HashMap<Int, LayoutCoordinates>() }
     // Quien camina va en el aire; quien tiene un recorrido en cola espera donde empieza.
     val hops = buildMap {
-        vm.walking.asReversed().forEach { put(it.player, Hop(it.path.first(), it.path.first())) }
+        vm.moving.filterIsInstance<Walk>().asReversed().forEach { put(it.player, Hop(it.path.first(), it.path.first())) }
         if (walk != null) {
             val i = steps.value.toInt().coerceIn(0, walk.path.size - 2)
             put(walk.player, Hop(walk.path[i], walk.path[i + 1], (steps.value - i).coerceIn(0f, 1f)))
@@ -122,10 +135,13 @@ fun GameScreen(
             highlight = if (walk == null) state.players[state.current].position else null, hops = hops,
             marks = cardOf?.let { k -> state.holdings.filterValues { it.owner == k }.keys }.orEmpty(),
             markColor = cardOf?.let { PlayerColors[it] } ?: Color.Unspecified,
+            flight = (motion as? Flight)?.let { Fly(it.square, it.player, steps.value.coerceIn(0f, 1f), TINT_MS / (TINT_MS + FLY_MS).toFloat()) },
+            iconOf = { icons[it] },
         ) {
             Column(Modifier.fillMaxSize()) {
                 PlayersRow(
                     state, showMoney, onTap = { cardOf = if (cardOf == it) null else it }, onLongPress = { showMoney = !showMoney },
+                    onPlaced = { k, c -> icons[k] = c },
                 )
                 val k = cardOf
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
@@ -138,7 +154,7 @@ fun GameScreen(
         ConfirmMenu(linked = vm.remote != null, onCancel = { askMenu = false }) { vm.leave(); onMenu() }
         return
     }
-    if (walk != null) return // lo que pasó y la decisión salen cuando la ficha llega
+    if (motion != null) return // lo que pasó y la decisión salen cuando la ficha llega y la casilla vuela
     // La carta de una casilla (FA.3) va primero: los diálogos del turno vuelven al cerrarla.
     shownSquare?.let {
         SquareCard(vm.config, state, it) { shownSquare = null }

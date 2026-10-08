@@ -157,8 +157,6 @@
     <string name="ev_first_player">Empieza %1$s.</string>
     <string name="ev_dice">%1$s sacó %2$d + %3$d = %4$d.</string>
     <string name="ev_salary">%1$s pasa por la salida y cobra %2$s.</string>
-    <string name="ev_bought">%1$s compra %2$s por %3$s.</string>
-    <string name="ev_auction_won">%1$s gana la subasta de %2$s por %3$s.</string>
     <string name="ev_auction_unsold">%1$s sigue siendo del Banco.</string>
     <string name="ev_rent">%1$s paga %4$s a %2$s por %3$s.</string>
     <string name="ev_tax">%1$s paga %3$s de %2$s.</string>

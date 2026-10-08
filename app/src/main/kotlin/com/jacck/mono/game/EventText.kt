@@ -15,7 +15,7 @@ import com.jacck.mono.engine.model.GameState
  */
 fun Event.isNotable(): Boolean = when (this) {
     is Event.FirstPlayer, is Event.SalaryPaid, is Event.RentPaid, is Event.TaxPaid, is Event.CardDrawn,
-    is Event.SentToJail, is Event.StayedInJail, is Event.LeftJail, is Event.AuctionWon, is Event.AuctionUnsold,
+    is Event.SentToJail, is Event.StayedInJail, is Event.LeftJail, is Event.AuctionUnsold,
     is Event.InDebt, is Event.Bankrupt, is Event.DeedDealt, is Event.GameOver, is Event.RollAgain -> true
     else -> false
 }
@@ -39,8 +39,7 @@ fun eventLine(event: Event, config: GameConfig, state: GameState): String? {
         )
         is Event.Moved -> null // la ficha camina hasta allá (FC.1, D-63)
         is Event.SalaryPaid -> stringResource(R.string.ev_salary, who(event.player), money(event.amount))
-        is Event.Bought -> stringResource(R.string.ev_bought, who(event.player), sq(event.square), money(event.price))
-        is Event.AuctionWon -> stringResource(R.string.ev_auction_won, who(event.player), sq(event.square), money(event.amount))
+        is Event.Bought, is Event.AuctionWon -> null // la casilla vuela al ícono de quien se la queda (FD.1, D-65)
         is Event.AuctionUnsold -> stringResource(R.string.ev_auction_unsold, sq(event.square))
         is Event.RentPaid -> stringResource(R.string.ev_rent, who(event.payer), who(event.owner), sq(event.square), money(event.amount))
         is Event.TaxPaid -> stringResource(R.string.ev_tax, who(event.player), sq(event.square), money(event.amount))

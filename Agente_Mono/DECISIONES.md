@@ -633,3 +633,11 @@
 - **Cómo se revierte:** se quita la sección FD del plan y F5.5 vuelve a ser la siguiente.
 - **Estado:** vigente.
 
+
+### D-65 · FD.1: la casilla comprada se tiñe, se encoge y vuela al ícono del comprador
+
+- **Del autor (2026-10-08):** la forma ya la dio en D-64 («la propiedad vaya cambiando de color, se vaya volviendo pequeña y vaya a parar al ícono del jugador que la compró»); se graba la definitiva y él la aprueba.
+- **Decisión:** `game/Walk.kt` pasa a sacar de los eventos una cola de `Motion` (puro y probado, `motions`): los `Walk` de D-59 y un `Flight` por cada `Bought` o `AuctionWon`, en el orden de los eventos (la ficha llega y después vuela la casilla). `GameViewModel.moving` reemplaza a `walking`: la máquina y los diálogos esperan a toda la cola. En `Board`, la casilla toma el color del jugador en `TINT_MS` = 450 ms (máscara de 0 a 85 % y crece 8 %), y en `FLY_MS` = 750 ms se encoge al 25 % y va en línea recta (FastOutSlowIn) hasta el centro de su ícono en `PlayersRow` (medido con `onGloballyPositioned`), desvaneciéndose el último 20 %. La casilla del tablero queda con la franja del dueño, como antes. `ev_bought` y `ev_auction_won` salen de «Lo que pasó» y de `strings.xml`; `AuctionWon` deja de ser notable.
+- **Medido:** en el Redmi, 15 vuelos de la máquina (Botty 1 contra Botty 2, semilla 7, `capturas/fd1_maquina.mp4`) de 1198 a 1231 ms y la compra propia (`fase=compra`, `capturas/fd1_propia.mp4`, fotogramas en `fd1_propia_vuelo.png`) en 1258 ms. `WalkTest`, 2 pruebas nuevas D-65.
+- **Cómo se revierte:** `motions` sin las dos ramas de `Flight`, y `ev_bought`/`ev_auction_won` de vuelta en `eventLine`.
+- **Estado:** vigente (pendiente de aprobación).
