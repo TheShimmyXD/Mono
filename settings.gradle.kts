@@ -22,5 +22,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Mono"
 
-// engine: reglas en Kotlin puro (D-02) · app: la interfaz Android
-include(":engine", ":app")
+// engine: reglas en Kotlin puro (D-02) · app: la interfaz Android · terminal: el jugador del PC (D-50)
+include(":engine", ":app", ":terminal")

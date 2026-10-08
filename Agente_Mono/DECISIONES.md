@@ -465,7 +465,7 @@
 - **Pregunta:** cómo probar F5 sin un segundo teléfono (P4) y sin descargar nada nuevo.
 - **Comprobado (sesión 27):** el PC tiene adaptador Bluetooth (apagado: `bluetoothctl show` → `Powered: no`) y el Python del sistema trae `socket.AF_BLUETOOTH` y `BTPROTO_RFCOMM`. La imagen del emulador (`android-37.0`) ya está, pero su Bluetooth es virtual y no conecta con un teléfono real (por confirmar en la documentación de Android en F5.1).
 - **Del autor:** el PC como segundo jugador de pruebas. Los *Terminado* de F5.3, F5.4 y F5.5 pasan a Redmi ↔ PC; F5.6 (hito «Enlace») sigue con el teléfono de un amigo.
-- **Consecuencia:** el transporte es Bluetooth clásico RFCOMM (Nearby Connections solo funciona entre Androids). F5.1 sigue pidiendo su prueba de concepto y su D-## aprobada. Para F5.4, el motor (Kotlin puro, D-02) corre en el PC como jugador de terminal, unido al Bluetooth por un puente en Python.
+- **Consecuencia:** el transporte es Bluetooth clásico RFCOMM (Nearby Connections solo funciona entre Androids). F5.1 sigue pidiendo su prueba de concepto y su D-## aprobada. Para F5.4, el motor (Kotlin puro, D-02) corre en el PC como jugador de terminal, unido al Bluetooth por un puente en Python. *(Cambiado por D-50: con la red local, el motor se une por TCP directo, sin puente.)*
 - **Cómo se revierte:** devolver los *Terminado* al teléfono de un amigo; lo del PC queda como herramienta de pruebas.
 - **Estado:** vigente.
 
@@ -517,3 +517,13 @@
 - **Del autor (2026-10-07, al aprobar F5.9):** el plan pasa a «por la red local» en el hito F5.6, F5.7 y la tabla de riesgos; las maquetas de F5.3 (`demo/Maquetas.kt`) se quedan como registro. Hecho en `9fcece6` (21 archivos, −472 líneas).
 - **Cómo se revierte:** el Bluetooth queda en la historia de Git (`6765db8` y anteriores).
 - **Estado:** vigente (pedida por el autor, 2026-10-07).
+
+### D-50 · F5.4: el jugador del PC es un programa de consola en Kotlin, con el mismo motor, y juega solo
+
+- **Pregunta:** cómo juega el PC su parte en F5.4 (D-44 preveía un puente en Python hacia el Bluetooth).
+- **Opciones:** Kotlin automático y manual · Kotlin solo automático · ampliar `pc/invitado.py` sin motor (más barato, pero no compara el resumen del estado).
+- **Del autor (2026-10-07):** Kotlin, solo automático.
+- **Decisión:** módulo Gradle `:terminal` (Kotlin/JVM con el plugin `application` de Gradle, sin dependencias nuevas) que usa `Guest` del motor por TCP directo a la sala (busca con `avahi-browse`, o `--ip`/`--puerto`). `choose` compra siempre que puede, construye una de cada tres veces al terminar el turno, pasa en las subastas y en una deuda vende, hipoteca o quiebra; su azar es suyo, con `--semilla` (D-03). Lanzador: `./gradlew :terminal:installDist` → `terminal/build/install/mono-pc/bin/mono-pc`.
+- **Medido (`TerminalTest`, localhost):** 10 partidas de 2 jugadores y 5 de 4 terminadas, 0 resúmenes distintos. Con el Clásico normal no terminan (más de 20 000 acciones: sin tratos nadie completa un grupo, D-43); con $300 al empezar y salario $0, 2 jugadores: 49-840 acciones, mediana 120 (25 turnos), unas 40 del teléfono.
+- **Cómo se revierte:** quitar `:terminal` de `settings.gradle.kts`; el protocolo no cambia.
+- **Estado:** vigente.
