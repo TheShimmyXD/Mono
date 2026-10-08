@@ -26,6 +26,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
+import android.util.Log
+import com.jacck.mono.LOG_TAG
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +50,7 @@ import com.jacck.mono.DialogoChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import com.jacck.mono.board.Board
+import com.jacck.mono.board.Hop
 import com.jacck.mono.board.BuildingIcons
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
@@ -76,11 +83,36 @@ fun GameScreen(
     val state = vm.state
     var showProperties by remember { mutableStateOf(openProperties) }
     var shownSquare by remember { mutableStateOf(openSquare) }
+    // La ficha camina con un saltito por casilla (FC.1, D-59): `steps` va de 0 al largo del recorrido.
+    val walk = vm.walking.firstOrNull()
+    val steps = remember { Animatable(0f) }
+    LaunchedEffect(vm.walked, walk != null) {
+        val w = walk ?: return@LaunchedEffect
+        val n = w.path.size - 1
+        val t0 = System.nanoTime()
+        steps.snapTo(0f)
+        steps.animateTo(n.toFloat(), tween(w.hopMs * n, easing = LinearEasing))
+        val ms = (System.nanoTime() - t0) / 1_000_000
+        Log.i(LOG_TAG, "recorrido de ${state.players[w.player].name}: ${w.path.first()} → ${w.path.last()}, $n saltos en $ms ms (${ms / n} ms por salto)")
+        vm.walkDone()
+    }
+    // Quien camina va en el aire; quien tiene un recorrido en cola espera donde empieza.
+    val hops = buildMap {
+        vm.walking.asReversed().forEach { put(it.player, Hop(it.path.first(), it.path.first())) }
+        if (walk != null) {
+            val i = steps.value.toInt().coerceIn(0, walk.path.size - 2)
+            put(walk.player, Hop(walk.path[i], walk.path[i + 1], (steps.value - i).coerceIn(0f, 1f)))
+        }
+    }
     PantallaChiva {
-        Board(vm.config, state, Modifier.fillMaxSize().padding(4.dp), onSquare = { shownSquare = it }) {
+        Board(
+            vm.config, state, Modifier.fillMaxSize().padding(4.dp), onSquare = { shownSquare = it },
+            highlight = if (walk == null) state.players[state.current].position else null, hops = hops,
+        ) {
             Center(vm) { showProperties = true }
         }
     }
+    if (walk != null) return // lo que pasó y la decisión salen cuando la ficha llega
     // La carta de una casilla (FA.3) va primero: los diálogos del turno vuelven al cerrarla.
     shownSquare?.let {
         SquareCard(vm.config, state, it) { shownSquare = null }

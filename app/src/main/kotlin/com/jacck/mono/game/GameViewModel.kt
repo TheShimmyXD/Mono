@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jacck.mono.LOG_TAG
@@ -18,6 +19,7 @@ import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.TurnPhase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.random.Random
 
@@ -31,6 +33,8 @@ import kotlin.random.Random
  * `remote.play`, las de allá llegan por `remote.listen`, y no se guarda ni se vuelve a empezar.
  * Los jugadores de `bots` los juega la máquina (F5.8b, D-55): cuando le toca, su jugada (`Machine`)
  * después de `pause` ms, y lo que hizo va entero a «Lo que pasó», como lo del otro teléfono.
+ * Cada jugada deja en `walking` los recorridos de las fichas (FC.1, D-59); la pantalla los anima uno
+ * a uno y avisa con `walked`; la máquina no juega mientras queden.
  */
 class GameViewModel(
     val config: GameConfig,
@@ -59,6 +63,14 @@ class GameViewModel(
         private set
 
     var error: String? by mutableStateOf(null)
+        private set
+
+    /** Recorridos que la pantalla aún no ha animado, en orden (FC.1, D-59). */
+    var walking: List<Walk> by mutableStateOf(emptyList())
+        private set
+
+    /** Cuántos recorridos ya se animaron: la pantalla anima el siguiente cuando cambia. */
+    var walked: Int by mutableStateOf(0)
         private set
 
     /** Número de la última jugada enlazada que se ve: una que llegue con número menor ya está incluida. */
@@ -102,6 +114,7 @@ class GameViewModel(
     private fun playMachine() {
         if (machineTurn == null || machine?.isActive == true) return
         machine = viewModelScope.launch {
+            snapshotFlow { walking.isEmpty() }.first { it } // que la ficha llegue antes de pensar
             delay(pause)
             machine = null
             val action = Machine.next(config, state, bots, random)
@@ -126,6 +139,7 @@ class GameViewModel(
     private fun show(action: Action?, result: Result, byMachine: Boolean = false) {
         val who = if (byMachine) " (máquina)" else ""
         Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[state.current].name}$who: ${action ?: "otro teléfono"} → ${result.events}")
+        walking = walking + walks(result.events, config, state.players.map { it.position })
         state = result.state
         onState(config, state)
         // Lo del otro teléfono no se vio aquí: se cuenta todo, no solo lo notable (D-51).
@@ -133,6 +147,12 @@ class GameViewModel(
         result.events.filterIsInstance<Event.DiceRolled>().lastOrNull()?.let { lastDice = it.dice }
         error = null
         playMachine()
+    }
+
+    /** La pantalla terminó de animar el primer recorrido de `walking`. */
+    fun walkDone() {
+        walking = walking.drop(1)
+        walked++
     }
 
     fun dismissNotices() {
@@ -146,6 +166,7 @@ class GameViewModel(
         state = fresh.state
         onState(config, state)
         notices = fresh.events
+        walking = emptyList()
         lastDice = null
         error = null
         playMachine()

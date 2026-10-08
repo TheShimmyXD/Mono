@@ -589,3 +589,11 @@
 - **Decisión:** fase con letra FC (D-27) entre F4 y F5, así es la siguiente; F5.5 espera. Tres tareas: FC.1 animación (2-3 formas grabadas antes), FC.2 maquetas del panel de íconos y su tarjeta, FC.3 la tarjeta, la hoja de cualquier jugador y las casillas marcadas en el tablero; «Mis propiedades» se quita y lo que tenía (construir, hipotecar, quiebra de D-56) pasa a la hoja propia. Se leyó «el logo» como el ícono del jugador.
 - **Cómo se revierte:** se quita la sección FC del plan y F5.5 vuelve a ser la siguiente.
 - **Estado:** vigente.
+
+### D-59 · FC.1: la ficha camina con un saltito por casilla (maqueta A)
+
+- **Del autor (2026-10-08):** de 3 maquetas grabadas en el Redmi (`capturas/fc1_A.mp4`, `fc1_B.mp4`, `fc1_C.mp4`: A saltito, B deslizarse, C casilla por casilla sin pasar por en medio), «quiero el saltito».
+- **Decisión:** `game/Walk.kt` saca de los eventos de cada jugada los recorridos (`walks`, puro y probado): un `Moved` avanza casilla por casilla (o retrocede si la carta era de retroceder, D-14) y un `SentToJail` salta derecho a la Cárcel (`jump`, 500 ms). Saltito de 180 ms por casilla (`HOP_MS`), y un recorrido no pasa de 2,7 s (`WALK_MAX_MS`: una carta que da la vuelta va más rápido). El `GameViewModel` guarda la cola (`walking`); `GameScreen` anima el primero (seno: sube y baja; la ficha crece un poco en el aire) y, mientras camina, no abre «Lo que pasó» ni las decisiones, y la máquina espera a que llegue. Quien tiene un recorrido en cola espera en la casilla de donde sale. Vale también en la partida enlazada (las jugadas del otro lado pasan por `show`). El motor no cambia.
+- **Medido:** `WalkTest`, 4 pruebas D-59; app 82 en verde, motor 187. En el Redmi (partida Botty 1 contra Botty 2, semilla 7, `capturas/fc1_partida.mp4`), el log: 184-191 ms por salto con los dados, una carta de 38 saltos en 2748 ms (72 ms por salto) y el salto a la Cárcel en 527 ms.
+- **Cómo se revierte:** `walking` vacío (sin `walks` en `show`) y `Board` sin `hops`.
+- **Estado:** vigente.

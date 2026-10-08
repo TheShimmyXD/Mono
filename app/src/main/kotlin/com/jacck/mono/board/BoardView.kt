@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -46,18 +47,28 @@ import com.jacck.mono.engine.model.Holding
 import com.jacck.mono.engine.model.OwnableSquare
 import com.jacck.mono.engine.model.Property
 import com.jacck.mono.engine.model.Square
+import kotlin.math.PI
+import kotlin.math.abs
+import kotlin.math.sin
 
 /** Color de la ficha de cada jugador (2-6, D-05). */
 val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E24AA, 0xFF00ACC1).map { Color(it) }
 
 /**
+ * Ficha en el aire (FC.1, D-59): va de la casilla [from] a [to] y lleva [f] (0 a 1) del saltito.
+ * Con `from == to` está quieta ahí (espera su turno de caminar).
+ */
+data class Hop(val from: Int, val to: Int, val f: Float = 0f)
+
+/**
  * El tablero en anillo (D-20) dibujado desde la configuración y el estado de la partida, para
- * cualquier N; [center] va dentro del anillo (dados, casilla, jugadores, botones).
+ * cualquier N; [center] va dentro del anillo (dados, casilla, jugadores, botones). Las fichas de
+ * [hops] (por jugador) no van en su casilla del estado: se dibujan donde dice su [Hop] (FC.1, D-59).
  */
 @Composable
 fun Board(
     config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
-    highlight: Int? = state.players[state.current].position, showTokens: Boolean = true,
+    highlight: Int? = state.players[state.current].position, showTokens: Boolean = true, hops: Map<Int, Hop> = emptyMap(),
     center: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier) {
@@ -72,13 +83,23 @@ fun Board(
                 state = state,
                 square = config.squares[i],
                 holding = state.holdings[i],
-                tokens = if (showTokens) state.players.indices.filter { state.players[it].position == i && !state.players[it].bankrupt } else emptyList(),
+                tokens = if (showTokens) state.players.indices.filter { state.players[it].position == i && !state.players[it].bankrupt && it !in hops } else emptyList(),
                 highlighted = i == highlight,
                 width = cw,
                 modifier = Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).clickable { onSquare(i) },
             )
         }
         Box(Modifier.offset(cw, ch).size(cw * (grid.cols - 2), ch * (grid.rows - 2)).padding(6.dp)) { center() }
+        if (showTokens) hops.forEach { (k, hop) ->
+            val size = minOf(30.dp, cw * 0.48f)
+            val a = grid.cellOf(hop.from)
+            val b = grid.cellOf(hop.to)
+            // Sube y baja (seno) mientras cruza; el salto a la Cárcel, que cruza el tablero, sube más.
+            val alto = sin(PI * hop.f).toFloat() * if (abs(b.col - a.col) + abs(b.row - a.row) > 1) 2f else 0.9f
+            val x = cw * (a.col + (b.col - a.col) * hop.f) + 2.dp
+            val y = ch * (a.row + (b.row - a.row) * hop.f) + ch - size - 6.dp - size * alto
+            PlayerToken(state, k, size, Modifier.offset(x, y).scale(1f + 0.12f * alto))
+        }
     }
 }
 
