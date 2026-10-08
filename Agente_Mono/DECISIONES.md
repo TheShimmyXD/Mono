@@ -549,3 +549,11 @@
 - **Decisión:** dos íconos 24 × 24 nuevos en `arte/arte.py` (`ICONOS`): `enlace` (cuatro barras azules `sea` que suben, lo del otro teléfono) y `propio` (estrella amarilla `bolt`, tablero propio); salen como `ic_enlace.xml` e `ic_propio.xml` y en Kotlin como `Icon.ENLACE` e `Icon.PROPIO`. `OpcionChiva` gana `icono` (como `BotonChiva`), y en un texto el ícono va al lado en un `Row`: botón «Unirme», ficha «Otro teléfono», sala («Otro teléfono: X»), «Esperando a X» y la nota de la copia («la de la estrella»). Se quita `menu_board_own` (era `menu_board` con «★»). El log dice «otro teléfono». `sin_emojis.py app/src/main`: 12 líneas → 0. Captura: `capturas/k18_sin_emojis.png` (menú, sala, unirme).
 - **Cómo se revierte:** devolver los símbolos a `strings.xml` (lo prohíbe K18).
 - **Estado:** vigente.
+
+### D-54 · F5.8a: la máquina vive en el motor (`bot/Bots.kt`), simple y lista, y solo elige jugadas que el motor acepta
+
+- **Del autor (2026-10-07):** F5.8 en sub-pasos a (motor), b (app), c (partida en el Redmi); en el plan, «Máquina» con un ícono dibujado (K18).
+- **Decisión:** `fun interface Bot` en `engine/.../bot/Bots.kt`, sin Android y con su `Random` con semilla (D-02, D-03). `SimpleBot` es la de `mono-pc` (D-50), movida tal cual; `:terminal` la usa (sus 15 partidas siguen en verde). `SmartBot` guarda una reserva de $50: compra si le queda la reserva o si completa un grupo; en la subasta puja (mayor + 5 % del precio, desde la base) hasta el precio, o ×1,5 si completa o bloquea un grupo; construye parejo y sin bajar de la reserva; levanta hipotecas con $100 de holgura; en el impuesto paga lo menos; en una deuda hipoteca lo suelto, luego vende casas (desde la que más tiene), luego hipoteca lo de grupos y al final quiebra. No son reglas: todo pasa por `Engine.tryApply`, así que no llevan R-##.
+- **Medido:** `BotsTest`: 10 partidas cortas ($300, salario $0, 2 jugadores, asientos alternados, semillas 1-10): la lista gana 10/10, todas terminan, turnos 17-73 (mediana 28,5). La ventaja grande es la subasta: la simple siempre pasa.
+- **Cómo se revierte:** `mono-pc` vuelve a su `choose` propio y se borra `bot/`.
+- **Estado:** vigente.
