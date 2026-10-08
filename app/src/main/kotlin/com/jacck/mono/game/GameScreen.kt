@@ -22,6 +22,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -74,13 +75,13 @@ import com.jacck.mono.engine.model.Holding
 import com.jacck.mono.engine.model.OwnableSquare
 import com.jacck.mono.engine.model.Property
 import com.jacck.mono.engine.model.Station
-import com.jacck.mono.engine.model.Tax
 import com.jacck.mono.engine.model.TurnPhase
 import com.jacck.mono.engine.model.Utility
 
 /**
- * La partida en el tablero (F3.3, D-22): en el centro, de quién es el turno, los dados, los
- * jugadores y la acción principal; cada decisión del motor sale en un diálogo encima. Arriba, los
+ * La partida en el tablero (F3.3, D-22): bajo los íconos, el letrero del turno con lo que toca y sus
+ * botones (FD.4, D-69, D-70); en el centro, los dados y lo que hace falta para decidir (la escritura,
+ * la subasta, lo que hizo la máquina). Arriba, los
  * íconos de los jugadores con su dinero ([hideMoney] lo abre oculto, extra `oculto`, D-66); un toque abre
  * su tarjeta y marca sus casillas (FC.3, D-60).
  * Las propiedades de cada uno van en una hoja que sube desde abajo (F3.4, D-24): la propia, en su
@@ -100,6 +101,8 @@ fun GameScreen(
     var askMenu by remember { mutableStateOf(openMenu) }
     BackHandler(enabled = onMenu != null) { askMenu = true }
     var shownSquare by remember { mutableStateOf(openSquare) }
+    // El «¿Seguro?» de la quiebra en una deuda: es del teléfono, va en ventana (D-67); `seguro` lo abre.
+    var confirmDebt by remember { mutableStateOf(askBankruptcy && state.phase is TurnPhase.Debt) }
     // La ficha camina con un saltito por casilla (FC.1, D-59): `steps` va de 0 al largo del recorrido.
     // La casilla comprada vuela al ícono (FD.1, D-65) y los billetes de un pago van de un ícono a otro
     // (FD.2, D-66): `steps` va de 0 a 1. `playing` dice a cuál ya se le puso `steps` en 0.
@@ -162,6 +165,16 @@ fun GameScreen(
                     onTap = { cardOf = if (cardOf == it) null else it }, onLongPress = { showMoney = !showMoney },
                     onPlaced = { k, c -> icons[k] = c },
                 )
+                turnBar(vm.config, state, vm.bots, vm.remote?.seats.orEmpty(), vm.held)?.let { bar ->
+                    TurnSign(vm, bar, enabled = motion == null) { b ->
+                        when {
+                            b.action != null -> vm.act(b.action)
+                            b.kind == BarKind.NEXT -> vm.next()
+                            b.kind == BarKind.SELL_OR_MORTGAGE -> sheetOf = decider(state)
+                            b.kind == BarKind.BANKRUPTCY -> confirmDebt = true
+                        }
+                    }
+                }
                 val k = cardOf
                 Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
                     if (k != null) PlayerCard(state, k, onProperties = { sheetOf = k }) { cardOf = null } else Center(vm)
@@ -188,64 +201,118 @@ fun GameScreen(
         NoticesDialog(lines, vm::dismissNotices)
         return
     }
-    // Decide el otro teléfono (F5.4) o la máquina (F5.8b): aquí solo se mira el tablero y el letrero.
-    if (vm.waitingFor != null || vm.machineTurn != null) return
+    // Las decisiones del turno van en el letrero (FD.4); el final de la partida, hasta FD.6, en ventana.
     when (val phase = state.phase) {
-        is TurnPhase.Roll -> if (state.players[state.current].jailTurns != null) JailDialog(vm)
-        is TurnPhase.Buy -> BuyDialog(vm, phase.square)
-        is TurnPhase.Auction -> AuctionDialog(vm, phase)
-        is TurnPhase.TaxChoice -> TaxDialog(vm, phase.square)
-        is TurnPhase.Debt -> DebtDialog(vm, phase, askBankruptcy)
         is TurnPhase.Over -> OverDialog(vm, phase.winners, onMenu?.let { { vm.leave(); it() } }) { vm.restart(newSeed()) }
-        TurnPhase.EndOfTurn -> Unit
+        is TurnPhase.Debt -> if (confirmDebt && vm.waitingFor == null && vm.machineTurn == null) {
+            ConfirmBankruptcy(vm, phase.debts.first().debtor, phase.debts.first().creditor, onCancel = { confirmDebt = false }) { confirmDebt = false }
+        }
+        else -> Unit
     }
 }
 
+/**
+ * El letrero del turno (FD.4, D-69): una línea con lo que toca y debajo sus botones, en una fila;
+ * los de más de 7 letras pesan 2 y las cifras, «Pasar» y «Quebrar», 1. Mientras algo se anima, apagados.
+ */
+@Composable
+private fun TurnSign(vm: GameViewModel, bar: TurnBar, enabled: Boolean, onButton: (BarButton) -> Unit) {
+    val players = vm.state.players
+    fun sq(i: Int) = vm.config.squares[i].name
+    val t = bar.title
+    val title = when (t) {
+        is BarTitle.Turn -> stringResource(R.string.bar_turn, players[t.player].name)
+        is BarTitle.Buy -> stringResource(R.string.bar_buy, sq(t.square))
+        is BarTitle.Auction -> stringResource(R.string.bar_auction, sq(t.square), players[t.bidder].name)
+        is BarTitle.Tax -> stringResource(R.string.bar_tax, sq(t.square))
+        is BarTitle.Jail -> stringResource(R.string.bar_jail, players[t.player].name, t.turn, t.of)
+        is BarTitle.Debt -> stringResource(R.string.debt_title, players[t.player].name, money(players[t.player].money))
+        is BarTitle.Machine -> stringResource(R.string.machine_playing, players[t.player].name)
+        is BarTitle.MachinePlayed -> stringResource(R.string.bar_machine_played, players[t.player].name)
+        is BarTitle.Waiting -> stringResource(R.string.waiting_remote, players[t.player].name)
+    }
+    val icon = when (t) {
+        is BarTitle.Machine, is BarTitle.MachinePlayed -> Icon.MAQUINA
+        is BarTitle.Waiting -> Icon.ENLACE
+        else -> null
+    }
+    Calcomania(Modifier.fillMaxWidth().padding(top = 6.dp)) {
+        Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                icon?.let { IconImage(it, 22.dp); Spacer(Modifier.width(6.dp)) }
+                Text(title, maxLines = 1, softWrap = false, autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 15.sp))
+            }
+            if (bar.buttons.isNotEmpty()) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    bar.buttons.forEach { b ->
+                        val label = buttonLabel(b)
+                        BotonChiva(
+                            label, { onButton(b) }, Modifier.weight(if (label.length > 7) 2f else 1f), principal = b.principal,
+                            enabled = enabled && b.enabled,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** El texto de un botón del letrero; con dinero, verbo y cifra con su signo (M-026), salvo las pujas (D-69). */
+@Composable
+private fun buttonLabel(b: BarButton): String {
+    val amount = b.amount ?: 0
+    return when (b.kind) {
+        BarKind.ROLL -> stringResource(R.string.roll)
+        BarKind.END_TURN -> stringResource(R.string.end_turn)
+        BarKind.BUY -> stringResource(R.string.buy, money(amount))
+        BarKind.DECLINE -> stringResource(R.string.decline)
+        BarKind.BID -> money(amount)
+        BarKind.PASS -> stringResource(R.string.pass_bid)
+        BarKind.TAX_FIXED -> stringResource(R.string.bar_tax_fixed, money(amount))
+        BarKind.TAX_PERCENT -> stringResource(R.string.bar_tax_percent, amount)
+        BarKind.JAIL_ROLL -> stringResource(R.string.bar_jail_roll)
+        BarKind.JAIL_FINE -> stringResource(R.string.bar_jail_fine, money(amount))
+        BarKind.JAIL_CARD -> stringResource(R.string.bar_jail_card)
+        BarKind.SELL_OR_MORTGAGE -> stringResource(R.string.bar_sell)
+        BarKind.BANKRUPTCY -> stringResource(R.string.bar_bankrupt)
+        BarKind.NEXT -> stringResource(R.string.next)
+    }
+}
+
+/**
+ * El centro del tablero: los dados, lo que hizo la máquina en su última jugada (FD.4, D-70) y lo que
+ * decían los diálogos del turno (la subasta, la deuda); al comprar, la escritura. Hasta FD.5.
+ */
 @Composable
 private fun Center(vm: GameViewModel) {
     val state = vm.state
-    val player = state.players[state.current]
+    val players = state.players
+    val phase = state.phase
+    val lines = vm.said.mapNotNull { eventLine(it, vm.config, state) }.toMutableList()
+    when (phase) {
+        is TurnPhase.Auction -> {
+            val leader = phase.highestBidder
+            lines += if (leader == null) stringResource(R.string.auction_none, money(minimumBid(vm.config, phase.square)))
+            else stringResource(R.string.auction_leader, players[leader].name, money(phase.highestBid))
+            val bidder = nextBidder(phase)
+            lines += stringResource(R.string.bar_auction_money, players[bidder].name, money(players[bidder].money))
+        }
+        is TurnPhase.Debt -> lines += stringResource(R.string.debt_text)
+        else -> Unit
+    }
+    if (vm.waitingFor != null && vm.remote?.connected == false) lines += stringResource(R.string.bar_cut)
     Column(Modifier.fillMaxSize().padding(2.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
-        Calcomania {
-            Text(
-                stringResource(R.string.turn_of, player.name), fontSize = 22.sp, textAlign = TextAlign.Center,
-                modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-            )
-            vm.lastDice?.let { DiceRow(it) }
-            vm.error?.let {
-                Text(
-                    stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp,
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                )
+        val dice = vm.lastDice
+        if (dice != null || lines.isNotEmpty() || vm.error != null) {
+            Calcomania {
+                dice?.let { DiceRow(it) }
+                Column(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    lines.forEach { Text(it, fontSize = 15.sp) }
+                    vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+                }
             }
         }
-        val waiting = vm.waitingFor
-        if (waiting != null) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                IconImage(Icon.ENLACE, 28.dp)
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    stringResource(if (vm.remote?.connected == false) R.string.waiting_cut else R.string.waiting_remote, waiting),
-                    fontSize = 20.sp, textAlign = TextAlign.Center,
-                )
-            }
-            return@Column
-        }
-        val machine = vm.machineTurn
-        if (machine != null) {
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                IconImage(Icon.MAQUINA, 28.dp)
-                Spacer(Modifier.width(8.dp))
-                Text(stringResource(R.string.machine_playing, machine), fontSize = 20.sp, textAlign = TextAlign.Center)
-            }
-            return@Column
-        }
-        when {
-            state.phase == TurnPhase.Roll && player.jailTurns == null ->
-                BotonChiva(stringResource(R.string.roll), { vm.act(Action.Roll) })
-            state.phase == TurnPhase.EndOfTurn ->
-                BotonChiva(stringResource(R.string.end_turn), { vm.act(Action.EndTurn) })
-        }
+        if (phase is TurnPhase.Buy) Deed(vm.config, state, phase.square)
     }
 }
 
@@ -356,117 +423,6 @@ private fun NoticesDialog(lines: List<String>, onDone: () -> Unit) {
         botones = { BotonChiva(stringResource(R.string.next), onDone) },
     ) {
         lines.forEach { Text("• $it", fontSize = 16.sp) }
-    }
-}
-
-@Composable
-private fun BuyDialog(vm: GameViewModel, square: Int) {
-    val sq = vm.config.squares[square] as OwnableSquare
-    DialogoChiva(
-        stringResource(R.string.buy_title, vm.state.players[vm.state.current].name, sq.name),
-        botones = {
-            BotonChiva(stringResource(R.string.buy, money(sq.price)), { vm.act(Action.Buy) })
-            BotonChiva(stringResource(R.string.decline), { vm.act(Action.Decline) }, principal = false)
-        },
-    ) {
-        Deed(vm.config, vm.state, square)
-        Rejected(vm)
-    }
-}
-
-@Composable
-private fun AuctionDialog(vm: GameViewModel, auction: TurnPhase.Auction) {
-    val players = vm.state.players
-    val bidder = nextBidder(auction)
-    val base = minimumBid(vm.config, auction.square)
-    val leader = auction.highestBidder
-    val offers = if (leader == null) listOf(base, base + 10, base + 50) else listOf(10, 50, 100).map { auction.highestBid + it }
-    DialogoChiva(
-        stringResource(R.string.auction_title, vm.config.squares[auction.square].name), color = Chiva.Magenta,
-        botones = {
-            offers.filter { it <= players[bidder].money }.forEach { amount ->
-                BotonChiva(stringResource(R.string.bid, money(amount)), { vm.act(Action.Bid(bidder, amount)) })
-            }
-            BotonChiva(stringResource(R.string.pass_bid), { vm.act(Action.PassBid(bidder)) }, principal = false)
-        },
-    ) {
-        Text(
-            if (leader == null) stringResource(R.string.auction_none, money(base))
-            else stringResource(R.string.auction_leader, players[leader].name, money(auction.highestBid)),
-            fontSize = 16.sp,
-        )
-        Text(stringResource(R.string.auction_turn, players[bidder].name, money(players[bidder].money)), fontSize = 18.sp)
-        Rejected(vm)
-    }
-}
-
-@Composable
-private fun TaxDialog(vm: GameViewModel, square: Int) {
-    val tax = vm.config.squares[square] as Tax
-    DialogoChiva(
-        stringResource(R.string.tax_title, vm.state.players[vm.state.current].name, tax.name),
-        botones = {
-            BotonChiva(stringResource(R.string.tax_fixed, money(tax.fixed)), { vm.act(Action.PayTax(percent = false)) })
-            if (tax.percent > 0) {
-                BotonChiva(stringResource(R.string.tax_percent, tax.percent), { vm.act(Action.PayTax(percent = true)) }, principal = false)
-            }
-        },
-    ) {
-        Rejected(vm)
-    }
-}
-
-@Composable
-private fun JailDialog(vm: GameViewModel) {
-    val player = vm.state.players[vm.state.current]
-    val rules = vm.config.rules
-    val turns = player.jailTurns ?: 0
-    DialogoChiva(
-        stringResource(R.string.jail_title, player.name, turns + 1, rules.jailMaxTurns), color = Chiva.Tinta,
-        botones = {
-            BotonChiva(stringResource(R.string.jail_roll), { vm.act(Action.Roll) })
-            // El motor dice si se puede (R-22): aquí solo se ocultan los botones que seguro no valen.
-            if (turns < rules.jailMaxTurns - 1 && player.money >= rules.jailFine) {
-                BotonChiva(stringResource(R.string.jail_fine, money(rules.jailFine)), { vm.act(Action.PayJailFine) }, principal = false)
-            }
-            if (player.jailCards.isNotEmpty()) {
-                BotonChiva(stringResource(R.string.jail_card), { vm.act(Action.UseJailCard) }, principal = false)
-            }
-        },
-    ) {
-        Rejected(vm)
-    }
-}
-
-@Composable
-private fun DebtDialog(vm: GameViewModel, debt: TurnPhase.Debt, ask: Boolean) {
-    val state = vm.state
-    val debtor = debt.debts.first().debtor
-    val player = state.players[debtor]
-    var confirm by remember { mutableStateOf(ask) }
-    if (confirm) {
-        ConfirmBankruptcy(vm, debtor, debt.debts.first().creditor, onCancel = { confirm = false })
-        return
-    }
-    DialogoChiva(
-        stringResource(R.string.debt_title, player.name, money(player.money)),
-        botones = {
-            state.holdings.filter { it.value.owner == debtor }.toSortedMap().forEach { (square, h) ->
-                val name = vm.config.squares[square].name
-                if (h.houses > 0 || h.hotel) {
-                    BotonChiva(stringResource(R.string.debt_sell, name), { vm.act(Action.SellBuilding(square)) }, principal = false)
-                } else if (!h.mortgaged) {
-                    BotonChiva(
-                        stringResource(R.string.debt_mortgage, name, money(mortgageValue(vm.config, state, square))),
-                        { vm.act(Action.Mortgage(square)) }, principal = false,
-                    )
-                }
-            }
-            BotonChiva(stringResource(R.string.bankruptcy), { confirm = true })
-        },
-    ) {
-        Text(stringResource(R.string.debt_text), fontSize = 16.sp)
-        Rejected(vm)
     }
 }
 

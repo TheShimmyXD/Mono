@@ -77,7 +77,6 @@
     </string-array>
 
     <!-- Partida (F3.3): centro del tablero, diálogos y lo que pasó (eventos del motor). -->
-    <string name="turn_of">Turno de %1$s</string>
     <string name="in_jail">%1$s está en la Cárcel</string>
     <string name="roll">Tirar los dados</string>
     <string name="end_turn">Terminar turno</string>
@@ -93,27 +92,13 @@
     <string name="move_mortgage">Hipotecar +%1$s</string>
     <string name="move_unmortgage">Levantar −%1$s</string>
     <string name="next">Seguir</string>
-    <string name="buy_title">%1$s cayó en %2$s</string>
     <string name="buy">Comprar −%1$s</string>
     <string name="decline">No comprar</string>
-    <string name="auction_title">Subasta de %1$s</string>
     <string name="auction_leader">Va ganando %1$s con %2$s.</string>
     <string name="auction_none">Nadie ha pujado. Base: %1$s.</string>
-    <string name="auction_turn">Le toca a %1$s (tiene %2$s):</string>
-    <string name="bid">Pujar %1$s</string>
     <string name="pass_bid">Pasar</string>
-    <string name="tax_title">%1$s: %2$s</string>
-    <string name="tax_fixed">Pagar %1$s</string>
-    <string name="tax_percent">Pagar el %1$d %% de lo que tiene</string>
-    <string name="jail_title">%1$s está en la Cárcel (turno %2$d de %3$d)</string>
-    <string name="jail_roll">Tirar para sacar dobles</string>
-    <string name="jail_fine">Pagar la multa de %1$s</string>
-    <string name="jail_card">Usar la carta «Salir libre»</string>
     <string name="debt_title">%1$s tiene %2$s y debe pagar</string>
     <string name="debt_text">Vende casas o hipoteca hasta quedar en cero o más; si no alcanza, se declara en quiebra.</string>
-    <string name="debt_mortgage">Hipotecar %1$s (+%2$s)</string>
-    <string name="debt_sell">Vender un edificio de %1$s</string>
-    <string name="bankruptcy">Declararse en quiebra</string>
     <string name="bankruptcy_me">Declararme en quiebra</string>
     <string name="bankruptcy_sure">¿Seguro que %1$s se declara en quiebra?</string>
     <string name="bankruptcy_to_bank">Sale de la partida: sus casas vuelven al Banco, sus propiedades se subastan entre los demás y su dinero se pierde.</string>
@@ -338,8 +323,23 @@
     <string name="host_note">Deja esta pantalla abierta: HyperOS corta la red de las apps en segundo plano.</string>
     <string name="host_cancel">Cancelar</string>
     <string name="waiting_remote">Esperando a %1$s</string>
-    <string name="waiting_cut">Esperando a %1$s\nSe cortó la conexión: el otro teléfono puede volver a unirse.</string>
     <string name="machine_playing">Juega %1$s</string>
+    <!-- Letrero del turno (FD.4, D-69, D-70) -->
+    <string name="bar_turn">Te toca, %1$s</string>
+    <string name="bar_buy">¿Compras %1$s?</string>
+    <string name="bar_auction">Subasta de %1$s: puja %2$s</string>
+    <string name="bar_auction_money">%1$s tiene %2$s.</string>
+    <string name="bar_tax">%1$s: ¿cómo pagas?</string>
+    <string name="bar_tax_fixed">Pagar −%1$s</string>
+    <string name="bar_tax_percent">Pagar el %1$d %%</string>
+    <string name="bar_jail">%1$s en la Cárcel (%2$d de %3$d)</string>
+    <string name="bar_jail_roll">Tirar dobles</string>
+    <string name="bar_jail_fine">Multa −%1$s</string>
+    <string name="bar_jail_card">Usar carta</string>
+    <string name="bar_sell">Vender o hipotecar</string>
+    <string name="bar_bankrupt">Quebrar</string>
+    <string name="bar_machine_played">%1$s jugó</string>
+    <string name="bar_cut">Se cortó la conexión: el otro teléfono puede volver a unirse.</string>
     <string name="join_title">Unirme a una partida</string>
     <string name="join_choose">¿A qué sala te unes?</string>
     <string name="join_searching">Buscando salas en esta red… (tu amigo debe tener la sala abierta y estar en el mismo Wi-Fi o punto de acceso)</string>

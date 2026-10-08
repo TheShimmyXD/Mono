@@ -32,7 +32,8 @@ import kotlin.random.Random
  * Con `remote` la partida está enlazada con otro teléfono (F5.4, D-51): las jugadas de aquí van por
  * `remote.play`, las de allá llegan por `remote.listen`, y no se guarda ni se vuelve a empezar.
  * Los jugadores de `bots` los juega la máquina (F5.8b, D-55): cuando le toca, su jugada (`Machine`)
- * después de `pause` ms, y lo que hizo va entero a «Lo que pasó», como lo del otro teléfono.
+ * después de `pause` ms; lo que hizo va entero a `said`, en el centro, y si hay una persona en este
+ * teléfono y la máquina sigue decidiendo, espera su «Seguir» (`held`, FD.4, D-70).
  * Cada jugada deja en `moving` los recorridos de las fichas (FC.1, D-59) y las casillas que vuelan al
  * ícono de quien las compra (FD.1, D-65) y los pagos entre jugadores (FD.2, D-66); la pantalla los
  * anima uno a uno y avisa con `moved`; la máquina no juega mientras queden.
@@ -74,6 +75,17 @@ class GameViewModel(
     var moved: Int by mutableStateOf(0)
         private set
 
+    /** Lo que dejó la última jugada de la máquina, entero, para el centro del tablero (FD.4, D-70). */
+    var said: List<Event> by mutableStateOf(emptyList())
+        private set
+
+    /** La máquina que acaba de jugar y espera «Seguir» (`next`); null si no espera nadie. */
+    var held: Int? by mutableStateOf(null)
+        private set
+
+    /** Hay alguien que toca este teléfono: sin personas aquí (solo máquinas) nadie espera «Seguir». */
+    private val people = names.indices.any { it !in bots && it !in remote?.seats.orEmpty() }
+
     /** Número de la última jugada enlazada que se ve: una que llegue con número menor ya está incluida. */
     private var seen = 0
 
@@ -114,7 +126,7 @@ class GameViewModel(
 
     /** Si decide la máquina, su jugada después de la pausa; una a la vez. */
     private fun playMachine() {
-        if (left || machineTurn == null || machine?.isActive == true) return
+        if (left || held != null || machineTurn == null || machine?.isActive == true) return
         machine = viewModelScope.launch {
             snapshotFlow { moving.isEmpty() }.first { it } // que la ficha llegue (y la casilla vuele) antes de pensar
             delay(pause)
@@ -140,12 +152,16 @@ class GameViewModel(
     /** Muestra lo que dejó una jugada; [action] es null si vino del otro teléfono. */
     private fun show(action: Action?, result: Result, byMachine: Boolean = false) {
         val who = if (byMachine) " (máquina)" else ""
-        Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[state.current].name}$who: ${action ?: "otro teléfono"} → ${result.events}")
+        val player = decider(state)
+        Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[player].name}$who: ${action ?: "otro teléfono"} → ${result.events}")
         moving = moving + motions(result.events, config, state.players.map { it.position })
         state = result.state
         onState(config, state)
-        // Lo del otro teléfono no se vio aquí: se cuenta todo, no solo lo notable (D-51).
-        if (action == null || byMachine || result.events.any { it.isNotable() }) notices = notices + result.events
+        // Lo del otro teléfono no se vio aquí: se cuenta todo, no solo lo notable (D-51). Lo de la
+        // máquina va al centro y, si ella sigue, espera «Seguir»; la jugada de una persona lo borra.
+        said = if (byMachine) result.events else emptyList()
+        held = player.takeIf { byMachine && people && machineTurn != null }
+        if (action == null || (!byMachine && result.events.any { it.isNotable() })) notices = notices + result.events
         result.events.filterIsInstance<Event.DiceRolled>().lastOrNull()?.let { lastDice = it.dice }
         error = null
         playMachine()
@@ -155,6 +171,14 @@ class GameViewModel(
     fun motionDone() {
         moving = moving.drop(1)
         moved++
+    }
+
+    /** «Seguir»: se borra lo que hizo la máquina y ella juega lo siguiente. */
+    fun next() {
+        held = null
+        said = emptyList()
+        Log.i(LOG_TAG, "seguir")
+        playMachine()
     }
 
     fun dismissNotices() {
@@ -169,6 +193,8 @@ class GameViewModel(
         onState(config, state)
         notices = fresh.events
         moving = emptyList()
+        said = emptyList()
+        held = null
         lastDice = null
         error = null
         playMachine()

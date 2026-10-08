@@ -33,8 +33,11 @@ private fun Event.amountOn(square: Int): Int = when {
 
 /**
  * Si la hoja de [player] lleva jugadas (FC.3, D-60): solo la de quien juega, en su turno en este
- * teléfono ([localTurn]: ni del otro teléfono ni de la máquina) y antes de tirar o al terminar.
- * La de los demás solo se mira.
+ * teléfono ([localTurn]: ni del otro teléfono ni de la máquina) y antes de tirar o al terminar; en
+ * una deuda, la del deudor, para vender o hipotecar (FD.4, D-70). La de los demás solo se mira.
  */
-fun canManage(state: GameState, player: Int, localTurn: Boolean): Boolean =
-    localTurn && player == state.current && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)
+fun canManage(state: GameState, player: Int, localTurn: Boolean): Boolean = localTurn && when (val phase = state.phase) {
+    TurnPhase.Roll, TurnPhase.EndOfTurn -> player == state.current
+    is TurnPhase.Debt -> player == phase.debts.first().debtor
+    else -> false
+}
