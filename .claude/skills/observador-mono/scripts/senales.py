@@ -212,6 +212,17 @@ def author_complaints(events: list[dict]) -> list[int]:
     ]
 
 
+# Lo que devuelve una herramienta cuando el autor rechaza la llamada (p. ej. para aclarar): no es un error (M-082).
+REJECTED = "The user doesn't want to proceed"
+
+
+def tool_errors(events: list[dict]) -> tuple[list[int], list[int]]:
+    """(llamadas con error de verdad, llamadas que el autor rechazó para aclarar o corregir)."""
+    failed = [e for e in tools(events) if e.get("error")]
+    rejected = [e["n"] for e in failed if str(e.get("resultado_inicio", "")).startswith(REJECTED)]
+    return [e["n"] for e in failed if e["n"] not in rejected], rejected
+
+
 def self_corrections(events: list[dict]) -> list[int]:
     return [
         e["n"]
@@ -307,7 +318,7 @@ def audit(root: Path, conf: dict, data: dict) -> list[tuple[str, str, str]]:
             (f"{x}05", "Alta", f"El contexto se compactó {summary['compactaciones']} vez(es)")
         )
 
-    errors = [e["n"] for e in tools(events) if e.get("error")]
+    errors, rejected = tool_errors(events)
     if errors:
         found.append((f"{x}06", "Info", f"{len(errors)} llamadas con error: #{errors[:12]}"))
 
@@ -320,6 +331,8 @@ def audit(root: Path, conf: dict, data: dict) -> list[tuple[str, str, str]]:
         found.append(
             (f"{x}08", "Alta", f"Mensajes del autor con corrección o reclamo: #{complaints}")
         )
+    if rejected:
+        found.append((f"{x}08", "Info", f"El autor rechazó la llamada para aclarar o corregir: #{rejected[:12]}"))
 
     over, near = skill_sizes(root, conf)
     if over:

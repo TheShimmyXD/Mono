@@ -52,6 +52,11 @@ class TestPagina(unittest.TestCase):
 
 
 class TestTelefono(unittest.TestCase):
+
+    def test_la_primera_captura_tras_instalar_espera_mas(self):
+        self.assertEqual(telefono.espera(0, telefono.PANTALLA_ESPERA_S), 12)
+        self.assertEqual(telefono.espera(1, telefono.PANTALLA_ESPERA_S), 6)
+        self.assertEqual(telefono.espera(2, telefono.CARTA_ESPERA_S), 5)
     def test_parse_devices_only_ready(self):
         out = (
             "List of devices attached\n"

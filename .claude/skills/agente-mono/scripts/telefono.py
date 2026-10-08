@@ -34,6 +34,8 @@ DEFAULT_LOG_LINES = 60
 CARTA_ESPERA_S = 5
 # Una pantalla que abre un dialogo tarda mas en aparecer entero (M-046)
 PANTALLA_ESPERA_S = 6
+# La primera tras instalar arranca en frio: a los 6 s salio en blanco y a los 8 s bien (F5.3, M-080)
+PRIMERA_EXTRA_S = 6
 # Extras que la app lee con getLongExtra: van con --el
 LONG_EXTRAS = {"semilla"}
 # Lineas de salida de gradle que se muestran si la instalacion falla.
@@ -223,6 +225,11 @@ def capture_path(salida: Path, now: dt.datetime) -> Path:
     return salida if salida.suffix.lower() == ".png" else salida / f"captura_{now:%H%M%S}.png"
 
 
+def espera(k: int, base: float) -> float:
+    """Segundos antes de la captura k de una serie: la primera, recien instalada la app, espera PRIMERA_EXTRA_S mas."""
+    return base + PRIMERA_EXTRA_S if k == 0 else base
+
+
 def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]], wait: float, salida: Path) -> int:
     """Abre cada (etiqueta, orden), espera, captura y une en `salida` (hoja_arte.py --unir, venv del arte)."""
     carpeta = root / "capturas" / "tmp" / f"serie_{dt.datetime.now():%H%M%S}"
@@ -232,7 +239,7 @@ def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]],
         warning = am_warning(started.stdout + started.stderr)
         if warning:
             print(f"{label or '-'}: {warning}")
-        time.sleep(wait)
+        time.sleep(espera(k, wait))
         if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
             print("Pantalla apagada: pide al autor que desbloquee el Redmi. Capturas a medias en " + str(carpeta))
             return 1

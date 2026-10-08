@@ -41,6 +41,11 @@ class TestSenales(unittest.TestCase):
     def setUp(self):
         senales._root["path"] = ROOT
 
+    def test_a_call_the_author_rejects_is_not_a_tool_error(self):
+        asked = {**tool(80, "AskUserQuestion"), "error": True, "resultado_inicio": senales.REJECTED + " with this tool use."}
+        broken = {**tool(95, "Bash", command="python3 x.py"), "error": True, "resultado_inicio": "Exit code 1"}
+        self.assertEqual(senales.tool_errors([asked, broken, tool(96, "Read")]), ([95], [80]))
+
     def test_skill_sizes_warn_from_90_percent(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
