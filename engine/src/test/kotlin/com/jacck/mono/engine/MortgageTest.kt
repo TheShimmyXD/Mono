@@ -31,7 +31,7 @@ class MortgageTest {
     }
 
     @Test
-    fun `R-32 levantar cuesta la hipoteca mas el 10 %, redondeado hacia arriba`() {
+    fun `R-32 levantar cuesta la hipoteca mas el 10 por ciento, redondeado hacia arriba`() {
         // Azul 3: 55 + 5,5 → 55 + 6 = 61.
         val state = twoPlayers(config, blue + (9 to Holding(0, mortgaged = true)))
         val (after, _) = Engine.apply(config, state, Action.Unmortgage(9))

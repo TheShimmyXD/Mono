@@ -80,7 +80,6 @@ fun SquareFace(config: GameConfig, state: GameState, square: Int, modifier: Modi
                 when (sq) {
                     is OwnableSquare -> OwnableDetails(config, state, square, sq, holding, group?.name)
                     is Tax -> TaxDetails(sq)
-                    else -> Unit
                 }
             }
             FranjaChiva(8.dp)
@@ -95,7 +94,7 @@ private fun OwnableDetails(config: GameConfig, state: GameState, square: Int, sq
     val active = holding != null && !holding.mortgaged
     when (sq) {
         is Property -> {
-            val row = when { !active -> -1; holding!!.hotel -> sq.rents.lastIndex; else -> holding.houses }
+            val row = when { !active -> -1; holding.hotel -> sq.rents.lastIndex; else -> holding.houses }
             sq.rents.forEachIndexed { k, r ->
                 val hotel = k == sq.rents.lastIndex && k > 0
                 val label = when {

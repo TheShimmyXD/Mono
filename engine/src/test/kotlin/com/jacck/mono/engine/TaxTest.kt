@@ -25,7 +25,7 @@ class TaxTest {
     }
 
     @Test
-    fun `R-19 elige el 10 % del patrimonio, redondeado hacia arriba (D-08)`() {
+    fun `R-19 elige el 10 por ciento del patrimonio, redondeado hacia arriba (D-08)`() {
         // Efectivo 1505 + Rojo 1 hipotecada 60 + Rojo 2 60 con hotel (50 + 4 casas de 50)
         // + Azul 1 100 con 2 casas de 50 = 2075 → 10 % = 207,5 → $208.
         val holdings = mapOf(

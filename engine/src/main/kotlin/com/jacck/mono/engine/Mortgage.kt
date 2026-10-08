@@ -124,7 +124,7 @@ fun buildingsCost(config: GameConfig, property: Property, holding: Holding): Int
  */
 internal fun actor(state: GameState): Int = when (state.phase) {
     TurnPhase.Roll, TurnPhase.EndOfTurn, is TurnPhase.Buy, is TurnPhase.TaxChoice -> state.current
-    is TurnPhase.Debt -> (state.phase as TurnPhase.Debt).debts.first().debtor
+    is TurnPhase.Debt -> state.phase.debts.first().debtor
     else -> illegal("no se hipoteca ni se vende ahora: ${state.phase}")
 }
 

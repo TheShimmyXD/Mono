@@ -88,6 +88,6 @@ fun actor(state: GameState, action: Action): Int = when {
     action is Action.Bid -> action.player
     action is Action.PassBid -> action.player
     action is Action.Trade -> action.from
-    state.phase is TurnPhase.Debt -> (state.phase as TurnPhase.Debt).debts.first().debtor
+    state.phase is TurnPhase.Debt -> state.phase.debts.first().debtor
     else -> state.current
 }

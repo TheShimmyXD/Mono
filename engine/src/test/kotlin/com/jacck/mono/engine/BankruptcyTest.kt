@@ -60,7 +60,7 @@ class BankruptcyTest {
     }
 
     @Test
-    fun `R-34 quiebra ante otro jugador - edificios a la mitad e hipotecadas con 10 %`() {
+    fun `R-34 quiebra ante otro jugador - edificios a la mitad e hipotecadas con 10 por ciento`() {
         // Ana: −200 tras pagar 300 a Beto; junta como mucho 25 + 25 + 30 + 30 = 110.
         val state = inDebt(config, 3, money = -200, creditor = 1, owed = 300, holdings = redHouses)
             .let { s -> s.copy(players = s.players.toMutableList().also { it[0] = it[0].copy(jailCards = listOf(0)) }) }

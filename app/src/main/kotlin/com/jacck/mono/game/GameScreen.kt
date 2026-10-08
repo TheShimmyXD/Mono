@@ -528,7 +528,6 @@ private fun Deed(config: GameConfig, state: GameState, square: Int) {
                 is Utility -> sq.diceMultipliers.forEachIndexed { k, m ->
                     Text(stringResource(R.string.deed_utility, m, k + 1), fontSize = 13.sp)
                 }
-                else -> Unit
             }
             runCatching { mortgageValue(config, state, square) }.getOrNull()?.let {
                 Text(stringResource(R.string.deed_mortgage, money(it)), fontSize = 13.sp)

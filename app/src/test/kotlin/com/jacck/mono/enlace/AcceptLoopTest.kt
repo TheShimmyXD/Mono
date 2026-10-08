@@ -21,7 +21,7 @@ class AcceptLoopTest {
             val loop = thread {
                 acceptLoop(listening, current, { stopped }, events::put, { input, _ ->
                     val reader = input.bufferedReader()
-                    while (reader.readLine() != null) Unit
+                    while (reader.readLine() != null) {}
                 }, silenceMs)
             }
             try {
