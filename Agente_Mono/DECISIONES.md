@@ -746,3 +746,13 @@
 - **Lección:** `git grep -E` no entiende `\d` (POSIX ERE). El primer barrido dio 0 IPs por eso; los patrones van con `[0-9]`.
 - **Cómo se revierte:** `git clone capturas/respaldo_antes_FE1.bundle` devuelve el historial original.
 - **Estado:** vigente.
+
+### D-78 · FE.2: 0 avisos, sin código muerto y ningún archivo nuestro de más de 400 líneas
+
+- **Avisos (FE.2a, del agente):** de 9 a 0 al compilar el motor, la app, la terminal y sus pruebas (`--rerun-tasks`). Eran casts y `else` redundantes, un `!!`, un `Unit` suelto y tres nombres de prueba con `%`, que pasan a «por ciento» (Windows no admite `%` en los reportes).
+- **Código muerto:** 0 de 1523 declaraciones Kotlin de `main` cuyo nombre no se usa en otro sitio (el detector se probó con una función inventada). De los 305 textos de `strings.xml`, solo `in_jail` no se usaba (nunca se citó) y se quitó. Los 4 dibujos sin uso son los logos descartados de FB.5, cuyo borrado espera al autor.
+- **`GameScreen.kt` (FE.2b, del agente):** 537 líneas → 290 (pantalla, letrero y confirmaciones) + `GameWindow.kt` 279 (la ventana: «Lo que pasa», fin, detalles, escritura). Solo se movió código: `Window`, `OverWindow` y `DetailWindow` pasan a `internal`. Las mismas 7 capturas antes y después (`capturas/fe2_*.png`) difieren en 0-6 píxeles, y el mismo APK capturado dos veces difiere en 6-339.
+- **`arte/arte.py` (FE.2c, del autor: «Dividir todo bajo 400»):** 2752 líneas → `arte.py` 189 (estilo y salida) + el paquete `arte/dibujos/` (formas, `lugares_1..4`, `clasico_1..3`, `registro`, `iconos`, `personajes`, `logos`; el más grande tiene 344 líneas). Se cortó por funciones completas con un script que genera las importaciones exactas y comprueba que no haya ciclos ni nombres perdidos. `franjas`, `FRANJA`, `W` y `H` pasan a `formas`, y `LUGARES` a `registro`. El arte sale idéntico: `arte.py` regenera 226 archivos con 0 cambiados.
+- **Fuera de alcance:** `telefono.py` (570), `senales.py` (548) y `extraer_sesion.py` (512) son de las skills y le tocan al observador.
+- **Cómo se revierte:** `git revert` de los commits FE.2a a FE.2c.
+- **Estado:** vigente.
