@@ -41,6 +41,20 @@ class TestSenales(unittest.TestCase):
     def setUp(self):
         senales._root["path"] = ROOT
 
+    def test_large_read_of_a_file_edited_later_is_not_k05(self):
+        root = Path("/p")
+        big = lambda e: {**e, "chars_resultado": 9000}
+        events = [
+            big(tool(1, "Read", file_path="/p/app/A.kt")),
+            big(tool(2, "Read", file_path="/p/app/B.kt")),
+            big(tool(3, "Read", file_path="/p/app/C.kt")),
+            big(tool(4, "Bash", command="sed -n 1,200p app/D.kt")),
+            tool(5, "Edit", file_path="/p/app/A.kt"),
+            tool(6, "Bash", command="python3 - <<'EOF'\np = Path(\"app/B.kt\"); p.write_text(s)\nEOF"),
+            tool(7, "Bash", command="grep -n fun app/C.kt"),
+        ]
+        self.assertEqual(senales.large_results(events, root), [3, 4])
+
     def test_a_call_the_author_rejects_is_not_a_tool_error(self):
         asked = {**tool(80, "AskUserQuestion"), "error": True, "resultado_inicio": senales.REJECTED + " with this tool use."}
         broken = {**tool(95, "Bash", command="python3 x.py"), "error": True, "resultado_inicio": "Exit code 1"}

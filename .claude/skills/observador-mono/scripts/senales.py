@@ -109,6 +109,33 @@ def written_paths(event: dict) -> list[str]:
     return list(event.get("escritas_bash") or [])
 
 
+# Escribe en un archivo desde Bash: un script de reemplazos, sed -i o una redirección (M-105).
+RX_BASH_WRITE = re.compile(r"write_text|sed -i|>>?\s*\S")
+
+
+def large_results(events: list[dict], root: Path) -> list[int]:
+    """Resultados de más de LARGE car., sin la lectura entera de un archivo que la sesión escribe
+    después (lo permite la economía de contexto: «entero, solo el archivo que vas a editar», M-105)."""
+    found = []
+    later = tools(events)
+    for e in later:
+        if e.get("chars_resultado", 0) <= LARGE:
+            continue
+        path = (e.get("entrada") or {}).get("file_path", "") if e.get("herramienta") == "Read" else ""
+        if path:
+            rel = path[len(str(root)) + 1:] if path.startswith(str(root) + "/") else path
+            edited = any(
+                path in written_paths(f)
+                or (f.get("herramienta") == "Bash" and rel in (f.get("entrada") or {}).get("command", "")
+                    and RX_BASH_WRITE.search((f.get("entrada") or {}).get("command", "")))
+                for f in later if f["n"] > e["n"]
+            )
+            if edited:
+                continue
+        found.append(e["n"])
+    return found
+
+
 def last_write(events: list[dict], prefixes: list[str]) -> int:
     """Número del último evento que escribió en prefixes (0 si ninguno)."""
     found = [e["n"] for e in tools(events) if any(in_paths(p, prefixes) for p in written_paths(e))]
@@ -309,14 +336,9 @@ def audit(root: Path, conf: dict, data: dict) -> list[tuple[str, str, str]]:
     reads = forbidden_reads(events, compile_any(observer.get("no_leer", [])))
     if reads:
         found.append((f"{x}05", "Alta", f"Lecturas de lo que no entra al contexto: #{reads}"))
-    if summary.get("resultados_grandes"):
-        found.append(
-            (
-                f"{x}05",
-                "Media",
-                f"{summary['resultados_grandes']} resultados de más de {LARGE} car.",
-            )
-        )
+    big = large_results(events, root)
+    if big:
+        found.append((f"{x}05", "Media", f"{len(big)} resultados de más de {LARGE} car.: #{big}"))
     if summary.get("compactaciones"):
         found.append(
             (f"{x}05", "Alta", f"El contexto se compactó {summary['compactaciones']} vez(es)")

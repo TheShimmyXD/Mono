@@ -33,6 +33,7 @@
 - **Partidas automáticas enteras en una prueba** (`TerminalTest`, enlace): sin tratos el Clásico no termina (más de 20 000 acciones, D-50); usa $300 al empezar, salario $0 y un tope ≤ 5000 acciones, y corre primero una semilla con el tiempo medido antes del bucle (M-085).
 
 - **Tarea grande** (más de ~6 R-##): pártela en sub-pasos (a, b, c), cada uno con `cierre_paso.py` y su commit; la casilla se marca con el último; ESTADO dice solo qué sub-pasos faltan (hashes y capturas, a SESIONES). Entre llamadas el árbol compila: el modelo nuevo va en la misma tanda que el código que lo usa. (M-088)
+- El nombre de una prueba entre comillas invertidas no admite `. ; [ ] / < > : \` (en la JVM no compila): separa con comas o guiones (M-102).
 
 ## 5. Estilo
 
