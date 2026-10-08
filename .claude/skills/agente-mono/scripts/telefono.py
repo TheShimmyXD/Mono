@@ -62,6 +62,8 @@ TRAMO_ANCHO = 270
 AUTOR_RECIENTE_S = 180
 # Extras que la app lee con getLongExtra: van con --el
 LONG_EXTRAS = {"semilla"}
+# Extras que MainActivity lee con getStringExtra: van con --es aunque sean digitos (maquina=1, M-118).
+STRING_EXTRAS = {"maquina", "maqueta", "fase", "enlace", "tablero", "reglas"}
 # Lineas de salida de gradle que se muestran si la instalacion falla.
 TAIL_LINES = 15
 # Estados de `adb devices` que no son 'device', con la pista para arreglarlos (Mono M-004).
@@ -273,6 +275,8 @@ def extras_args(item: str) -> list[str]:
         key, _, value = pair.partition("=")
         if key in LONG_EXTRAS:
             kind = "el"
+        elif key in STRING_EXTRAS:
+            kind = "es"
         elif value in ("true", "false"):
             kind = "ez"
         elif value.lstrip("-").isdigit():

@@ -243,6 +243,8 @@ class TestCartasYHoja(unittest.TestCase):
             ["--ez", "propiedades", "true", "--ei", "jugadores", "3", "--el", "semilla", "7"],
         )
         self.assertEqual(telefono.extras_args("-"), [])
+        # M-118: maquina se lee con getStringExtra; con --ei la partida abria sin maquina.
+        self.assertEqual(telefono.extras_args("maquina=1"), ["--es", "maquina", "1"])
         argv = telefono.pantalla_command("adb", "S1", "p/.A", "fase=fin")
         self.assertEqual(argv, ["adb", "-s", "S1", "shell", "am", "start", "-S", "-n", "p/.A", "--es", "fase", "fin"])
         own, _ = telefono.split_passthrough(["pantallas", "-", "fase=compra", "--salida", "x.png"])
