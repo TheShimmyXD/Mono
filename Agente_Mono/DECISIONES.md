@@ -578,7 +578,7 @@
 ### D-57 · Menú: la máquina se llama «Botty N», de 2 a 4 jugadores y abre en 2
 
 - **Del autor (2026-10-08):** «si se selecciona el robot, haz que los nombres sean Botty 1, Botty 2, etc.; la cantidad máxima de jugadores debe ser 4; por defecto debe ser 2 jugadores, no 3».
-- **Decisión:** `playerNames` recibe los puestos de la máquina y los nombra `Botty k` (k = 1, 2… en el orden de la mesa), sin importar lo escrito; en el menú, con el robot, el campo muestra ese nombre y no se escribe (lo escrito vuelve al quitar el robot). `MAX_PLAYERS = 4` y `DEFAULT_PLAYERS = 2` en `NewGameForm.kt`; el extra `jugadores` también se limita a 4 y el extra `maquina` usa los mismos nombres. El límite es solo de la app: el motor sigue aceptando de 2 a 6 (D-05) y sus pruebas no cambian. Texto en `menu_bot_name` («Botty %1$d»).
-- **Medido:** `NewGameFormTest`, 2 pruebas D-57; app 78 pruebas en verde, motor 187. Captura `capturas/d57_botty.png` (menú con 2 · 3 · 4 y el 2 elegido; partida con Botty 1 y Botty 2).
+- **Decisión:** `playerNames` recibe los puestos de la máquina y los nombra `Botty k` (k = 1, 2… en el orden de la mesa), sin importar lo escrito; en el menú, con el robot, el campo muestra ese nombre y no se escribe (lo escrito vuelve al quitar el robot). `MAX_PLAYERS = 4` y `DEFAULT_PLAYERS = 2` en `NewGameForm.kt`; el extra `jugadores` también se limita a 4 y el extra `maquina` usa los mismos nombres. El límite es solo de la app: el motor sigue aceptando de 2 a 6 (D-05) y sus pruebas no cambian. Texto en `menu_bot_name` («Botty %1$d»). Al aprobar, el autor pidió dos puntos en la tirada inicial («Para empezar: Ana: 3, Botty 1: 6…», `EventText.kt`), para que el número del nombre no se pegue al del dado.
+- **Medido:** `NewGameFormTest`, 2 pruebas D-57; app 78 pruebas en verde, motor 187. Capturas `capturas/d57_botty.png` (menú con 2 · 3 · 4 y el 2 elegido; partida con Botty 1 y Botty 2) y `capturas/d57_botty_tirada.png` (con los dos puntos).
 - **Cómo se revierte:** `MAX_PLAYERS = 6`, `DEFAULT_PLAYERS = 3` y `playerNames` sin `bots`.
-- **Estado:** vigente.
+- **Estado:** vigente (aprobada, 2026-10-08).

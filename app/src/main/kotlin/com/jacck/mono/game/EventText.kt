@@ -31,7 +31,7 @@ fun eventLine(event: Event, config: GameConfig, state: GameState): String? {
     return when (event) {
         is Event.StartRolled -> stringResource(
             R.string.ev_start_rolled,
-            event.rolls.entries.joinToString(", ") { (p, d) -> "${who(p)} ${d.total}" },
+            event.rolls.entries.joinToString(", ") { (p, d) -> "${who(p)}: ${d.total}" },
         )
         is Event.FirstPlayer -> stringResource(R.string.ev_first_player, who(event.player))
         is Event.DiceRolled -> stringResource(
