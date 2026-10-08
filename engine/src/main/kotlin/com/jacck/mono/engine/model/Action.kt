@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Lo que un jugador puede pedir al motor. Las acciones sin `player` las hace quien juega;
- * el motor (F2.2..F2.6) dice si son válidas en la fase actual. Son lo que viaja por Bluetooth.
+ * el motor (F2.2..F2.6) dice si son válidas en la fase actual. Son lo que viaja de un teléfono a otro.
  * `square` es siempre el índice de la casilla en el anillo.
  */
 @Serializable

@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 /**
  * Azar inmutable con semilla (D-03): cada tirada devuelve el número y el generador
  * siguiente, que se guarda en el estado de la partida. Así una partida guardada o enviada
- * por Bluetooth se repite igual.
+ * a otro teléfono se repite igual.
  *
  * Es SplitMix64, el mismo algoritmo de `java.util.SplittableRandom`, pero con el estado
  * en un `Long` visible para poder serializarlo.

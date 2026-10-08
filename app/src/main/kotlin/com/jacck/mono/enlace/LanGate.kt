@@ -70,7 +70,7 @@ fun LanGate(content: @Composable (List<String>) -> Unit) {
     when {
         !granted -> {
             Text(stringResource(R.string.lan_why_permission), fontSize = 18.sp)
-            BotonChiva(stringResource(R.string.bt_grant), { ask.launch(LOCAL_NETWORK) })
+            BotonChiva(stringResource(R.string.lan_grant), { ask.launch(LOCAL_NETWORK) })
         }
         addresses.isEmpty() -> Text(stringResource(R.string.lan_none), fontSize = 18.sp)
         else -> content(addresses)

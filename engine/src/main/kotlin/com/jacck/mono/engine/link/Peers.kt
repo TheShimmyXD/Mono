@@ -15,7 +15,7 @@ import com.jacck.mono.engine.link.Message.Snapshot
 /**
  * El anfitrión (F5.2, D-46): tiene la partida de verdad y el registro de todas las acciones, para
  * reenviar las que el invitado no recibió. `guestSeats` = jugadores que maneja el invitado.
- * No sabe de Bluetooth: recibe mensajes y devuelve los que hay que enviar.
+ * No sabe de sockets: recibe mensajes y devuelve los que hay que enviar.
  */
 class Host(val config: GameConfig, start: GameState, val guestSeats: Set<Int>) {
 

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 /**
  * Estado de una partida en un instante (D-03): inmutable y completo, azar incluido, para
- * guardarlo o enviarlo por Bluetooth y seguir igual. La configuración va aparte (`GameConfig`).
+ * guardarlo o enviarlo a otro teléfono y seguir igual. La configuración va aparte (`GameConfig`).
  */
 @Serializable
 data class GameState(

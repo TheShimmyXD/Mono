@@ -311,12 +311,7 @@
     <string name="rules_bankruptcy_interest_help">Quien recibe una hipotecada de un quebrado paga ya este interés.</string>
     <string name="rules_starting_deeds">Escrituras al empezar</string>
     <string name="rules_starting_deeds_help">Propiedades que recibe cada jugador al empezar, pagando su precio.</string>
-    <!-- Prueba de enlace por Bluetooth (F5.1, D-45) -->
-    <string name="bt_none">Este teléfono no tiene Bluetooth.</string>
-    <string name="bt_why_permission">Mono usa «Dispositivos cercanos» para jugar con otro teléfono por Bluetooth.</string>
-    <string name="bt_grant">Dar permiso</string>
-    <string name="bt_off">El Bluetooth está apagado.</string>
-    <string name="bt_turn_on">Encender el Bluetooth</string>
+    <!-- Partida entre dos teléfonos por la red local (F5.3, D-47, D-48) -->
     <string name="host_title">Partida en red</string>
     <string name="host_board">%1$s · %2$d casillas</string>
     <string name="host_here">Aquí: %1$s</string>
@@ -324,6 +319,7 @@
     <string name="host_phone">Este teléfono se llama «%1$s».</string>
     <string name="host_address">En la red: %1$s</string>
     <string name="lan_why_permission">Mono usa «Dispositivos cercanos» para jugar con otro teléfono en la misma red.</string>
+    <string name="lan_grant">Dar permiso</string>
     <string name="lan_none">Conéctate al mismo Wi-Fi que tu amigo, o enciende el punto de acceso (Ajustes › Punto de acceso) y que él se conecte.</string>
     <string name="host_listening">Esperando al otro teléfono…</string>
     <string name="host_connected">Conectado con %1$s (%2$s)</string>
@@ -343,10 +339,4 @@
     <string name="join_closed">Se cortó con %1$s (%2$s).</string>
     <string name="join_again">Elegir otra vez</string>
     <string name="menu_join">📶 Unirme a la partida de un amigo</string>
-    <string name="eco_title">Enlace · eco</string>
-    <string name="eco_phone_name">Este teléfono: %1$s</string>
-    <string name="eco_listening">Esperando al otro lado…</string>
-    <string name="eco_connected">Conectado con %1$s</string>
-    <string name="eco_closed">Se cortó (%1$s). Esperando otra vez…</string>
-    <string name="eco_received">Mensajes recibidos: %1$d</string>
 </resources>

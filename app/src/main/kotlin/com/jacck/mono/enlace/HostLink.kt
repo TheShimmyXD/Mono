@@ -11,7 +11,7 @@ import java.io.OutputStream
  * Lado del anfitrión en el enlace (F5.3, D-46, D-47): lee una línea de JSON por mensaje de [input],
  * se la da a [host] y escribe sus respuestas en [output], hasta que el invitado cierra o dice `Bye`.
  * Una línea que no se entiende se cuenta y se salta (el invitado la pedirá de nuevo con `Resync`).
- * [onMessage] recibe cada mensaje entendido. No sabe de Bluetooth, para probarlo en la JVM.
+ * [onMessage] recibe cada mensaje entendido. No sabe de sockets, para probarlo en la JVM.
  * Devuelve cuántas líneas leyó y cuántas no entendió.
  */
 fun hostLoop(host: Host, input: InputStream, output: OutputStream, onMessage: (Message) -> Unit = {}): Pair<Int, Int> {

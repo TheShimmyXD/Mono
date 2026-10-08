@@ -65,7 +65,7 @@ fun NewGameScreen(
     var count by rememberSaveable { mutableStateOf(3) }
     var typed by rememberSaveable { mutableStateOf(List(defaults.size) { "" }) }
     var picks by rememberSaveable { mutableStateOf(List(defaults.size) { it }) }
-    // Quién juega en el otro teléfono por Bluetooth (F5.3, D-47); con alguno, «Empezar» abre la sala.
+    // Quién juega en el otro teléfono (F5.3, D-47, D-48); con alguno, «Empezar» abre la sala.
     var remote by rememberSaveable { mutableStateOf(List(defaults.size) { false }) }
     val seats = (0 until count).filter { remote[it] }.toSet()
     val tokens = playerTokens(picks, count, Personajes.size)

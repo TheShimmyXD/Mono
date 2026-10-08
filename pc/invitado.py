@@ -8,7 +8,6 @@ En el PC, en el mismo Wi-Fi que el teléfono (o conectado a su punto de acceso):
     python3 pc/invitado.py                 # 1 minuto; busca la sala por mDNS (avahi-browse)
     python3 pc/invitado.py --minutos 10    # la prueba de F5.3
     python3 pc/invitado.py --ip 192.168.43.1 --puerto 40123   # la dirección que muestra la sala
-    python3 pc/invitado.py --bt            # por Bluetooth (D-45; la sala de hoy ya no escucha ahí)
 
 Habla el protocolo de `engine/.../link/` (un JSON por línea): manda `hello`, recibe la partida
 (`snapshot`) y cada `--cada` segundos pide la partida entera (`resync` con `full`) y mide la ida y
@@ -22,8 +21,6 @@ import statistics
 import subprocess
 import sys
 import time
-
-from eco import NOMBRE, canal, telefono
 
 PROTOCOLO = 1  # PROTOCOL_VERSION de engine/.../link/Messages.kt
 TIPO = "_mono._tcp"  # SERVICE_TYPE de app/.../enlace/LanServer.kt
@@ -78,39 +75,17 @@ def conectar_red(a) -> socket.socket | None:
     return s
 
 
-def conectar_bt(a) -> socket.socket | None:
-    mac = a.mac or telefono(subprocess.run(["bluetoothctl", "devices"], capture_output=True, text=True).stdout)
-    if not mac:
-        print("No encuentro el teléfono en `bluetoothctl devices`: emparéjalo o pasa --mac.")
-        return None
-    ch = a.canal
-    if ch is None:
-        sdp = subprocess.run(["sdptool", "browse", mac], capture_output=True, text=True)
-        ch = canal(sdp.stdout)
-        if ch is None:
-            print(f"{mac} no anuncia el servicio {NOMBRE} (¿está abierta la sala?). sdptool: {sdp.stderr.strip() or 'sin el registro'}")
-            return None
-    print(f"Conectando con {mac}, canal {ch}…")
-    s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
-    s.settimeout(15)
-    s.connect((mac, ch))
-    return s
-
-
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     ap.add_argument("--ip", help="dirección de la sala (por defecto, la que se anuncia por mDNS)")
     ap.add_argument("--puerto", type=int, help="puerto de la sala, con --ip")
-    ap.add_argument("--bt", action="store_true", help="por Bluetooth en vez de la red local")
-    ap.add_argument("--mac", help="con --bt: MAC del teléfono (por defecto, el Redmi de `bluetoothctl devices`)")
-    ap.add_argument("--canal", type=int, help="con --bt: canal RFCOMM (por defecto, el que anuncia Mono por SDP)")
     ap.add_argument("--nombre", default="PC", help="nombre del invitado (PC)")
     ap.add_argument("--minutos", type=float, default=1.0, help="cuánto dura la prueba (1)")
     ap.add_argument("--cada", type=float, default=10.0, help="segundos entre pedidos (10)")
     a = ap.parse_args()
 
     t0 = time.monotonic()
-    s = conectar_bt(a) if a.bt else conectar_red(a)
+    s = conectar_red(a)
     if s is None:
         return 1
     lector = s.makefile("r", encoding="utf-8", newline="\n")

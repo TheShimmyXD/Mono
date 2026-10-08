@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 /**
- * Protocolo de la partida por Bluetooth (F5.2, D-46). El anfitrión tiene la partida de verdad:
+ * Protocolo de la partida entre dos teléfonos (F5.2, D-46; por la red local, D-48). El anfitrión tiene la partida de verdad:
  * aplica cada acción (suya o propuesta por el invitado), la numera y la envía; el invitado aplica
  * las mismas en orden y compara el resumen del estado. El azar va dentro de `GameState.random`
  * (D-03), así que los dados no viajan. Cada mensaje es una línea de JSON (`encode`/`decode`).

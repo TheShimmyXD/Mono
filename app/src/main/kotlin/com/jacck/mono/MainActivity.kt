@@ -18,7 +18,6 @@ import com.jacck.mono.demo.DemoBoardScreen
 import com.jacck.mono.demo.Maqueta
 import com.jacck.mono.demo.withSampleProperties
 import com.jacck.mono.demo.withPhase
-import com.jacck.mono.enlace.EcoScreen
 import com.jacck.mono.enlace.GuestScreen
 import com.jacck.mono.enlace.HostScreen
 import com.jacck.mono.engine.Preset
@@ -50,7 +49,7 @@ const val LOG_TAG = "Mono"
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
  * `deuda`, `fin`) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
- * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`eco`) se abre la prueba de Bluetooth de F5.1 (`enlace/EcoScreen.kt`, D-45); con `sala`, la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). La partida del menú se guarda tras cada jugada
+ * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
@@ -78,9 +77,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             ChivaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
-                    if (link == "eco") {
-                        EcoScreen()
-                    } else if (link == "sala") {
+                    if (link == "sala") {
                         HostScreen(Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), seed) { finish() }
                     } else if (link == "unirme") {
                         GuestScreen { finish() }

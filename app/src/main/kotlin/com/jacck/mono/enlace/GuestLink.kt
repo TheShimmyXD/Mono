@@ -11,7 +11,7 @@ import java.io.OutputStream
  * Lado del invitado en el enlace (F5.3, D-46, D-47): saluda con `Hello`, le da a [guest] cada línea
  * de JSON de [input] y escribe sus respuestas en [output], hasta que el anfitrión cierra o dice
  * `Bye`. Una línea que no se entiende se salta. [onMessage] recibe cada mensaje entendido, ya
- * aplicado. No sabe de Bluetooth, para probarlo en la JVM. Devuelve cuántas líneas leyó.
+ * aplicado. No sabe de sockets, para probarlo en la JVM. Devuelve cuántas líneas leyó.
  */
 fun guestLoop(guest: Guest, input: InputStream, output: OutputStream, onMessage: (Message) -> Unit = {}): Int {
     val reader = input.bufferedReader(Charsets.UTF_8)
