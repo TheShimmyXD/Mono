@@ -5,6 +5,9 @@
 
     <!-- Tablero (F3.2) -->
     <string name="money">$%1$d</string>
+    <!-- Debajo del ícono mientras se anima un pago entre jugadores (FD.2, D-66). -->
+    <string name="pay_plus">+$%1$d</string>
+    <string name="pay_minus">−$%1$d</string>
     <string name="mortgaged_short">Hipotecada</string>
 
     <!-- Errores de la configuración (F2.7, D-16). %1$s = «nombre» (casilla n) -->
@@ -158,10 +161,8 @@
     <string name="ev_dice">%1$s sacó %2$d + %3$d = %4$d.</string>
     <string name="ev_salary">%1$s pasa por la salida y cobra %2$s.</string>
     <string name="ev_auction_unsold">%1$s sigue siendo del Banco.</string>
-    <string name="ev_rent">%1$s paga %4$s a %2$s por %3$s.</string>
     <string name="ev_tax">%1$s paga %3$s de %2$s.</string>
     <string name="ev_card">%1$s saca una carta: «%2$s»</string>
-    <string name="ev_card_payment">%1$s paga %3$s a %2$s.</string>
     <string name="ev_card_to_bank">%1$s paga %2$s al Banco.</string>
     <string name="ev_card_from_bank">%1$s recibe %2$s del Banco.</string>
     <string name="ev_jail">%1$s va a la Cárcel.</string>

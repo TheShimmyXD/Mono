@@ -50,12 +50,12 @@ const val LOG_TAG = "Mono"
  * Con `n` (16..48) se abre en cambio el tablero de muestra de F3.2. Para probar F3.4 sin jugar media
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre «Mis propiedades»); `casilla` (índice) abre la carta de esa casilla (FA.3); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
- * `deuda`, `fin`) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
- * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). Con `maquina` (índices, `--es maquina 1+2`) la partida abre con esos jugadores en manos de la máquina (F5.8b, D-55), y con `seguro` (true), junto a `hoja` o `fase=deuda`, sale ya el «¿Seguro?» de la quiebra (D-56). La partida del menú se guarda tras cada jugada
+ * `deuda`, `fin`; `alquiler` y `carta`, FD.2) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
+ * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). Con `maquina` (índices, `--es maquina 1+2`) la partida abre con esos jugadores en manos de la máquina (F5.8b, D-55), y con `seguro` (true), junto a `hoja` o `fase=deuda`, sale ya el «¿Seguro?» de la quiebra (D-56). Con `oculto` (true) abre con el dinero oculto y con `pausa` (ms, `--ei`; 900) la máquina espera eso antes de cada jugada, para que la grabación alcance la primera (FD.2, D-66). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
-private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "tarjeta", "atras", "casilla", "fase", "maquina", "seguro")
+private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "tarjeta", "atras", "casilla", "fase", "maquina", "seguro", "oculto", "pausa")
 
 class MainActivity : ComponentActivity() {
 
@@ -69,6 +69,8 @@ class MainActivity : ComponentActivity() {
         val sheet = intent.getBooleanExtra("hoja", false)
         val sure = intent.getBooleanExtra("seguro", false)
         val back = intent.getBooleanExtra("atras", false)
+        val hidden = intent.getBooleanExtra("oculto", false)
+        val pause = intent.getIntExtra("pausa", 900).toLong()
         val card = if (intent.hasExtra("tarjeta")) intent.getIntExtra("tarjeta", 0) else null
         val square = if (intent.hasExtra("casilla")) intent.getIntExtra("casilla", 0) else null
         val mockup = intent.getStringExtra("maqueta")
@@ -198,12 +200,12 @@ class MainActivity : ComponentActivity() {
                                         test && sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines).also { if (test && (phase != null || card != null || back)) it.dismissNotices() }
+                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines, pause = if (test) pause else 900).also { if (test && (phase != null || card != null || back)) it.dismissNotices() }
                                 }
                             }
                             GameScreen(
                                 vm, openProperties = test && sheet, openSquare = square.takeIf { test }, askBankruptcy = test && sure,
-                                openCard = card.takeIf { test }, openMenu = test && back,
+                                openCard = card.takeIf { test }, openMenu = test && back, hideMoney = test && hidden,
                                 onMenu = {
                                     saved = saveFile.read()
                                     Log.i(LOG_TAG, "partida: vuelve al menú; guardada ${saved?.state?.turn?.let { t -> "turno $t" } ?: "ninguna"}")

@@ -22,7 +22,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.TextUnit
@@ -36,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
@@ -78,6 +81,17 @@ data class Hop(val from: Int, val to: Int, val f: Float = 0f)
  */
 data class Fly(val square: Int, val player: Int, val f: Float, val tint: Float)
 
+/**
+ * Billetes que van de un ícono a otro (FD.2, D-66): por cada par de [lanes] (quien paga, quien cobra),
+ * [BILLS] billetes del color de quien paga; [f] va de 0 a 1.
+ */
+data class Bills(val lanes: List<Pair<Int, Int>>, val f: Float)
+
+/** Billetes por pago, qué parte de la animación tarda cada uno en cruzar y cuánto sube su arco (D-66). */
+const val BILLS = 5
+const val BILL_TRIP = 0.5f
+const val BILL_ARC = 22f
+
 /** Dónde quedó dibujado el tablero, para llevar la casilla que vuela hasta el ícono (D-65). */
 private class Where {
     var at: LayoutCoordinates? = null
@@ -94,16 +108,22 @@ const val BREATH_SCALE = 0.12f
  * Las casillas de [marks] llevan un marco de [markColor] (las de un jugador elegido, FC.3, D-60) y
  * respiran: se agrandan y vuelven, con una máscara translúcida de ese color encima (D-62).
  * [flight] es la casilla que vuela al ícono de quien la compró (D-65); [iconOf] dice dónde quedó
- * dibujado el ícono de cada jugador (`PlayersRow`, en [center]).
+ * dibujado el ícono de cada jugador (`PlayersRow`, en [center]). [bills] son los billetes de un pago
+ * entre jugadores (D-66).
  */
 @Composable
 fun Board(
     config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
     highlight: Int? = state.players[state.current].position, showTokens: Boolean = true, hops: Map<Int, Hop> = emptyMap(),
-    marks: Set<Int> = emptySet(), markColor: Color = Chiva.Tinta, flight: Fly? = null,
+    marks: Set<Int> = emptySet(), markColor: Color = Chiva.Tinta, flight: Fly? = null, bills: Bills? = null,
     iconOf: (Int) -> LayoutCoordinates? = { null }, center: @Composable () -> Unit,
 ) {
     val where = remember { Where() }
+    val density = LocalDensity.current
+    // Centro del ícono de [k] en el tablero, o null si aún no se dibujó.
+    fun iconAt(k: Int): Pair<Dp, Dp>? = where.at?.let { me ->
+        iconOf(k)?.takeIf { it.isAttached }?.let { me.localPositionOf(it, Offset(it.size.width / 2f, it.size.height / 2f)) }
+    }?.let { with(density) { it.x.toDp() to it.y.toDp() } }
     BoxWithConstraints(modifier.onGloballyPositioned { where.at = it }) {
         val n = config.squares.size
         val grid = remember(n, maxWidth, maxHeight) { RingGrid.fit(n, maxWidth.value, maxHeight.value) }
@@ -149,10 +169,7 @@ fun Board(
             // Del centro de la casilla al del ícono (si aún no se dibujó, se queda en su sitio).
             val x0 = cw * at.col + cw / 2
             val y0 = ch * at.row + ch / 2
-            val icon = where.at?.let { me ->
-                iconOf(fly.player)?.takeIf { it.isAttached }?.let { me.localPositionOf(it, Offset(it.size.width / 2f, it.size.height / 2f)) }
-            }
-            val (x1, y1) = with(LocalDensity.current) { icon?.let { it.x.toDp() to it.y.toDp() } ?: (x0 to y0) }
+            val (x1, y1) = iconAt(fly.player) ?: (x0 to y0)
             val k = (1f + 0.08f * t) * (1f - 0.75f * g)
             Box(
                 Modifier.offset(lerp(x0, x1, g) - cw / 2, lerp(y0, y1, g) - ch / 2).size(cw, ch)
@@ -160,6 +177,20 @@ fun Board(
             ) {
                 SquareCell(config, state, config.squares[fly.square], state.holdings[fly.square], emptyList(), false, cw, Modifier.fillMaxSize())
                 Box(Modifier.fillMaxSize().background(color.copy(alpha = 0.85f * t)).border(4.dp, color))
+            }
+        }
+        bills?.lanes?.forEach { (from, to) ->
+            val a = iconAt(from) ?: return@forEach
+            val b = iconAt(to) ?: return@forEach
+            // Salen escalonados y cruzan en arco, apareciendo y desvaneciéndose en las puntas.
+            for (i in 0 until BILLS) {
+                val start = (1f - BILL_TRIP - 0.1f) * i / (BILLS - 1)
+                val g = ((bills.f - start) / BILL_TRIP).coerceIn(0f, 1f)
+                if (g <= 0f || g >= 1f) continue
+                val e = FastOutSlowInEasing.transform(g)
+                val x = lerp(a.first, b.first, e)
+                val y = lerp(a.second, b.second, e) - (sin(PI * e).toFloat() * BILL_ARC).dp
+                Bill(PlayerColors[from], Modifier.offset(x - 12.dp, y - 7.dp).alpha(minOf(1f, g / 0.15f, (1f - g) / 0.15f)))
             }
         }
         if (showTokens) hops.forEach { (k, hop) ->
@@ -172,6 +203,17 @@ fun Board(
             val y = ch * (a.row + (b.row - a.row) * hop.f) + ch - size - 6.dp - size * alto
             PlayerToken(state, k, size, Modifier.offset(x, y).scale(1f + 0.12f * alto))
         }
+    }
+}
+
+/** Un billete del color de quien paga (D-66), con su signo de dinero. */
+@Composable
+private fun Bill(color: Color, modifier: Modifier) {
+    Box(
+        modifier.size(24.dp, 14.dp).background(color, RoundedCornerShape(2.dp)).border(1.5.dp, Chiva.Tinta, RoundedCornerShape(2.dp)),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("$", color = Color.White, fontSize = 9.sp, fontWeight = FontWeight.Bold, lineHeight = 9.sp)
     }
 }
 
@@ -275,29 +317,64 @@ fun Medallon(pj: Int, color: Color, size: Dp, modifier: Modifier = Modifier) {
     }
 }
 
+/** En un pago (D-66): cuánto engorda quien cobra y se encoge quien paga, y qué parte tarda en hacerlo. */
+const val SWELL = 0.3f
+const val SHRINK = 0.2f
+const val SWELL_EDGE = 0.2f
+
+/** Color del dinero mientras sube y mientras baja (D-66). */
+val MoneyUp = Color(0xFF1E8E3E)
+val MoneyDown = Chiva.Techo
+
 /**
- * Los jugadores en fila (FC.3, D-60): su ícono y, debajo, su dinero si [showMoney]; el de quien
- * juega, 15 % más grande, con fondo y aro. Un toque es [onTap] y una pulsación larga [onLongPress].
+ * Los jugadores en fila (FC.3, D-60): su ícono y, debajo, su dinero ([money], el que se ve) si
+ * [showMoney]; el de quien juega, 15 % más grande, con fondo y aro. Un toque es [onTap] y una
+ * pulsación larga [onLongPress]. Mientras se anima un pago ([swing]: lo que gana o pierde cada uno;
+ * [swingF] de 0 a 1, D-66), quien cobra engorda y quien paga se encoge, su dinero va de verde o rojo y
+ * debajo sale «+$x» o «−$x», sin mover lo de abajo.
  */
 @Composable
 fun PlayersRow(
     state: GameState, showMoney: Boolean, modifier: Modifier = Modifier, size: Dp = 46.dp,
+    money: List<Int> = state.players.map { it.money }, swing: Map<Int, Int> = emptyMap(), swingF: Float = 0f,
     onTap: (Int) -> Unit = {}, onLongPress: () -> Unit = {}, onPlaced: (Int, LayoutCoordinates) -> Unit = { _, _ -> },
 ) {
+    val going = swingF > 0f && swingF < 1f
+    val e = FastOutSlowInEasing.transform(minOf(1f, swingF / SWELL_EDGE, (1f - swingF) / SWELL_EDGE).coerceIn(0f, 1f))
     Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.Top) {
         state.players.forEachIndexed { k, p ->
             val turn = k == state.current
+            val d = swing[k]?.takeIf { going && it != 0 }
+            val tint = when {
+                d == null -> Color.Unspecified
+                d > 0 -> MoneyUp
+                else -> MoneyDown
+            }
+            val grow = when {
+                d == null -> 1f
+                d > 0 -> 1f + SWELL * e
+                else -> 1f - SHRINK * e
+            }
             Column(
-                Modifier.combinedClickable(onLongClick = onLongPress) { onTap(k) }.alpha(if (p.bankrupt) 0.4f else 1f),
+                Modifier.zIndex(if (d != null) 1f else 0f).combinedClickable(onLongClick = onLongPress) { onTap(k) }
+                    .alpha(if (p.bankrupt) 0.4f else 1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Box(
-                    Modifier.background(if (turn) Chiva.Turno else Color.Transparent, CircleShape)
+                    Modifier.graphicsLayer { scaleX = grow; scaleY = grow }
+                        .background(if (turn) Chiva.Turno else Color.Transparent, CircleShape)
                         .border(if (turn) 2.5.dp else 0.dp, if (turn) Chiva.Tinta else Color.Transparent, CircleShape).padding(4.dp),
                 ) {
                     PlayerToken(state, k, if (turn) size * 1.15f else size, Modifier.onGloballyPositioned { onPlaced(k, it) })
                 }
-                if (showMoney) Text(stringResource(R.string.money, p.money), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                if (showMoney) Text(stringResource(R.string.money, money[k]), color = tint, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                // Alto cero: la etiqueta cuelga debajo sin empujar el centro del tablero.
+                if (d != null) Box(Modifier.height(0.dp)) {
+                    Text(
+                        stringResource(if (d > 0) R.string.pay_plus else R.string.pay_minus, abs(d)), color = tint,
+                        fontSize = 15.sp, fontWeight = FontWeight.Bold, modifier = Modifier.wrapContentHeight(Alignment.Top, unbounded = true),
+                    )
+                }
             }
         }
     }

@@ -34,8 +34,8 @@ import kotlin.random.Random
  * Los jugadores de `bots` los juega la máquina (F5.8b, D-55): cuando le toca, su jugada (`Machine`)
  * después de `pause` ms, y lo que hizo va entero a «Lo que pasó», como lo del otro teléfono.
  * Cada jugada deja en `moving` los recorridos de las fichas (FC.1, D-59) y las casillas que vuelan al
- * ícono de quien las compra (FD.1, D-65); la pantalla los anima uno a uno y avisa con `moved`; la
- * máquina no juega mientras queden.
+ * ícono de quien las compra (FD.1, D-65) y los pagos entre jugadores (FD.2, D-66); la pantalla los
+ * anima uno a uno y avisa con `moved`; la máquina no juega mientras queden.
  */
 class GameViewModel(
     val config: GameConfig,
@@ -66,7 +66,7 @@ class GameViewModel(
     var error: String? by mutableStateOf(null)
         private set
 
-    /** Recorridos y vuelos que la pantalla aún no ha animado, en orden (FC.1, D-59; FD.1, D-65). */
+    /** Recorridos, vuelos y pagos que la pantalla aún no ha animado, en orden (FC.1, D-59; FD.1, D-65; FD.2, D-66). */
     var moving: List<Motion> by mutableStateOf(emptyList())
         private set
 

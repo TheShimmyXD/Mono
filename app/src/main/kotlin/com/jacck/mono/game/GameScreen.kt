@@ -35,6 +35,7 @@ import androidx.compose.animation.core.tween
 import android.util.Log
 import com.jacck.mono.LOG_TAG
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -54,6 +55,7 @@ import com.jacck.mono.R
 import com.jacck.mono.board.Board
 import com.jacck.mono.board.Hop
 import com.jacck.mono.board.Fly
+import com.jacck.mono.board.Bills
 import androidx.compose.ui.layout.LayoutCoordinates
 import com.jacck.mono.board.BuildingIcons
 import com.jacck.mono.board.Icon
@@ -79,7 +81,8 @@ import com.jacck.mono.engine.model.Utility
 /**
  * La partida en el tablero (F3.3, D-22): en el centro, de quién es el turno, los dados, los
  * jugadores y la acción principal; cada decisión del motor sale en un diálogo encima. Arriba, los
- * íconos de los jugadores con su dinero; un toque abre su tarjeta y marca sus casillas (FC.3, D-60).
+ * íconos de los jugadores con su dinero ([hideMoney] lo abre oculto, extra `oculto`, D-66); un toque abre
+ * su tarjeta y marca sus casillas (FC.3, D-60).
  * Las propiedades de cada uno van en una hoja que sube desde abajo (F3.4, D-24): la propia, en su
  * turno, con sus jugadas; la de otro, solo para mirar. Con [onMenu], «atrás» pregunta si se vuelve al
  * menú y el final de la partida lo ofrece (D-63).
@@ -87,24 +90,27 @@ import com.jacck.mono.engine.model.Utility
 @Composable
 fun GameScreen(
     vm: GameViewModel, openProperties: Boolean = false, openSquare: Int? = null, askBankruptcy: Boolean = false,
-    openCard: Int? = null, onMenu: (() -> Unit)? = null, openMenu: Boolean = false, newSeed: () -> Long,
+    openCard: Int? = null, onMenu: (() -> Unit)? = null, openMenu: Boolean = false, hideMoney: Boolean = false, newSeed: () -> Long,
 ) {
     val state = vm.state
     // Hoja abierta: la de quién (null, ninguna). La del extra `hoja` es la de `tarjeta` o, sin ella, la de quien juega.
     var sheetOf by remember { mutableStateOf(if (openProperties) openCard?.takeIf { it in state.players.indices } ?: state.current else null) }
     var cardOf by rememberSaveable { mutableStateOf(openCard?.takeIf { it in state.players.indices }) }
-    var showMoney by rememberSaveable { mutableStateOf(true) }
+    var showMoney by rememberSaveable { mutableStateOf(!hideMoney) }
     var askMenu by remember { mutableStateOf(openMenu) }
     BackHandler(enabled = onMenu != null) { askMenu = true }
     var shownSquare by remember { mutableStateOf(openSquare) }
     // La ficha camina con un saltito por casilla (FC.1, D-59): `steps` va de 0 al largo del recorrido.
-    // La casilla comprada vuela al ícono (FD.1, D-65): `steps` va de 0 a 1.
+    // La casilla comprada vuela al ícono (FD.1, D-65) y los billetes de un pago van de un ícono a otro
+    // (FD.2, D-66): `steps` va de 0 a 1. `playing` dice a cuál ya se le puso `steps` en 0.
     val motion = vm.moving.firstOrNull()
     val walk = motion as? Walk
     val steps = remember { Animatable(0f) }
+    var playing by remember { mutableStateOf(-1) }
     LaunchedEffect(vm.moved, motion != null) {
         val t0 = System.nanoTime()
         steps.snapTo(0f)
+        playing = vm.moved
         when (val m = motion ?: return@LaunchedEffect) {
             is Walk -> {
                 val n = m.path.size - 1
@@ -116,6 +122,12 @@ fun GameScreen(
                 steps.animateTo(1f, tween(TINT_MS + FLY_MS, easing = LinearEasing))
                 val ms = (System.nanoTime() - t0) / 1_000_000
                 Log.i(LOG_TAG, "vuelo de ${vm.config.squares[m.square].name} a ${state.players[m.player].name}: $ms ms")
+            }
+            is Payment -> {
+                steps.animateTo(1f, tween(PAY_MS, easing = LinearEasing))
+                val ms = (System.nanoTime() - t0) / 1_000_000
+                val what = m.transfers.joinToString { "${state.players[it.from].name} → ${state.players[it.to].name} $${it.amount}" }
+                Log.i(LOG_TAG, "pago $what: $ms ms")
             }
         }
         vm.motionDone()
@@ -129,6 +141,9 @@ fun GameScreen(
             put(walk.player, Hop(walk.path[i], walk.path[i + 1], (steps.value - i).coerceIn(0f, 1f)))
         }
     }
+    // Hasta que su animación arranca, el pago va en 0 (no en el 1 del anterior).
+    val pay = motion as? Payment
+    val f = if (playing == vm.moved) steps.value.coerceIn(0f, 1f) else 0f
     PantallaChiva {
         Board(
             vm.config, state, Modifier.fillMaxSize().padding(4.dp), onSquare = { shownSquare = it },
@@ -136,11 +151,14 @@ fun GameScreen(
             marks = cardOf?.let { k -> state.holdings.filterValues { it.owner == k }.keys }.orEmpty(),
             markColor = cardOf?.let { PlayerColors[it] } ?: Color.Unspecified,
             flight = (motion as? Flight)?.let { Fly(it.square, it.player, steps.value.coerceIn(0f, 1f), TINT_MS / (TINT_MS + FLY_MS).toFloat()) },
+            bills = pay?.let { p -> Bills(p.transfers.map { it.from to it.to }, f) },
             iconOf = { icons[it] },
         ) {
             Column(Modifier.fillMaxSize()) {
                 PlayersRow(
-                    state, showMoney, onTap = { cardOf = if (cardOf == it) null else it }, onLongPress = { showMoney = !showMoney },
+                    state, showMoney, Modifier.zIndex(1f), money = shownMoney(state.players.map { it.money }, vm.moving, f),
+                    swing = pay?.deltas.orEmpty(), swingF = f,
+                    onTap = { cardOf = if (cardOf == it) null else it }, onLongPress = { showMoney = !showMoney },
                     onPlaced = { k, c -> icons[k] = c },
                 )
                 val k = cardOf
