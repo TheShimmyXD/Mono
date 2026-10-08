@@ -14,7 +14,10 @@ Desde la raiz del proyecto:
   python3 .claude/skills/agente-mono/scripts/telefono.py cartas 1 3 6 8 --salida capturas/FA.5f_cartas.png [--tio-rico]
       (instala, abre la carta de cada casilla, captura y une con hoja_arte.py; M-037)
   python3 .claude/skills/agente-mono/scripts/telefono.py pantallas - fase=compra propiedades=true,hoja=true --salida capturas/FB.2_pantallas.png
-      (instala, abre la app con cada juego de extras -'-' sin extras: el menu-, espera 6 s, captura y une; M-048)
+      (instala, abre la app con cada juego de extras -'-' sin extras: el menu-, espera 6 s, captura y une; M-048;
+       con --sueltas deja tambien cada captura en <salida sin .png>/)
+  python3 .claude/skills/agente-mono/scripts/telefono.py comparar capturas/<paso>_antes capturas/<paso>_despues
+      (pixeles distintos de cada par, sin la barra de estado; no usa el telefono; M-129)
   python3 .claude/skills/agente-mono/scripts/telefono.py grabar maqueta=A --segundos 11 --salida capturas/FC.1_A.mp4
       (instala, abre con esos extras, graba con screenrecord, baja el video y deja al lado <nombre>_hoja.png
        con hasta 24 fotogramas por GStreamer; M-099). Los extras van en UN argumento, separados por comas
@@ -34,6 +37,7 @@ import argparse
 import datetime as dt
 import math
 import os
+import shutil
 import subprocess
 import sys
 import time
@@ -300,8 +304,8 @@ def pantalla_command(adb: str, serial: str, target: str, item: str) -> list[str]
 def build_parser() -> argparse.ArgumentParser:
     """Opciones propias; lo que va tras `--` lo separa `split_passthrough` antes."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="adb: telefono.py adb -- <argumentos>")
-    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas", "grabar", "fotogramas"])
-    parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura; grabar: un juego de extras; fotogramas: el video")
+    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas", "grabar", "fotogramas", "comparar"])
+    parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura; grabar: un juego de extras; fotogramas: el video; comparar: dos carpetas")
     parser.add_argument("--segundos", type=float, default=10, help="grabar: duracion del video (screenrecord admite hasta 180; se redondea hacia arriba); fotogramas: largo del tramo")
     parser.add_argument("--desde", type=float, default=0.0, help="fotogramas: segundo del video donde empieza el tramo")
     parser.add_argument("--fps", type=int, default=8, help="fotogramas: fotogramas por segundo del tramo")
@@ -310,6 +314,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--ya", action="store_true", help="instalar, cartas, pantallas, grabar: sigue aunque el autor haya jugado hace poco")
     parser.add_argument("--tio-rico", action="store_true", help="cartas: preset Tio Rico (si no, el Clasico)")
     parser.add_argument("--serie")
+    parser.add_argument("--sueltas", action="store_true", help="pantallas: guarda tambien las capturas sueltas en <salida sin .png>/ (para comparar, M-129)")
     parser.add_argument("--salida", type=Path)
     parser.add_argument("-n", type=int, default=DEFAULT_LOG_LINES)
     return parser
@@ -325,7 +330,8 @@ def espera(k: int, base: float) -> float:
     return base + PRIMERA_EXTRA_S if k == 0 else base
 
 
-def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]], wait: float, salida: Path) -> int:
+def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]], wait: float, salida: Path,
+          sueltas: bool = False) -> int:
     """Abre cada (etiqueta, orden), espera, captura y une en `salida` (hoja_arte.py --unir, venv del arte)."""
     carpeta = root / "capturas" / "tmp" / f"serie_{dt.datetime.now():%H%M%S}"
     carpeta.mkdir(parents=True)
@@ -341,6 +347,9 @@ def serie(root: Path, adb: str, serial: str, shots: list[tuple[str, list[str]]],
         name = "".join(c if c.isalnum() else "_" for c in label)
         with (carpeta / f"{k:02d}_{name}.png").open("wb") as handle:
             subprocess.run([adb, "-s", serial, "exec-out", "screencap", "-p"], stdout=handle)
+    if sueltas:
+        shutil.copytree(carpeta, salida.with_suffix(""), dirs_exist_ok=True)
+        print(f"Sueltas en {salida.with_suffix('')}/")
     hoja = Path(__file__).with_name("hoja_arte.py")
     venv = Path("~/.cache/mono-arte/bin/python").expanduser()
     done = run([str(venv), str(hoja), "--unir", str(carpeta), "--salida", str(salida)], cwd=root)
@@ -363,7 +372,7 @@ def pantallas(args, root: Path, adb: str, serial: str, target: str | None) -> in
         print("Uso: telefono.py pantallas <extras>... --salida capturas/<paso>.png  (extras: fase=compra o a=1,b=true; '-' sin extras)")
         return 1
     shots = [(item, pantalla_command(adb, serial, target, item)) for item in args.objetivos]
-    return serie(root, adb, serial, shots, PANTALLA_ESPERA_S, args.salida)
+    return serie(root, adb, serial, shots, PANTALLA_ESPERA_S, args.salida, args.sueltas)
 
 
 def fotogramas_por_segundo(segundos: int) -> Fraction:
@@ -477,6 +486,15 @@ def main() -> int:
     adb = str(sdk_path(conf) / "platform-tools" / "adb")
     if args.orden == "fotogramas":
         return fotogramas(args, root)
+    if args.orden == "comparar":  # no usa el telefono
+        if len(args.objetivos) != 2:
+            print("Uso: telefono.py comparar <carpeta_antes> <carpeta_despues> (de `pantallas --sueltas`, M-129).")
+            return 1
+        hoja = Path(__file__).with_name("hoja_arte.py")
+        venv = Path("~/.cache/mono-arte/bin/python").expanduser()
+        done = run([str(venv), str(hoja), "--comparar", *args.objetivos], cwd=root)
+        print((done.stdout + done.stderr).strip())
+        return done.returncode
     if args.orden == "grabar" and len(args.objetivos) > 1:  # antes de instalar: no toca el telefono
         print("Los extras van en un solo argumento, separados por comas: grabar jugadores=2,semilla=7,maquina=0-1 (M-108).")
         return 1

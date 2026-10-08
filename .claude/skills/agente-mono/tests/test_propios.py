@@ -273,5 +273,24 @@ class TestCartasYHoja(unittest.TestCase):
             self.assertEqual(hoja_arte.faltantes(["enlace", "nada"], Path(d)), ["nada"])
 
 
+
+class TestComparar(unittest.TestCase):
+    def test_pairs_by_name_and_refuses_different_counts(self):
+        with tempfile.TemporaryDirectory() as d:
+            a, b = Path(d, "a"), Path(d, "b")
+            a.mkdir(); b.mkdir()
+            for n in ("00_menu.png", "01_fase_compra.png"):
+                (a / n).write_bytes(b""); (b / n).write_bytes(b"")
+            self.assertEqual([x.name for x, _ in hoja_arte.pares(a, b)], ["00_menu.png", "01_fase_compra.png"])
+            (b / "02_extra.png").write_bytes(b"")
+            with self.assertRaises(ValueError):
+                hoja_arte.pares(a, b)
+
+    def test_comparar_is_an_order_and_sueltas_a_flag(self):
+        args = telefono.build_parser().parse_args(["comparar", "x", "y"])
+        self.assertEqual((args.orden, args.objetivos, args.sueltas), ("comparar", ["x", "y"], False))
+        self.assertTrue(telefono.build_parser().parse_args(["pantallas", "-", "--sueltas"]).sueltas)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -7,6 +7,8 @@ Con el venv de cairosvg y Pillow (arte.md §2), desde la raiz del proyecto:
   ~/.cache/mono-arte/bin/python .claude/skills/agente-mono/scripts/hoja_arte.py --unir <carpeta> --salida <png>
       une las capturas PNG de la carpeta de izquierda a derecha y borra la carpeta (lo llama `telefono.py cartas`).
       Con --columnas N, en rejilla y a su tamano (los fotogramas de `telefono.py grabar`, M-099).
+  ~/.cache/mono-arte/bin/python .claude/skills/agente-mono/scripts/hoja_arte.py --comparar <carpeta_a> <carpeta_b>
+      pixeles distintos de cada par de capturas sueltas, sin la barra de estado (`telefono.py comparar`, M-129).
 Mono M-037: antes se reescribia en el scratchpad en cada sesion. Fondo blanco: lo transparente
 (personajes sin fondo) salia negro (M-053).
 """
@@ -25,6 +27,8 @@ ANCHO_MAX = 1600
 SEP = 8
 COLUMNAS = 3
 ALTO_CAPTURA = 900
+UMBRAL_DIFERENCIA = 40  # un canal que cambia mas que esto cuenta como pixel distinto
+BARRA_ESTADO = 0.04  # fraccion de arriba que se ignora: hora, bateria, avisos
 
 
 def celda(columnas: int = COLUMNAS, ancho_max: int = ANCHO_MAX, sep: int = SEP) -> int:
@@ -93,6 +97,45 @@ def rejilla(n: int, columnas: int, ancho: int, alto: int, sep: int = SEP) -> tup
     return columnas * (ancho + sep) - sep, filas(n, columnas) * (alto + sep) - sep
 
 
+def pares(a: Path, b: Path) -> list[tuple[Path, Path]]:
+    """Capturas de dos carpetas emparejadas por orden de nombre; ValueError si no hay o no son las mismas."""
+    fa, fb = sorted(a.glob("*.png")), sorted(b.glob("*.png"))
+    if not fa or len(fa) != len(fb):
+        raise ValueError(f"{a} tiene {len(fa)} capturas y {b} {len(fb)}: saca las dos con los mismos objetivos.")
+    return list(zip(fa, fb))
+
+
+def diferencia(a: Path, b: Path) -> tuple[int, int] | None:
+    """(pixeles distintos, pixeles comparados) sin la barra de estado; None si los tamanos no coinciden."""
+    from PIL import Image, ImageChops
+
+    ia, ib = Image.open(a).convert("RGB"), Image.open(b).convert("RGB")
+    if ia.size != ib.size:
+        return None
+    caja = (0, round(ia.height * BARRA_ESTADO), ia.width, ia.height)
+    bandas = ImageChops.difference(ia.crop(caja), ib.crop(caja)).split()
+    marca = [banda.point(lambda v: 255 if v > UMBRAL_DIFERENCIA else 0) for banda in bandas]
+    distinto = ImageChops.lighter(ImageChops.lighter(marca[0], marca[1]), marca[2])
+    return distinto.histogram()[255], (caja[2] - caja[0]) * (caja[3] - caja[1])
+
+
+def comparar(a: Path, b: Path) -> int:
+    try:
+        lista = pares(a, b)
+    except ValueError as error:
+        print(error)
+        return 1
+    codigo = 0
+    for fa, fb in lista:
+        d = diferencia(fa, fb)
+        if d is None:
+            print(f"{fa.name}: tamanos distintos")
+            codigo = 1
+        else:
+            print(f"{fa.name}: {d[0]} pixeles distintos de {d[1]}")
+    return codigo
+
+
 def unir(carpeta: Path, salida: Path, columnas: int | None = None) -> int:
     from PIL import Image
 
@@ -125,7 +168,8 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     parser.add_argument("ids", nargs="*")
     parser.add_argument("--unir", type=Path, help="carpeta de capturas a unir (y borrar)")
-    parser.add_argument("--salida", type=Path, required=True)
+    parser.add_argument("--salida", type=Path)
+    parser.add_argument("--comparar", type=Path, nargs=2, metavar=("A", "B"), help="dos carpetas de capturas sueltas")
     parser.add_argument("--columnas", type=int, help="--unir: en rejilla de N columnas, sin cambiar el tamano")
     return parser
 
@@ -137,6 +181,11 @@ def main() -> int:
         from PIL import Image  # noqa: F401
     except ImportError:
         print(f"Falta el venv del arte: corre esto con {VENV_ARTE} (arte.md §2).")
+        return 1
+    if args.comparar:
+        return comparar(*args.comparar)
+    if args.salida is None:
+        print("Falta --salida.")
         return 1
     if args.unir:
         return unir(args.unir, args.salida, args.columnas)

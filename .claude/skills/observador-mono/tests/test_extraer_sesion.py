@@ -97,6 +97,27 @@ class TestExtraerSesion(unittest.TestCase):
         self.assertEqual(counts["password"], 1)
         self.assertEqual(counts["correo"], 1)
 
+    def test_masks_real_macs_but_not_examples_or_times(self):
+        counts = Counter()
+        text = "Browsing D4:17:61:0A:1B:2C y AA:BB:CC:11:22:33, 11:22:33:44:55:66 a las 10:42:40"
+        masked = extraer_sesion.mask_secrets(text, counts)
+        self.assertEqual(masked, "Browsing <mac> y AA:BB:CC:11:22:33, 11:22:33:44:55:66 a las 10:42:40")
+        self.assertEqual(counts["mac"], 1)
+
+    def test_learns_phone_serial_and_masks_it_everywhere(self):
+        events = [
+            dict(n=1, tipo="TOOL", herramienta="Bash", entrada="adb devices", resultado="List\nabc123xyz9\tdevice\n"),
+            dict(n=2, tipo="TOOL", herramienta="Bash", entrada="barrido.py abc123xyz9 head", resultado="ok"),
+            dict(n=3, tipo="TOOL", herramienta="Bash", entrada="telefono.py pantallas", resultado="Instalada en abc123xyz9; 7 capturas."),
+        ]
+        written = [("t", "Write", "x.md", "serial abc123xyz9")]
+        masked, mwritten, counts = extraer_sesion.mask_events(events, written)
+        self.assertNotIn("abc123xyz9", repr(masked) + repr(mwritten))
+        self.assertEqual(counts["total"]["serial"], 4)
+
+    def test_no_serial_no_extra_masking(self):
+        self.assertEqual(extraer_sesion.serial_patterns([dict(resultado="List of devices attached")], []), ())
+
     def test_common_phrase_is_not_a_password(self):
         self.assertEqual(
             extraer_sesion.mask_secrets("Palabras clave: robot"), "Palabras clave: robot"

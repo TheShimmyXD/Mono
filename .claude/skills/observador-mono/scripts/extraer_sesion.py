@@ -68,24 +68,56 @@ SECRET_PATTERNS = [
     # Los noreply (atribución de commits) no son datos personales (M-001).
     ("correo", re.compile(r"(?<![\w.+-])(?!no-?reply@)[\w.+-]+@[\w-]+(?:\.[\w-]+)+"), "<correo>"),
     ("celular", re.compile(r"(?<![\w.])(?:\+?57\s?)?3\d{2}\s?\d{3}\s?\d{4}(?![\w.])"), "<celular>"),
+    # MAC de un equipo real; las de ejemplo (AA:BB:CC:…, 11:22:33:…, 22:33:44:…) se quedan (M-128).
+    (
+        "mac",
+        re.compile(r"(?<![\w:])(?!(?i:aa:bb:cc|11:22:33|22:33:44):)(?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}(?![\w:])"),
+        "<mac>",
+    ),
 ]
 
+# El serial del teléfono no tiene forma fija: se aprende de `adb devices` y de telefono.py (M-128).
+SERIAL_SOURCES = re.compile(r"(?m)^([A-Za-z0-9]{6,32})\tdevice\b|Instalada en ([A-Za-z0-9]{6,32})\b")
 
-def mask_secrets(text: str, counts: Counter | None = None) -> str:
+
+def mask_secrets(text: str, counts: Counter | None = None, extra: tuple = ()) -> str:
     """Enmascara secretos y datos personales; suma en counts cuántos hubo de cada tipo."""
-    for kind, rx, repl in SECRET_PATTERNS:
+    for kind, rx, repl in (*SECRET_PATTERNS, *extra):
         text, n = rx.subn(repl, text)
         if n and counts is not None:
             counts[kind] += n
     return text
 
 
-def mask_deep(value, counts: Counter):
+def mask_deep(value, counts: Counter, extra: tuple = ()):
     if isinstance(value, dict):
-        return {k: mask_deep(v, counts) for k, v in value.items()}
+        return {k: mask_deep(v, counts, extra) for k, v in value.items()}
     if isinstance(value, list):
-        return [mask_deep(v, counts) for v in value]
-    return mask_secrets(value, counts) if isinstance(value, str) else value
+        return [mask_deep(v, counts, extra) for v in value]
+    return mask_secrets(value, counts, extra) if isinstance(value, str) else value
+
+
+def strings_of(value):
+    if isinstance(value, dict):
+        for v in value.values():
+            yield from strings_of(v)
+    elif isinstance(value, (list, tuple)):
+        for v in value:
+            yield from strings_of(v)
+    elif isinstance(value, str):
+        yield value
+
+
+def serial_patterns(events: list, written: list) -> tuple:
+    """Patrón que enmascara los seriales de teléfono vistos en la sesión (vacío si no hubo)."""
+    found = set()
+    for text in strings_of([events, written]):
+        for m in SERIAL_SOURCES.finditer(text):
+            found.add(m.group(1) or m.group(2))
+    if not found:
+        return ()
+    rx = re.compile("|".join(re.escape(x) for x in sorted(found, key=len, reverse=True)))
+    return (("serial", rx, "<serial>"),)
 
 
 def find_config(start: Path) -> Path | None:
@@ -411,12 +443,13 @@ def mask_events(events: list, written: list) -> tuple[list, list, dict]:
     total: Counter = Counter()
     by_event = {}
     masked_events = []
+    extra = serial_patterns(events, written)
     for ev in events:
         sent, rest = Counter(), Counter()
         # en un evento de herramienta solo el resultado llegó de afuera; el resumen sale de la entrada
         tool = ev["tipo"] == "TOOL"
         masked = {
-            k: mask_deep(v, sent if k == "entrada" or (tool and k != "resultado_inicio") else rest)
+            k: mask_deep(v, sent if k == "entrada" or (tool and k != "resultado_inicio") else rest, extra)
             for k, v in ev.items()
         }
         masked_events.append(masked)
@@ -431,7 +464,7 @@ def mask_events(events: list, written: list) -> tuple[list, list, dict]:
     masked_written = []
     for ts, name, path, text in written:
         counts = Counter()
-        masked_written.append((ts, name, path, mask_secrets(text, counts)))
+        masked_written.append((ts, name, path, mask_secrets(text, counts, extra)))
         total.update(counts)
     return masked_events, masked_written, dict(total=dict(total), por_evento=by_event)
 

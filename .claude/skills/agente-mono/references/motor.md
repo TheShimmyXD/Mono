@@ -22,6 +22,7 @@
 
 ## 4. Pruebas
 
+- Primero el motor: no se escribe interfaz para algo que el motor no resuelva ya, probado; `engine` no importa Android ni usa azar sin semilla (D-02, D-03).
 - JUnit en `engine/src/test/kotlin`, una clase por tema y **una prueba por R-##**, con el ID en el nombre: ``fun `R-07 cobra el salario al pasar por la salida`()``.
 - Escenario pequeño y explícito: tablero de pocas casillas, dados fijados (generador falso o semilla con resultado conocido), lo que se espera escrito con números.
 - La prueba compara con lo que dice la ficha R-## (la fuente), no con lo que devuelve otra función del motor.
