@@ -2,6 +2,7 @@ package com.jacck.mono.game
 
 import com.jacck.mono.engine.Event
 import com.jacck.mono.engine.JailCause
+import com.jacck.mono.engine.JailExit
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.CardEffect
 import com.jacck.mono.engine.model.Jail
@@ -63,14 +64,47 @@ class WalkTest {
     }
 
     @Test
-    fun `D-66 una carta que cobra a cada jugador sale en un solo pago, y los del Banco todavia no`() {
+    fun `D-66 una carta que cobra a cada jugador sale en un solo pago`() {
         val events = listOf(
             Event.CardDrawn(2, 0), Event.CardPayment(0, 2, 10), Event.CardPayment(1, 2, 10), Event.CardPayment(3, 2, 10),
         )
         val w = motions(events, config, listOf(0, 0, 0, 0)).single() as Payment
         assertEquals(listOf(Transfer(0, 2, 10), Transfer(1, 2, 10), Transfer(3, 2, 10)), w.transfers)
         assertEquals(mapOf(0 to -10, 2 to 30, 1 to -10, 3 to -10), w.deltas)
-        assertEquals(emptyList<Motion>(), motions(listOf(Event.CardPayment(null, 1, 50), Event.CardPayment(1, null, 15)), config, listOf(0, 0)))
+    }
+
+    @Test
+    fun `D-68 el sueldo sale del Banco despues de caminar, y el alquiler que sigue va aparte`() {
+        val events = listOf(Event.Moved(0, 38, 3), Event.SalaryPaid(0, 200), Event.RentPaid(0, 1, 3, 4))
+        val w = motions(events, config, listOf(38, 3))
+        assertEquals(
+            listOf(Walk(0, listOf(38, 39, 0, 1, 2, 3)), Payment(listOf(Transfer(BANK, 0, 200))), Payment(listOf(Transfer(0, 1, 4)))),
+            w,
+        )
+        assertEquals(mapOf(0 to 200), (w[1] as Payment).deltas)
+        assertEquals(0, w[1].player)
+    }
+
+    @Test
+    fun `D-68 impuesto, cartas del y al Banco y multa de la Carcel van con el Banco`() {
+        val events = listOf(
+            Event.TaxPaid(0, 4, 200), Event.CardDrawn(1, 0), Event.CardPayment(null, 1, 50),
+            Event.CardDrawn(1, 1), Event.CardPayment(1, null, 15), Event.LeftJail(2, JailExit.FINE, 50),
+            Event.LeftJail(3, JailExit.DOUBLES),
+        )
+        val w = motions(events, config, listOf(0, 0, jail, jail))
+        assertEquals(
+            listOf(Transfer(0, BANK, 200), Transfer(BANK, 1, 50), Transfer(1, BANK, 15), Transfer(2, BANK, 50)),
+            w.map { (it as Payment).transfers.single() },
+        )
+        assertEquals(listOf(mapOf(0 to -200), mapOf(1 to 50), mapOf(1 to -15), mapOf(2 to -50)), w.map { (it as Payment).deltas })
+    }
+
+    @Test
+    fun `D-68 el dinero que se ve no tiene el sueldo hasta que llegan los billetes del Banco`() {
+        val queue = listOf(Walk(0, listOf(38, 39, 0)), Payment(listOf(Transfer(BANK, 0, 200))))
+        assertEquals(listOf(1500, 1500), shownMoney(listOf(1700, 1500), queue, 0.9f))
+        assertEquals(listOf(1650, 1500), shownMoney(listOf(1700, 1500), queue.drop(1), 0.75f))
     }
 
     @Test

@@ -126,7 +126,8 @@ fun GameScreen(
             is Payment -> {
                 steps.animateTo(1f, tween(PAY_MS, easing = LinearEasing))
                 val ms = (System.nanoTime() - t0) / 1_000_000
-                val what = m.transfers.joinToString { "${state.players[it.from].name} → ${state.players[it.to].name} $${it.amount}" }
+                fun name(k: Int) = if (k == BANK) "Banco" else state.players[k].name
+                val what = m.transfers.joinToString { "${name(it.from)} → ${name(it.to)} $${it.amount}" }
                 Log.i(LOG_TAG, "pago $what: $ms ms")
             }
         }

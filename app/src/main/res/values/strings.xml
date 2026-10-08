@@ -159,17 +159,12 @@
     <string name="ev_start_rolled">Para empezar: %1$s</string>
     <string name="ev_first_player">Empieza %1$s.</string>
     <string name="ev_dice">%1$s sacó %2$d + %3$d = %4$d.</string>
-    <string name="ev_salary">%1$s pasa por la salida y cobra %2$s.</string>
     <string name="ev_auction_unsold">%1$s sigue siendo del Banco.</string>
-    <string name="ev_tax">%1$s paga %3$s de %2$s.</string>
     <string name="ev_card">%1$s saca una carta: «%2$s»</string>
-    <string name="ev_card_to_bank">%1$s paga %2$s al Banco.</string>
-    <string name="ev_card_from_bank">%1$s recibe %2$s del Banco.</string>
     <string name="ev_jail">%1$s va a la Cárcel.</string>
     <string name="ev_jail_doubles">%1$s sacó dobles %2$d veces seguidas y va a la Cárcel.</string>
     <string name="ev_stayed_jail">%1$s sigue en la Cárcel (turno %2$d).</string>
     <string name="ev_left_jail">%1$s sale de la Cárcel.</string>
-    <string name="ev_left_jail_fine">%1$s paga %2$s y sale de la Cárcel.</string>
     <string name="ev_in_debt">%1$s quedó debiendo: tiene que vender o hipotecar.</string>
     <string name="ev_bankrupt">%1$s está en quiebra.</string>
     <string name="ev_deed_dealt">%1$s recibe %2$s.</string>

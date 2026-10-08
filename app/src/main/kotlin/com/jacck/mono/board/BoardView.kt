@@ -69,6 +69,9 @@ import androidx.compose.ui.unit.lerp
 /** Color de la ficha de cada jugador (2-6, D-05). */
 val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E24AA, 0xFF00ACC1).map { Color(it) }
 
+/** Los billetes del Banco (FD.3, D-68): gris pizarra, que no es de ningún jugador. */
+val BankColor = Color(0xFF455A64)
+
 /**
  * Ficha en el aire (FC.1, D-59): va de la casilla [from] a [to] y lleva [f] (0 a 1) del saltito.
  * Con `from == to` está quieta ahí (espera su turno de caminar).
@@ -83,7 +86,8 @@ data class Fly(val square: Int, val player: Int, val f: Float, val tint: Float)
 
 /**
  * Billetes que van de un ícono a otro (FD.2, D-66): por cada par de [lanes] (quien paga, quien cobra),
- * [BILLS] billetes del color de quien paga; [f] va de 0 a 1.
+ * [BILLS] billetes del color de quien paga; [f] va de 0 a 1. El Banco (`BANK`, −1) está en el centro
+ * del tablero y sus billetes son de [BankColor] (FD.3, D-68).
  */
 data class Bills(val lanes: List<Pair<Int, Int>>, val f: Float)
 
@@ -179,9 +183,11 @@ fun Board(
                 Box(Modifier.fillMaxSize().background(color.copy(alpha = 0.85f * t)).border(4.dp, color))
             }
         }
+        // El Banco (−1) paga y cobra desde el centro del tablero (D-68).
+        fun at(k: Int) = if (k < 0) maxWidth / 2 to maxHeight / 2 else iconAt(k)
         bills?.lanes?.forEach { (from, to) ->
-            val a = iconAt(from) ?: return@forEach
-            val b = iconAt(to) ?: return@forEach
+            val a = at(from) ?: return@forEach
+            val b = at(to) ?: return@forEach
             // Salen escalonados y cruzan en arco, apareciendo y desvaneciéndose en las puntas.
             for (i in 0 until BILLS) {
                 val start = (1f - BILL_TRIP - 0.1f) * i / (BILLS - 1)
@@ -190,7 +196,7 @@ fun Board(
                 val e = FastOutSlowInEasing.transform(g)
                 val x = lerp(a.first, b.first, e)
                 val y = lerp(a.second, b.second, e) - (sin(PI * e).toFloat() * BILL_ARC).dp
-                Bill(PlayerColors[from], Modifier.offset(x - 12.dp, y - 7.dp).alpha(minOf(1f, g / 0.15f, (1f - g) / 0.15f)))
+                Bill(if (from < 0) BankColor else PlayerColors[from], Modifier.offset(x - 12.dp, y - 7.dp).alpha(minOf(1f, g / 0.15f, (1f - g) / 0.15f)))
             }
         }
         if (showTokens) hops.forEach { (k, hop) ->
@@ -206,7 +212,7 @@ fun Board(
     }
 }
 
-/** Un billete del color de quien paga (D-66), con su signo de dinero. */
+/** Un billete del color de quien paga (D-66) o del Banco (D-68), con su signo de dinero. */
 @Composable
 private fun Bill(color: Color, modifier: Modifier) {
     Box(

@@ -11,11 +11,12 @@ import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.Jail
 import com.jacck.mono.engine.model.PlayerDebt
 import com.jacck.mono.engine.model.Property
+import com.jacck.mono.engine.model.Start
 import com.jacck.mono.engine.model.Tax
 import com.jacck.mono.engine.model.TurnPhase
 
 /** Valores del extra `fase` (FB.2): cada uno abre la partida en el diálogo de turno que nombra. */
-val SAMPLE_PHASES = listOf("compra", "subasta", "carcel", "impuesto", "deuda", "fin", "alquiler", "carta")
+val SAMPLE_PHASES = listOf("compra", "subasta", "carcel", "impuesto", "deuda", "fin", "alquiler", "carta", "sueldo", "banco")
 
 /**
  * Deja la partida recién repartida en el diálogo de [phase] para capturarlo sin jugar (FB.2; adb no
@@ -24,7 +25,8 @@ val SAMPLE_PHASES = listOf("compra", "subasta", "carcel", "impuesto", "deuda", "
  * impuesto con porcentaje, o el primero; queda con −$50 y las propiedades de muestra (deuda); o gana.
  * Con `alquiler` y `carta` (FD.2, D-66) queda a la distancia de los dados que van a salir de una
  * propiedad de otro (las de muestra) o de una casilla de carta con «cobra a cada jugador» encima del
- * mazo: al tirar, paga el alquiler o cobra la carta.
+ * mazo: al tirar, paga el alquiler o cobra la carta. Con `sueldo` y `banco` (FD.3, D-68), de la salida
+ * (cobra el sueldo al llegar) o de una casilla de carta con «cobra del Banco» encima del mazo.
  */
 fun withPhase(config: GameConfig, phase: String): (GameState) -> GameState = { state ->
     val me = state.current
@@ -60,14 +62,19 @@ fun withPhase(config: GameConfig, phase: String): (GameState) -> GameState = { s
         }
         "fin" -> state.copy(phase = TurnPhase.Over(listOf(me)))
         "alquiler" -> withSampleProperties(state).let { s -> s.landingOn(config, s.holdings.filterValues { it.owner != me }.keys.max()) }
-        "carta" -> {
-            val card = config.cards.indexOfFirst { it.effect is CardEffect.CollectFromEach }
-            val deck = config.cards[card].deck
-            val square = config.squares.indexOfFirst { it is CardSquare && it.deck == deck }
-            state.copy(decks = state.decks + (deck to listOf(card) + state.decks[deck].orEmpty().minus(card))).landingOn(config, square)
-        }
+        "carta" -> state.onCard(config) { it is CardEffect.CollectFromEach }
+        "banco" -> state.onCard(config) { it is CardEffect.Collect }
+        "sueldo" -> state.landingOn(config, config.squares.indexOfFirst { it is Start })
         else -> state
     }
+}
+
+/** La primera carta con [effect] va encima de su mazo y quien juega cae en una casilla de ese mazo al tirar. */
+private fun GameState.onCard(config: GameConfig, effect: (CardEffect) -> Boolean): GameState {
+    val card = config.cards.indexOfFirst { effect(it.effect) }
+    val deck = config.cards[card].deck
+    val square = config.squares.indexOfFirst { it is CardSquare && it.deck == deck }
+    return copy(decks = decks + (deck to listOf(card) + decks[deck].orEmpty().minus(card))).landingOn(config, square)
 }
 
 /** Quien juega queda a la distancia de los próximos dados (`random` es puro) de [target], así cae ahí al tirar. */

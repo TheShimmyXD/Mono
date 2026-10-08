@@ -39,7 +39,10 @@ data class Walk(override val player: Int, val path: List<Int>, val jump: Boolean
 /** La casilla [square] pasa a [player] (compra o subasta ganada) y vuela hasta su ícono (FD.1, D-65). */
 data class Flight(override val player: Int, val square: Int) : Motion
 
-/** [from] le paga [amount] a [to] (alquiler o carta, FD.2, D-66). */
+/** El Banco en un [Transfer]: sus billetes salen del centro del tablero o llegan a él (FD.3, D-68). */
+const val BANK = -1
+
+/** [from] le paga [amount] a [to] (alquiler o carta, FD.2, D-66); uno de los dos puede ser el [BANK] (FD.3, D-68). */
 data class Transfer(val from: Int, val to: Int, val amount: Int)
 
 /**
@@ -47,14 +50,14 @@ data class Transfer(val from: Int, val to: Int, val amount: Int)
  * una carta que cobra a cada jugador. [player] es quien paga el primero.
  */
 data class Payment(val transfers: List<Transfer>) : Motion {
-    override val player: Int get() = transfers.first().from
+    override val player: Int get() = transfers.first().let { if (it.from == BANK) it.to else it.from }
 
-    /** Cuánto gana (+) o pierde (−) cada jugador con estos pagos; quien no paga ni cobra no sale. */
+    /** Cuánto gana (+) o pierde (−) cada jugador con estos pagos; quien no paga ni cobra no sale, ni el Banco. */
     val deltas: Map<Int, Int>
         get() = buildMap {
             transfers.forEach { (from, to, amount) ->
-                put(from, (get(from) ?: 0) - amount)
-                put(to, (get(to) ?: 0) + amount)
+                if (from != BANK) put(from, (get(from) ?: 0) - amount)
+                if (to != BANK) put(to, (get(to) ?: 0) + amount)
             }
         }
 }
@@ -75,8 +78,8 @@ fun shownMoney(money: List<Int>, queue: List<Motion>, f: Float): List<Int> {
  * Lo que dejan los eventos de una jugada, en orden: un `Moved` avanza casilla por casilla (o retrocede,
  * si lo mandó una carta de retroceder, D-14), un `SentToJail` salta derecho a la Cárcel desde donde
  * estaba, un `Bought` o un `AuctionWon` hace volar la casilla al ícono de quien se la queda y un
- * `RentPaid` o un `CardPayment` entre dos jugadores lleva los billetes de uno al otro (los pagos con el
- * Banco, FD.3, todavía no).
+ * `RentPaid` o un `CardPayment` lleva los billetes de quien paga a quien cobra; el sueldo, un impuesto,
+ * una carta del o al Banco y la multa de la Cárcel, entre el Banco ([BANK]) y el jugador (FD.3, D-68).
  * [positions] son las casillas de cada jugador antes de la jugada.
  */
 fun motions(events: List<Event>, config: GameConfig, positions: List<Int>): List<Motion> {
@@ -85,32 +88,37 @@ fun motions(events: List<Event>, config: GameConfig, positions: List<Int>): List
     val at = positions.toMutableList()
     var back = false
     val out = mutableListOf<Motion>()
-    // Un pago se junta con el anterior si este fue el último movimiento: salen a la vez.
-    fun pay(t: Transfer) {
+    // Los pagos de una misma carta (la que cobra o paga a cada uno) salen a la vez; los demás, de a uno.
+    var card = false
+    fun pay(t: Transfer, join: Boolean = false) {
         val last = out.lastOrNull()
-        if (last is Payment) out[out.lastIndex] = Payment(last.transfers + t) else out += Payment(listOf(t))
+        if (join && card && last is Payment) out[out.lastIndex] = Payment(last.transfers + t) else out += Payment(listOf(t))
+        card = join
     }
-    for (e in events) when (e) {
-        is Event.CardDrawn -> back = (config.cards.getOrNull(e.card)?.effect as? CardEffect.MoveBy)?.let { it.steps < 0 } == true
-        is Event.Moved -> {
-            val steps = if (back) Math.floorMod(e.from - e.to, n) else Math.floorMod(e.to - e.from, n)
-            val dir = if (back) -1 else 1
-            if (steps > 0) out += Walk(e.player, (0..steps).map { Math.floorMod(e.from + dir * it, n) })
-            at[e.player] = e.to
-            back = false
+    for (e in events) {
+        if (e !is Event.CardPayment) card = false
+        when (e) {
+            is Event.CardDrawn -> back = (config.cards.getOrNull(e.card)?.effect as? CardEffect.MoveBy)?.let { it.steps < 0 } == true
+            is Event.Moved -> {
+                val steps = if (back) Math.floorMod(e.from - e.to, n) else Math.floorMod(e.to - e.from, n)
+                val dir = if (back) -1 else 1
+                if (steps > 0) out += Walk(e.player, (0..steps).map { Math.floorMod(e.from + dir * it, n) })
+                at[e.player] = e.to
+                back = false
+            }
+            is Event.SentToJail -> {
+                if (at[e.player] != jail) out += Walk(e.player, listOf(at[e.player], jail), jump = true)
+                at[e.player] = jail
+            }
+            is Event.Bought -> out += Flight(e.player, e.square)
+            is Event.AuctionWon -> out += Flight(e.player, e.square)
+            is Event.SalaryPaid -> pay(Transfer(BANK, e.player, e.amount))
+            is Event.RentPaid -> pay(Transfer(e.payer, e.owner, e.amount))
+            is Event.TaxPaid -> pay(Transfer(e.player, BANK, e.amount))
+            is Event.CardPayment -> pay(Transfer(e.from ?: BANK, e.to ?: BANK, e.amount), join = true)
+            is Event.LeftJail -> if (e.fine > 0) pay(Transfer(e.player, BANK, e.fine))
+            else -> Unit
         }
-        is Event.SentToJail -> {
-            if (at[e.player] != jail) out += Walk(e.player, listOf(at[e.player], jail), jump = true)
-            at[e.player] = jail
-        }
-        is Event.Bought -> out += Flight(e.player, e.square)
-        is Event.AuctionWon -> out += Flight(e.player, e.square)
-        is Event.RentPaid -> pay(Transfer(e.payer, e.owner, e.amount))
-        is Event.CardPayment -> {
-            val (from, to) = e.from to e.to
-            if (from != null && to != null) pay(Transfer(from, to, e.amount))
-        }
-        else -> Unit
     }
     return out
 }

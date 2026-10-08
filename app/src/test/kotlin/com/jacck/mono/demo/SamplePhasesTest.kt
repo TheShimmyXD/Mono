@@ -30,6 +30,11 @@ class SamplePhasesTest {
             assertTrue(rent.any { it is Event.RentPaid && it.payer == start.current }, "$preset alquiler: $rent")
             val card = Engine.apply(config, phases.getValue("carta"), Action.Roll).events
             assertEquals(2, card.count { it is Event.CardPayment && it.to == start.current && it.from != null }, "$preset carta: $card")
+            // Y con el Banco: cobra el sueldo al llegar a la salida o una carta del Banco (FD.3, D-68).
+            val salary = Engine.apply(config, phases.getValue("sueldo"), Action.Roll).events
+            assertTrue(salary.any { it is Event.SalaryPaid && it.player == start.current }, "$preset sueldo: $salary")
+            val bank = Engine.apply(config, phases.getValue("banco"), Action.Roll).events
+            assertTrue(bank.any { it is Event.CardPayment && it.to == start.current && it.from == null }, "$preset banco: $bank")
         }
     }
 }
