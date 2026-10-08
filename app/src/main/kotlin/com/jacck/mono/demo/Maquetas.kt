@@ -7,12 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import com.jacck.mono.BotonChiva
 import com.jacck.mono.Calcomania
 import com.jacck.mono.Chiva
-import com.jacck.mono.DialogoChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.board.Board
 import com.jacck.mono.board.Icon
@@ -42,10 +41,9 @@ import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.Holding
 
 /**
- * Maquetas de FC.2 (D-58): el panel de jugadores solo con sus íconos, con datos de muestra (4 jugadores,
- * turno de Ana). Extra `maqueta`: A, en fila sin dinero; B, en fila con el dinero debajo; C, en columna
- * sin dinero; D, en columna con el dinero al lado; E, la tarjeta que abre un ícono (Ana) con sus
- * casillas marcadas en el tablero.
+ * Maquetas de FC.2, segunda vuelta (D-58): el panel de jugadores solo con sus íconos, con datos de muestra
+ * (4 jugadores, turno de Ana). Extra `maqueta`: A y B, en fila pegados arriba (sin y con dinero); C y D,
+ * dos a cada lado (sin y con dinero); E, la tarjeta de Ana en el centro, sin oscurecer, con sus casillas marcadas.
  */
 @Composable
 fun Maqueta(letra: String) {
@@ -63,48 +61,35 @@ fun Maqueta(letra: String) {
         )
     }
     val titulo = when (letra) {
-        "B" -> "B · En fila, con dinero"
-        "C" -> "C · En columna, sin dinero"
-        "D" -> "D · En columna, con dinero"
-        "E" -> "E · Al tocar a Ana"
-        else -> "A · En fila, sin dinero"
+        "B" -> "B · Arriba, con dinero"
+        "C" -> "C · A los lados, sin dinero"
+        "D" -> "D · A los lados, con dinero"
+        "E" -> "E · Tarjeta en el centro (Ana)"
+        else -> "A · Arriba, sin dinero"
     }
+    val conDinero = letra == "B" || letra == "D"
     PantallaChiva {
         BoxWithConstraints(Modifier.fillMaxSize().padding(4.dp)) {
             Board(config, state, Modifier.fillMaxSize()) {
-                Column(Modifier.fillMaxSize().padding(2.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
-                    Text(titulo, fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
-                    when (letra) {
-                        "C", "D" -> Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Calcomania(Modifier.width(if (letra == "D") 132.dp else 72.dp)) {
-                                Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    state.players.indices.forEach { k ->
-                                        Row(verticalAlignment = Alignment.CenterVertically) {
-                                            Icono(state, k, 44.dp)
-                                            if (letra == "D") Text("$${state.players[k].money}", fontSize = 15.sp, modifier = Modifier.padding(start = 6.dp))
-                                        }
-                                    }
+                if (letra == "C" || letra == "D") {
+                    // Dos a cada lado, pegados a las columnas del tablero.
+                    Row(Modifier.fillMaxSize()) {
+                        Lado(state, listOf(0, 1), conDinero)
+                        Medio(state, titulo, Modifier.weight(1f))
+                        Lado(state, listOf(2, 3), conDinero)
+                    }
+                } else {
+                    Column(Modifier.fillMaxSize()) {
+                        // En fila, pegados arriba.
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            state.players.indices.forEach { k ->
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Icono(state, k, 46.dp)
+                                    if (conDinero) Dinero(state, k)
                                 }
                             }
-                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Calcomania { Turno(state) }
-                                BotonChiva("Tirar los dados", {})
-                            }
                         }
-                        else -> {
-                            Calcomania {
-                                Turno(state)
-                                Row(Modifier.fillMaxWidth().padding(8.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-                                    state.players.indices.forEach { k ->
-                                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                            Icono(state, k, 48.dp)
-                                            if (letra == "B") Text("$${state.players[k].money}", fontSize = 14.sp)
-                                        }
-                                    }
-                                }
-                            }
-                            BotonChiva("Tirar los dados", {})
-                        }
+                        if (letra == "E") Tarjeta(state, titulo, Modifier.weight(1f)) else Medio(state, titulo, Modifier.weight(1f))
                     }
                 }
             }
@@ -121,21 +106,53 @@ fun Maqueta(letra: String) {
             }
         }
     }
-    if (letra == "E") {
-        val ana = state.players[0]
-        DialogoChiva("Ana", botones = {
-            BotonChiva("Propiedades (${state.holdings.count { it.value.owner == 0 }})", {}, icono = Icon.CASA)
-            BotonChiva("Cerrar", {}, principal = false)
-        }) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+}
+
+/** Una columna de íconos a un lado del centro, arriba. */
+@Composable
+private fun Lado(state: GameState, players: List<Int>, conDinero: Boolean) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        players.forEach { k ->
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icono(state, k, 46.dp)
+                if (conDinero) Dinero(state, k)
+            }
+        }
+    }
+}
+
+@Composable
+private fun Dinero(state: GameState, k: Int) =
+    Text("$${state.players[k].money}", fontSize = 14.sp, fontWeight = FontWeight.Bold)
+
+/** El centro: el título de la maqueta, de quién es el turno y «Tirar». */
+@Composable
+private fun Medio(state: GameState, titulo: String, modifier: Modifier) {
+    Column(modifier.fillMaxHeight().padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
+        Text(titulo, fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Calcomania { Turno(state) }
+        BotonChiva("Tirar los dados", {})
+    }
+}
+
+/** La tarjeta de Ana en el centro, sin oscurecer el tablero: sus casillas se ven marcadas. */
+@Composable
+private fun Tarjeta(state: GameState, titulo: String, modifier: Modifier) {
+    val ana = state.players[0]
+    Column(modifier.fillMaxHeight().padding(horizontal = 4.dp), verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.CenterVertically)) {
+        Text(titulo, fontSize = 15.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+        Calcomania {
+            Row(Modifier.padding(12.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 PlayerToken(state, 0, 64.dp)
                 Column {
+                    Text(ana.name, fontSize = 22.sp)
                     Text("$${ana.money}", fontSize = 26.sp, fontWeight = FontWeight.Bold)
-                    Text("Le toca a Ana", fontSize = 15.sp)
-                    Text("Sus casillas tienen marco rojo", fontSize = 15.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
+                    Text("Sus casillas: marco rojo", fontSize = 14.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
                 }
             }
         }
+        BotonChiva("Propiedades (${state.holdings.count { it.value.owner == 0 }})", {}, icono = Icon.CASA)
+        BotonChiva("Cerrar", {}, principal = false)
     }
 }
 
