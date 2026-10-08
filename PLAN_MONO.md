@@ -220,7 +220,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 - [x] **FE.1** Datos sensibles: barrido de lo versionado y del historial de Git (correo, nombres reales, rutas absolutas, serial del Redmi, IP de la red local, `local.properties`, firma) y lista de qué sube (`Agente_Mono/`, `.claude/`, `REGLAS.md`, arte y letras con su licencia). *Terminado:* 0 hallazgos en lo versionado y en el historial (o el historial reescrito con el visto bueno del autor) y la lista aprobada por el autor.
 - [x] **FE.2** Optimización del código: código muerto, avisos del compilador y archivos de más de 400 líneas divididos (`GameScreen.kt`). *Terminado:* 0 avisos de nuestro código, pruebas en verde y las mismas capturas antes y después.
-- [ ] **FE.3** README: qué es, capturas, cómo compilar e instalar, cómo jugar, reglas configurables, estructura, créditos y licencia (la elige el autor). *Terminado:* el autor lo aprueba leído.
+- [x] **FE.3** README: qué es, capturas, cómo compilar e instalar, cómo jugar, reglas configurables, estructura, créditos y licencia (la elige el autor). *Terminado:* el autor lo aprueba leído.
 - [ ] **FE.4** Repositorio en GitHub y primer push, solo cuando el autor lo ordene (privado o público, lo decide él). *Terminado:* el autor lo ve en GitHub.
 
 ---
