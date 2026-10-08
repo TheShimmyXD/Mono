@@ -222,6 +222,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **FE.2** Optimización del código: código muerto, avisos del compilador y archivos de más de 400 líneas divididos (`GameScreen.kt`). *Terminado:* 0 avisos de nuestro código, pruebas en verde y las mismas capturas antes y después.
 - [x] **FE.3** README: qué es, capturas, cómo compilar e instalar, cómo jugar, reglas configurables, estructura, créditos y licencia (la elige el autor). *Terminado:* el autor lo aprueba leído.
 - [x] **FE.4** Repositorio en GitHub y primer push, solo cuando el autor lo ordene (privado o público, lo decide él). *Terminado:* el autor lo ve en GitHub.
+- [ ] **FE.5** APK para instalar directo, sin compilar (pedida por el autor el 2026-10-08, D-81): etiqueta `v0.1`, GitHub Release con el APK de depuración y sección «Instalar el APK» en el README. *Terminado:* la release existe y el autor instala la app en el Redmi desde su enlace.
 
 ---
 

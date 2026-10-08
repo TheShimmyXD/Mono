@@ -41,6 +41,16 @@ Cada tablero lleva sus reglas; se cambian en **Editar → Reglas**. Donde el Tí
 
 Las reglas salen de los reglamentos impresos de los dos juegos: cada una está transcrita con su página en [`REGLAS.md`](REGLAS.md) (54 fichas, R-01 a R-54) y tiene su prueba en el motor.
 
+## Instalar el APK
+
+Para jugar sin compilar nada, en un teléfono con **Android 8.0 o más nuevo**:
+
+1. Desde el teléfono, abrir la [última versión](https://github.com/TheShimmyXD/Mono/releases/latest) y descargar `mono-0.1.apk` (en *Assets*).
+2. Abrir el archivo descargado. La primera vez Android pide permiso para *instalar apps desconocidas* desde el navegador (o el gestor de archivos): activarlo y volver.
+3. Pulsar *Instalar*. Si Play Protect avisa que no reconoce la app, elegir *Instalar de todas formas* (puede pasar con las apps que no vienen de Play Store).
+
+Para pasarlo a un amigo basta con mandarle el mismo archivo (por WhatsApp, Bluetooth o cable) o el enlace. Las versiones nuevas se instalan encima sin borrar las partidas ni los tableros guardados. Si alguna vez dice «la app no se instaló porque entra en conflicto con un paquete existente», es que la versión instalada se compiló en otro PC: desinstalarla primero (eso sí borra lo guardado).
+
 ## Compilar e instalar
 
 Hace falta [Android Studio](https://developer.android.com/studio) (trae el JDK y el SDK de Android) y un teléfono con **Android 8.0 o más nuevo**.

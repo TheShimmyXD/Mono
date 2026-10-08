@@ -777,3 +777,13 @@
 - **Desde aquí:** cada `push` lo ordena el autor (regla 3); `origin` queda configurado.
 - **Cómo se revierte:** pasar el repositorio a privado (`gh repo edit TheShimmyXD/Mono --visibility private --accept-visibility-change-consequences`) o borrarlo desde GitHub; lo que ya se vio en público pudo quedar copiado.
 - **Estado:** vigente.
+
+### D-81 · FE.5: APK directo en una GitHub Release
+
+- **Del autor (2026-10-08):** el repositorio no tenía cómo instalar sin compilar; eligió «release con el APK de depuración» frente a una keystore propia (una llave más que guardar) y a solo instrucciones (quien no compila no puede instalar). Va como FE.5, sin renumerar.
+- **Qué sube:** `mono-0.1.apk` = el `app-debug.apk` de `assembleDebug` (16 707 121 bytes, `versionCode 1`, `versionName 0.1`, `minSdk 26` = Android 8.0), en la etiqueta `v0.1`. Firma: la llave de depuración de este PC, `CN=Android Debug, O=Android, C=US` (SHA-256 `cb5561e7…`); no se creó ninguna keystore (regla 3).
+- **Medido antes de subir:** 0 archivos del APK con `/home/jacck`, el correo o `10.159.` (el buscador encontró 3 de 3 casos sembrados).
+- **README:** sección «Instalar el APK» (descargar, permitir apps desconocidas, Play Protect, pasarlo a un amigo, el conflicto de firma).
+- **Para la próxima versión:** subir `versionCode` y `versionName` en `app/build.gradle.kts` y compilar en este PC; con otra llave de depuración Android no la instala encima (hay que desinstalar y se pierde lo guardado).
+- **Cómo se revierte:** `gh release delete v0.1 --cleanup-tag -R TheShimmyXD/Mono` y quitar la sección del README.
+- **Estado:** vigente.
