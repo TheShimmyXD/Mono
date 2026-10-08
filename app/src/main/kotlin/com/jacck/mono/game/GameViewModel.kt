@@ -94,7 +94,7 @@ class GameViewModel(
 
     /** Muestra lo que dejó una jugada; [action] es null si vino del otro teléfono. */
     private fun show(action: Action?, result: Result) {
-        Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[state.current].name}: ${action ?: "📶"} → ${result.events}")
+        Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[state.current].name}: ${action ?: "otro teléfono"} → ${result.events}")
         state = result.state
         onState(config, state)
         // Lo del otro teléfono no se vio aquí: se cuenta todo, no solo lo notable (D-51).

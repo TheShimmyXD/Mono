@@ -17,6 +17,7 @@ import com.jacck.mono.Calcomania
 import com.jacck.mono.Chiva
 import com.jacck.mono.OpcionChiva
 import com.jacck.mono.PantallaChiva
+import com.jacck.mono.board.Icon
 
 /**
  * Maquetas de la pantalla que se está diseñando (M-029), con datos falsos; se abren con el extra
@@ -52,7 +53,7 @@ private fun MaquetaA() {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Crear partida", fontSize = 20.sp)
             Nota("Clásico · 40 casillas · Ana, Beto y Caro aquí")
-            Text("📶 Caro juega en el otro teléfono", fontSize = 16.sp)
+            Text("Caro juega en el otro teléfono", fontSize = 16.sp)
             Text("Esperando… este teléfono se llama «Redmi Note 13 Pro»", fontSize = 16.sp)
             BotonChiva("Cancelar", {}, principal = false)
         }
@@ -72,7 +73,7 @@ private fun MaquetaA() {
 @Composable
 private fun MaquetaB() {
     Titulo("Nueva partida")
-    BotonChiva("📶 Unirme a la partida de un amigo", {}, principal = false)
+    BotonChiva("Unirme a la partida de un amigo", {}, principal = false, icono = Icon.ENLACE)
     Calcomania { Text("Juego: Clásico · 40 casillas", Modifier.padding(12.dp), fontSize = 18.sp) }
     Calcomania {
         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -81,7 +82,7 @@ private fun MaquetaB() {
                 Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(n, fontSize = 18.sp, modifier = Modifier.weight(1f).padding(top = 10.dp))
                     OpcionChiva("Aquí", aqui, {}, Modifier.weight(1f))
-                    OpcionChiva("📶 Otro", !aqui, {}, Modifier.weight(1f))
+                    OpcionChiva("Otro", !aqui, {}, Modifier.weight(1f), Icon.ENLACE)
                 }
             }
             Nota("Caro y Dani juegan en el otro teléfono.")

@@ -542,3 +542,10 @@
 - **Decisión:** en `PLAN_MONO.md`, F5.8 va entre F5.4 y F5.5, sin renumerar (como F5.9, D-27). Un jugador del menú se marca «🤖 Máquina» y juega solo; puja en subastas y construye con criterio. *Terminado:* una partida corta ($300, salario $0) del autor contra la máquina, terminada en el Redmi con captura, y la máquina lista gana al menos 3 de 10 partidas simuladas contra la simple (la de `mono-pc`, D-50).
 - **Cómo se revierte:** devolver la casilla al final de F5 con «(Extra)».
 - **Estado:** vigente.
+
+### D-53 · K18: sin emojis en la app; «📶» y «★» pasan a íconos dibujados
+
+- **Del autor (2026-10-07, K18, M-087):** ningún emoji en textos, `strings.xml`, logs ni comentarios de `app/`; lo que haría un emoji es un ícono en el estilo de la app.
+- **Decisión:** dos íconos 24 × 24 nuevos en `arte/arte.py` (`ICONOS`): `enlace` (cuatro barras azules `sea` que suben, lo del otro teléfono) y `propio` (estrella amarilla `bolt`, tablero propio); salen como `ic_enlace.xml` e `ic_propio.xml` y en Kotlin como `Icon.ENLACE` e `Icon.PROPIO`. `OpcionChiva` gana `icono` (como `BotonChiva`), y en un texto el ícono va al lado en un `Row`: botón «Unirme», ficha «Otro teléfono», sala («Otro teléfono: X»), «Esperando a X» y la nota de la copia («la de la estrella»). Se quita `menu_board_own` (era `menu_board` con «★»). El log dice «otro teléfono». `sin_emojis.py app/src/main`: 12 líneas → 0. Captura: `capturas/k18_sin_emojis.png` (menú, sala, unirme).
+- **Cómo se revierte:** devolver los símbolos a `strings.xml` (lo prohíbe K18).
+- **Estado:** vigente.

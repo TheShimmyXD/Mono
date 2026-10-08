@@ -3,6 +3,7 @@ package com.jacck.mono.enlace
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text
@@ -13,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
@@ -26,6 +28,8 @@ import com.jacck.mono.Calcomania
 import com.jacck.mono.Chiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
+import com.jacck.mono.board.Icon
+import com.jacck.mono.board.IconImage
 import com.jacck.mono.engine.Engine
 import com.jacck.mono.engine.link.Host
 import com.jacck.mono.engine.model.GameConfig
@@ -80,7 +84,10 @@ fun HostScreen(room: HostRoom, config: GameConfig, names: List<String>, seats: S
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.host_board, config.name, config.squares.size), fontSize = 20.sp)
                     Text(stringResource(R.string.host_here, names.filterIndexed { i, _ -> i !in seats }.joinToString(", ")), fontSize = 16.sp)
-                    Text(stringResource(R.string.host_remote, names.filterIndexed { i, _ -> i in seats }.joinToString(", ")), fontSize = 16.sp)
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        IconImage(Icon.ENLACE, 20.dp)
+                        Text(stringResource(R.string.host_remote, names.filterIndexed { i, _ -> i in seats }.joinToString(", ")), fontSize = 16.sp)
+                    }
                 }
             }
             Calcomania {

@@ -2402,11 +2402,22 @@ def turno():
     return [("roof", poly([(4, 3.5), (20.5, 12), (4, 20.5), (8.5, 12)]))]
 
 
+def enlace():
+    """Lo que juega en el otro teléfono (F5, en lugar del emoji de señal): cuatro barras que suben."""
+    return [("sea", rrect(2 + 5.3 * i, 21.5 - h, 4, h, 1)) for i, h in enumerate((5.5, 9.5, 14, 19))]
+
+
+def propio():
+    """Tablero propio (F4.4, en lugar del emoji de estrella)."""
+    return [("bolt", star(12, 12.6, 10.5, 4.6))]
+
+
 ICONOS = {"casa": casa, "hotel": hotel, **{f"dado_{n}": (lambda n=n: dado(n)) for n in range(1, 7)},
           "salida": salida, "carcel": carcel, "vayase_carcel": vayase_carcel, "estacion": estacion,
           "energia": energia, "acueducto": acueducto, "impuesto": impuesto, "casualidad": casualidad,
           "arca": arca, "loteria": loteria, "sorpresa": sorpresa, "parada_libre": parada_libre,
-          "mirador": mirador, "hamaca": hamaca, "turno": turno}
+          "mirador": mirador, "hamaca": hamaca, "turno": turno,
+          "enlace": enlace, "propio": propio}
 ICONO_ANCHO = 1.1
 
 # ---------- personajes (FB.3): lienzo 48 x 48, sin fondo ----------

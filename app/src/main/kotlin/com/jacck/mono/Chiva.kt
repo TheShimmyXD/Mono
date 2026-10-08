@@ -175,15 +175,19 @@ fun DialogoChiva(
     }
 }
 
-/** Ficha de opción (FB.2c): roja con letra blanca si está elegida, blanca con letra de tinta si no. */
+/**
+ * Ficha de opción (FB.2c): roja con letra blanca si está elegida, blanca con letra de tinta si no;
+ * [icono] va a la izquierda del texto (en lugar de un emoji, K18).
+ */
 @Composable
-fun OpcionChiva(texto: String, elegida: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun OpcionChiva(texto: String, elegida: Boolean, onClick: () -> Unit, modifier: Modifier = Modifier, icono: Icon? = null) {
     val forma = RoundedCornerShape(10.dp)
-    Box(
+    Row(
         modifier.clip(forma).background(if (elegida) Chiva.Techo else Color.White).border(2.dp, Chiva.Tinta, forma)
             .clickable(role = Role.RadioButton, onClick = onClick).padding(horizontal = 12.dp, vertical = 8.dp),
-        contentAlignment = Alignment.Center,
+        horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
     ) {
+        icono?.let { IconImage(it, 18.dp); Spacer(Modifier.width(6.dp)) }
         Text(
             texto, color = if (elegida) Color.White else Chiva.Tinta, maxLines = 1, softWrap = false,
             autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 16.sp),

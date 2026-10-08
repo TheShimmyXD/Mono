@@ -36,6 +36,8 @@ import com.jacck.mono.DialogoChiva
 import com.jacck.mono.OpcionChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
+import com.jacck.mono.board.Icon
+import com.jacck.mono.board.IconImage
 import com.jacck.mono.board.PlayerColors
 import com.jacck.mono.board.Medallon
 import com.jacck.mono.board.Personajes
@@ -48,7 +50,7 @@ import com.jacck.mono.engine.model.GameState
  * Con una partida guardada (`saved`), arriba va «Seguir la partida» (F3.6, D-26). Estilo chiva (FB.2c, D-33).
  * Bajo cada nombre, los 8 personajes (FB.4, D-36): el suyo grande con su color, los de otros atenuados.
  * Un juego editado con errores (`broken`, F4.3) no se puede empezar y lo dice en rojo.
- * Tableros (F4.4, maqueta A, D-42): la lista de `boards` (originales y propios ★); con uno propio
+ * Tableros (F4.4, maqueta A, D-42): la lista de `boards` (originales y propios, con `Icon.PROPIO`); con uno propio
  * elegido, su nombre se cambia ahí mismo (`onRename`) y se puede borrar (con aviso); todos se editan
  * y se duplican. Lo elegido (`selected`) lo guarda quien llama, porque duplicar elige la copia.
  */
@@ -86,7 +88,7 @@ fun NewGameScreen(
                 stringResource(R.string.menu_title), fontSize = 34.sp, textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
             )
-            BotonChiva(stringResource(R.string.menu_join), onJoin, principal = false)
+            BotonChiva(stringResource(R.string.menu_join), onJoin, principal = false, icono = Icon.ENLACE)
             if (saved != null) {
                 Calcomania(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onResume)) {
                     Column(
@@ -106,8 +108,8 @@ fun NewGameScreen(
                     Text(stringResource(R.string.menu_game), fontSize = 18.sp)
                     boards.forEach { b ->
                         OpcionChiva(
-                            stringResource(if (b.own) R.string.menu_board_own else R.string.menu_board, b.config.name, b.config.squares.size),
-                            b.key == board.key, { onSelect(b.key) }, Modifier.fillMaxWidth(),
+                            stringResource(R.string.menu_board, b.config.name, b.config.squares.size),
+                            b.key == board.key, { onSelect(b.key) }, Modifier.fillMaxWidth(), icono = Icon.PROPIO.takeIf { b.own },
                         )
                     }
                     if (board.own) {
@@ -126,7 +128,10 @@ fun NewGameScreen(
                         BotonChiva(stringResource(R.string.menu_duplicate), onDuplicate, Modifier.weight(1f), principal = false)
                         if (board.own) BotonChiva(stringResource(R.string.menu_delete), { asking = true }, Modifier.weight(1f), principal = false)
                     }
-                    if (!board.own) Text(stringResource(R.string.menu_copy_note), fontSize = 14.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
+                    if (!board.own) Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        IconImage(Icon.PROPIO, 18.dp)
+                        Text(stringResource(R.string.menu_copy_note), fontSize = 14.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
+                    }
                     if (board.key in broken) Text(stringResource(R.string.menu_broken), color = Chiva.Techo, fontSize = 15.sp)
                 }
             }
@@ -160,7 +165,7 @@ fun NewGameScreen(
                             }
                             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 OpcionChiva(stringResource(R.string.menu_here), !remote[i], { remote = remote.toMutableList().also { it[i] = false } }, Modifier.weight(1f))
-                                OpcionChiva(stringResource(R.string.menu_remote), remote[i], { remote = remote.toMutableList().also { it[i] = true } }, Modifier.weight(1.4f))
+                                OpcionChiva(stringResource(R.string.menu_remote), remote[i], { remote = remote.toMutableList().also { it[i] = true } }, Modifier.weight(1.4f), Icon.ENLACE)
                             }
                         }
                     }

@@ -127,10 +127,14 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
         }
         val waiting = vm.waitingFor
         if (waiting != null) {
-            Text(
-                stringResource(if (vm.remote?.connected == false) R.string.waiting_cut else R.string.waiting_remote, waiting),
-                fontSize = 20.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
-            )
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+                IconImage(Icon.ENLACE, 28.dp)
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    stringResource(if (vm.remote?.connected == false) R.string.waiting_cut else R.string.waiting_remote, waiting),
+                    fontSize = 20.sp, textAlign = TextAlign.Center,
+                )
+            }
             return@Column
         }
         if (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn) {
