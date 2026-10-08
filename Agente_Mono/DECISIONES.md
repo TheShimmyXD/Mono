@@ -718,3 +718,11 @@
 - **Pendiente:** el invitado de Android (`GuestScreen`) aún no juega la partida (solo se une y muestra el tablero); cuando juegue, usa el mismo `resume` y la misma regla de silencio.
 - **Cómo se revierte:** `git revert` del commit de F5.5 (vuelve el protocolo 1 y la sala de una conexión a la vez).
 - **Estado:** vigente.
+
+### D-75 · F5.10: el teléfono invitado juega la partida, antes de FE y del hito
+
+- **Hallazgo (F5.5):** en Android, «Unirme» (`GuestScreen`) solo se conecta y muestra el tablero y los jugadores; solo el anfitrión implementa `Remote`, así que hasta hoy el único invitado que jugaba era el PC (`mono-pc`). Sin esto, el hito F5.6 (cada uno en su teléfono) no se puede hacer.
+- **Del autor (2026-10-08):** «F5.10 antes de FE» (la recomendada, entre: antes de FE, después de FE, no por ahora).
+- **Decisión:** casilla F5.10 (siguiente número libre, sin renumerar, D-27) justo después de F5.5: «Unirme» abre la partida y juega sus turnos con el mismo `GameScreen`, usando `Guest` y la reconexión de D-74. *Terminado:* una partida corta terminada con el Redmi de invitado y el PC de anfitrión (un `mono-pc` que abre sala), con captura. F5.6 espera a F5.10 y a FE.
+- **Cómo se revierte:** se quita la casilla F5.10 y su espera en F5.6.
+- **Estado:** vigente.

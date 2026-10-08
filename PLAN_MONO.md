@@ -209,13 +209,14 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **F5.9** Limpieza: quitar el Bluetooth de la app y del PC (D-48) y ordenar la interfaz del enlace. *Terminado:* compila sin código ni permisos de Bluetooth, pruebas en verde y capturas del menú, la sala y «Unirme» aprobadas.
 - [x] **F5.4** Partida de punta a punta entre el Redmi y el PC (jugador de terminal con el mismo motor, D-44). *Terminado:* una partida corta terminada, con captura del Redmi y la salida del PC.
 - [x] **F5.8** Jugar contra la máquina (D-52): en el menú, un jugador se marca «Máquina» (con un ícono dibujado, K18) y juega solo sus turnos; puja en las subastas y construye con criterio, no solo compra y pasa como `mono-pc`. *Terminado:* una partida corta ($300 al empezar, salario $0) entre el autor y la máquina, terminada en el Redmi y con captura, y la máquina lista gana al menos 3 de 10 partidas simuladas contra la simple.
-- [ ] **F5.5** Desconexión y reconexión a mitad de partida. *Terminado:* se corta la red del invitado (el PC, D-44, D-48) y la partida sigue igual al reconectar.
-- [ ] **F5.6** **Hito «Enlace»**: el autor y un amigo, cada uno en su teléfono. *(Espera a FE)* *Terminado:* el autor lo aprueba.
+- [x] **F5.5** Desconexión y reconexión a mitad de partida. *Terminado:* se corta la red del invitado (el PC, D-44, D-48) y la partida sigue igual al reconectar.
+- [ ] **F5.10** El teléfono invitado juega la partida (D-75): «Unirme» abre el tablero y juega sus turnos, con la reconexión de D-74. *Terminado:* una partida corta terminada con el Redmi de invitado y el PC de anfitrión, con captura del Redmi.
+- [ ] **F5.6** **Hito «Enlace»**: el autor y un amigo, cada uno en su teléfono. *(Espera a F5.10 y FE)* *Terminado:* el autor lo aprueba.
 - [ ] **F5.7** *(Extra)* 3-6 jugadores por la red local.
 
 ### FE · Limpieza y README
 
-*Pedida por el autor el 2026-10-08 (D-73): antes del hito F5.6, dejar el proyecto listo para subirlo a GitHub. Va después de F5.5; F5.6 espera a que FE cierre (al cerrarla se quita su «Espera a FE»). Nada se publica sin la orden del autor (regla 3).*
+*Pedida por el autor el 2026-10-08 (D-73): antes del hito F5.6, dejar el proyecto listo para subirlo a GitHub. Va después de F5.5 y F5.10 (D-75); F5.6 espera a que FE cierre (al cerrarla se quita «FE» de su espera). Nada se publica sin la orden del autor (regla 3).*
 
 - [ ] **FE.1** Datos sensibles: barrido de lo versionado y del historial de Git (correo, nombres reales, rutas absolutas, serial del Redmi, IP de la red local, `local.properties`, firma) y lista de qué sube (`Agente_Mono/`, `.claude/`, `REGLAS.md`, arte y letras con su licencia). *Terminado:* 0 hallazgos en lo versionado y en el historial (o el historial reescrito con el visto bueno del autor) y la lista aprobada por el autor.
 - [ ] **FE.2** Optimización del código: código muerto, avisos del compilador y archivos de más de 400 líneas divididos (`GameScreen.kt`). *Terminado:* 0 avisos de nuestro código, pruebas en verde y las mismas capturas antes y después.
