@@ -112,7 +112,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - **D-02 · Dos módulos.** `engine` sin Android + `app` · las reglas se prueban en segundos sin teléfono y no se mezclan con la interfaz (Azorian D-04).
 - **D-03 · Motor determinista.** Estado inmutable + acción → estado nuevo; dados y barajado con una semilla inyectada · reproduce cualquier partida en una prueba y, en F5, el anfitrión decide y los dos teléfonos aplican las mismas acciones.
 - **D-04 · Reglas con fuente.** Catálogo `REGLAS.md` (R-##: texto, cifras, reglamento y página o recorte); donde Tío Rico y Monopoly difieren, una opción de configuración con su valor en cada preset · regla 1 del mandato.
-- **D-05 · Jugadores y tablero.** 2-6 jugadores; tablero en anillo de N casillas · autor (P1-P2). Primero en un teléfono; Bluetooth después del hito (autor).
+- **D-05 · Jugadores y tablero.** 2-6 jugadores en el motor; en la app, 2-4 y abre en 2 (D-57); tablero en anillo de N casillas · autor (P1-P2). Primero en un teléfono; Bluetooth después del hito (autor).
 - Pendiente para F5.1: transporte Bluetooth (clásico RFCOMM o Nearby Connections).
 
 ---
@@ -235,7 +235,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 - **Pila:** Kotlin + Compose (D-01). **Tamaño:** meses. **Multijugador:** local primero, Bluetooth después del hito. **Nombre:** Mono. **Hermano:** Azorian.
 - **Reglamentos:** «tienes los dos en mi carpeta de Descargas» → `Monopoly(Spanish).pdf` y `tio_rico.pdf` (escaneos; H4).
-- **P1** Jugadores: 2-6 (D-05).
+- **P1** Jugadores: 2-6 en el motor (D-05); 2-4 en la app (D-57).
 - **P2** Tablero: anillo de N casillas (D-05; el rango exacto de N sale de F1.4).
 - **P3** ¿Se publicará algún día? → **resuelta para los presets** (2026-10-06): nombres propios, sin los de terceros (D-18).
 - **P4** Segundo Android: no hay → el Bluetooth se prueba con el teléfono de un amigo, y el protocolo, en la JVM.
