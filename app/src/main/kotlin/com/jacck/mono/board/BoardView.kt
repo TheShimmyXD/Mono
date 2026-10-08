@@ -1,5 +1,11 @@
 package com.jacck.mono.board
 
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,12 +29,14 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.material3.LocalTextStyle
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,11 +67,16 @@ val PlayerColors = listOf(0xFFE53935, 0xFF1E88E5, 0xFF43A047, 0xFFFFB300, 0xFF8E
  */
 data class Hop(val from: Int, val to: Int, val f: Float = 0f)
 
+/** Respiración de las casillas marcadas (D-62): ms en crecer (y otros tantos en volver) y cuánto crecen. */
+const val BREATH_MS = 1400
+const val BREATH_SCALE = 0.12f
+
 /**
  * El tablero en anillo (D-20) dibujado desde la configuración y el estado de la partida, para
  * cualquier N; [center] va dentro del anillo (dados, casilla, jugadores, botones). Las fichas de
  * [hops] (por jugador) no van en su casilla del estado: se dibujan donde dice su [Hop] (FC.1, D-59).
- * Las casillas de [marks] llevan un marco de [markColor] (las de un jugador elegido, FC.3, D-60).
+ * Las casillas de [marks] llevan un marco de [markColor] (las de un jugador elegido, FC.3, D-60) y
+ * respiran: se agrandan y vuelven, con una máscara translúcida de ese color encima (D-62).
  */
 @Composable
 fun Board(
@@ -88,7 +101,24 @@ fun Board(
                 width = cw,
                 modifier = Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).clickable { onSquare(i) },
             )
-            if (i in marks) Box(Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).border(4.dp, markColor))
+        }
+        if (marks.isNotEmpty()) {
+            // Encima de las demás, para que al crecer no las tape la vecina (D-62).
+            val breath by rememberInfiniteTransition(label = "respira").animateFloat(
+                0f, 1f, infiniteRepeatable(tween(BREATH_MS, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "respira",
+            )
+            marks.forEach { i ->
+                val at = grid.cellOf(i)
+                val k = 1f + BREATH_SCALE * breath
+                Box(Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).graphicsLayer { scaleX = k; scaleY = k }.clickable { onSquare(i) }) {
+                    SquareCell(
+                        config, state, config.squares[i], state.holdings[i],
+                        if (showTokens) state.players.indices.filter { state.players[it].position == i && !state.players[it].bankrupt && it !in hops } else emptyList(),
+                        i == highlight, cw, Modifier.fillMaxSize(),
+                    )
+                    Box(Modifier.fillMaxSize().background(markColor.copy(alpha = 0.2f + 0.2f * breath)).border(4.dp, markColor))
+                }
+            }
         }
         Box(Modifier.offset(cw, ch).size(cw * (grid.cols - 2), ch * (grid.rows - 2)).padding(6.dp)) { center() }
         if (showTokens) hops.forEach { (k, hop) ->

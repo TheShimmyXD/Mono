@@ -611,3 +611,10 @@
 - **Decisión:** un toque en un ícono abre su tarjeta en el centro en lugar del turno (sin «Tirar» a la vista hasta «Cerrar»); tocar el mismo ícono la cierra. «Propiedades (n)» abre la hoja de ese jugador; lleva jugadas y «Declararme en quiebra» solo si `canManage` (es quien juega, su turno es de este teléfono y la fase es tirar o terminar, como antes en «Mis propiedades»); si no, solo se mira. El dinero oculto (pulsación larga) vale para todos y se recuerda al girar la pantalla. Se quitan «Mis propiedades» y `PlayersPanel` (la demo `n` usa `PlayersRow`). Extra `tarjeta=k` abre la tarjeta de k sin el aviso «Lo que pasó»; con `hoja=true`, la hoja de k. La muestra `propiedades` le da además 11, 13 y 15 al siguiente jugador.
 - **Cómo se revierte:** `Center` vuelve a llevar «Mis propiedades» y la hoja vuelve a ser solo de quien juega.
 - **Estado:** vigente.
+
+### D-62 · Las casillas del jugador elegido respiran con una máscara de su color
+
+- **Del autor (2026-10-08, al aprobar FC.3):** «que las casillas parpadearan con el color correspondiente … una máscara de un tono traslucido del color del jugador y un efecto de breathing (lento) … se agrandan y vuelven al tamaño original para distinguir mejor».
+- **Decisión:** mientras la tarjeta está abierta, cada casilla del jugador se dibuja otra vez encima del tablero (para que la vecina no la tape al crecer), con su marco de 4 dp (D-60) y una máscara de su color que va del 20 % al 40 % de opacidad, y crece hasta un 12 % (`BREATH_SCALE`) en 1400 ms (`BREATH_MS`) y vuelve en otros tantos, con aceleración suave. Cifras elegidas por el agente; las ajusta el autor al verlo.
+- **Cómo se revierte:** se quita el bloque `marks` de `Board` y vuelve el marco quieto de D-60.
+- **Estado:** vigente.
