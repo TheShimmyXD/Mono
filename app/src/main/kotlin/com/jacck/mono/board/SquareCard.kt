@@ -74,14 +74,17 @@ fun SquareFace(config: GameConfig, state: GameState, square: Int, modifier: Modi
             Box(Modifier.fillMaxWidth().height(120.dp).background(Sky), contentAlignment = Alignment.Center) { IconImage(icon, 88.dp) }
         }
         if (art != null || icon != null) FranjaChiva(8.dp)
-        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-            when (sq) {
-                is OwnableSquare -> OwnableDetails(config, state, square, sq, holding, group?.name)
-                is Tax -> TaxDetails(sq)
-                else -> Unit
+        // Sin cifras (cartas, esquinas), la franja del arte cierra la carta: sin hueco ni otra franja (FD.6).
+        if (sq is OwnableSquare || sq is Tax) {
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                when (sq) {
+                    is OwnableSquare -> OwnableDetails(config, state, square, sq, holding, group?.name)
+                    is Tax -> TaxDetails(sq)
+                    else -> Unit
+                }
             }
-        }
-        FranjaChiva(8.dp)
+            FranjaChiva(8.dp)
+        } else if (art == null && icon == null) FranjaChiva(8.dp)
     }
 }
 
