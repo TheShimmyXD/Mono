@@ -768,3 +768,12 @@
 - **Aprobación:** el autor aprobó el README leído el 2026-10-08 (sesión `82c5f2d2`).
 - **Cómo se revierte:** `git revert` del commit de FE.3.
 - **Estado:** vigente.
+
+### D-80 · FE.4: repositorio público `TheShimmyXD/Mono`
+
+- **Del autor:** público (orden del 2026-10-08) y con el nombre «Mono», elegido frente a «Project_Mono» y «mono-juego».
+- **Antes de subir, medido:** 456 archivos versionados y 0 de `capturas/`, `fuentes/`, ESTADO, SESIONES, trazas, `local.properties` o firma (el buscador encontró 2 de 2 casos sembrados). En los 209 commits: 0 apariciones del correo, del serial del Redmi y de las IPs reales `10.159.*` (caso sembrado: 1). Solo quedan IPs de ejemplo genéricas (`192.168.1.5`, `192.168.1.7`, `192.168.43.1`) en textos de ayuda y pruebas. Autor de los commits: el correo `noreply` de GitHub.
+- **Cómo:** `gh repo create Mono --public --source . --remote origin --push` con una descripción de una línea. GitHub muestra `PUBLIC`, rama `main`, «MIT License» y las 6 capturas de `docs/capturas/`; `origin/main` = `fce2803`.
+- **Desde aquí:** cada `push` lo ordena el autor (regla 3); `origin` queda configurado.
+- **Cómo se revierte:** pasar el repositorio a privado (`gh repo edit TheShimmyXD/Mono --visibility private --accept-visibility-change-consequences`) o borrarlo desde GitHub; lo que ya se vio en público pudo quedar copiado.
+- **Estado:** vigente.
