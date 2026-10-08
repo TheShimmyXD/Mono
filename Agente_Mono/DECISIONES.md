@@ -514,6 +514,6 @@
 - **Pregunta (del autor, 2026-10-07):** con la partida en la red local (D-48), ¿sigue el Bluetooth en la app? Quedan la prueba del eco (`RfcommServer`, `BluetoothGate`, `EcoServer`, `EcoScreen`: 234 líneas), el permiso `BLUETOOTH_CONNECT`, `pc/eco.py` y `invitado.py --bt`.
 - **Del autor:** quitarlo en un paso antes de F5.4, con la interfaz: lo que en pantalla, textos y permisos habla de Bluetooth (no un repaso del resto de la app).
 - **Decisión:** casilla **F5.9** escrita entre F5.3 y F5.4 (el siguiente número libre: `tablero.py` solo cuenta `F5.<número>` y F5.4-F5.8 ya se citan en fichas y referencias; D-27). `MONO_UUID` y `SERVICE_NAME` se van con `RfcommServer.kt`; lo que se reutiliza (`LinkEvent`, `hostLoop`, `guestLoop`) se queda. Los archivos los borra el autor con `! git rm` (regla de la skill).
-- **Pendiente de preguntar:** F5.7 dice «3-6 jugadores por Bluetooth».
+- **Del autor (2026-10-07, al aprobar F5.9):** el plan pasa a «por la red local» en el hito F5.6, F5.7 y la tabla de riesgos; las maquetas de F5.3 (`demo/Maquetas.kt`) se quedan como registro. Hecho en `9fcece6` (21 archivos, −472 líneas).
 - **Cómo se revierte:** el Bluetooth queda en la historia de Git (`6765db8` y anteriores).
 - **Estado:** vigente (pedida por el autor, 2026-10-07).

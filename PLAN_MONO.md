@@ -25,7 +25,7 @@
 
 **El orden es innegociable:** reglamentos transcritos (F1) → motor sin Android, probado regla por regla (F2) → interfaz (F3) → editor y hito (F4) → Bluetooth (F5).
 
-**Hito de validación («Primera quiebra»):** en su Redmi Note 13 Pro, el autor edita un tablero (cambia el nombre y el precio de una casilla y el número de casillas), juegan 2-4 personas pasándose el teléfono y la partida termina cuando alguien quiebra, sin reglas inventadas (F4.5). Nada de F5 antes de que lo apruebe. Segundo hito, **«Enlace»** (F5.6): el autor y un amigo, cada uno en su teléfono, juegan la misma partida por Bluetooth.
+**Hito de validación («Primera quiebra»):** en su Redmi Note 13 Pro, el autor edita un tablero (cambia el nombre y el precio de una casilla y el número de casillas), juegan 2-4 personas pasándose el teléfono y la partida termina cuando alguien quiebra, sin reglas inventadas (F4.5). Nada de F5 antes de que lo apruebe. Segundo hito, **«Enlace»** (F5.6): el autor y un amigo, cada uno en su teléfono, juegan la misma partida por la red local (Wi-Fi o punto de acceso, D-48).
 
 **Fuera del alcance de la versión 1:** jugar contra la máquina, partidas por internet, iOS, publicación en Play Store, arte o marcas de Hasbro y del Tío Rico, animaciones elaboradas. Se anotan como ideas, no se programan.
 
@@ -187,11 +187,11 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **F5.1** Transporte: Bluetooth clásico (RFCOMM) o Nearby Connections, con prueba de concepto. *Terminado:* D-## aprobada por el autor.
 - [x] **F5.2** Protocolo: anfitrión que decide, acciones numeradas, el invitado aplica las mismas; probado en la JVM con un transporte falso. *Terminado:* dos motores idénticos tras 1000 partidas simuladas.
 - [x] **F5.3** Permisos (Android 12+), descubrir y conectar; HyperOS no corta la conexión. *Terminado:* conexión de 10 min sin cortes entre el Redmi y el PC (D-44).
-- [ ] **F5.9** Limpieza: quitar el Bluetooth de la app y del PC (D-48) y ordenar la interfaz del enlace. *Terminado:* compila sin código ni permisos de Bluetooth, pruebas en verde y capturas del menú, la sala y «Unirme» aprobadas.
+- [x] **F5.9** Limpieza: quitar el Bluetooth de la app y del PC (D-48) y ordenar la interfaz del enlace. *Terminado:* compila sin código ni permisos de Bluetooth, pruebas en verde y capturas del menú, la sala y «Unirme» aprobadas.
 - [ ] **F5.4** Partida de punta a punta entre el Redmi y el PC (jugador de terminal con el mismo motor, D-44). *Terminado:* una partida corta terminada, con captura del Redmi y la salida del PC.
 - [ ] **F5.5** Desconexión y reconexión a mitad de partida. *Terminado:* se corta la red del invitado (el PC, D-44, D-48) y la partida sigue igual al reconectar.
 - [ ] **F5.6** **Hito «Enlace»**: el autor y un amigo, cada uno en su teléfono. *Terminado:* el autor lo aprueba.
-- [ ] **F5.7** *(Extra)* 3-6 jugadores por Bluetooth.
+- [ ] **F5.7** *(Extra)* 3-6 jugadores por la red local.
 - [ ] **F5.8** *(Extra)* Jugar contra la máquina.
 
 ---
@@ -222,7 +222,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 |---|---|
 | Reglamentos escaneados: se lee mal una cifra o se salta una regla | `pagina.py` por página o recorte; cada cifra se lee dos veces; el autor aprueba `REGLAS.md` (F1.3) |
 | Los originales están en Descargas y se pueden borrar | Copia en `fuentes/`, intocable (F0.1) |
-| Bluetooth en Android 12+: permisos en tiempo de ejecución; HyperOS corta conexiones por batería | Fase aparte después del hito; prueba de 10 min (F5.3); sin segundo Android, el protocolo se prueba en la JVM (F5.2) y en real con un amigo |
+| Red local (D-48): permiso de la red local en Android 17; HyperOS corta la red de las apps en segundo plano | Fase aparte después del hito; prueba de 10 min (F5.3); sin segundo Android, el protocolo se prueba en la JVM (F5.2) y en real con un amigo |
 | El editor permite tableros o reglas incoherentes | Validador en el motor (F2.7) antes del editor (F4) |
 | Dos teléfonos con estados distintos tras una desconexión | Motor determinista (D-03), anfitrión que decide, acciones numeradas (F5.2, F5.5) |
 | El autor conoce poco Kotlin y Android | El agente explica en una línea cada decisión de Android o Compose al tomarla |
