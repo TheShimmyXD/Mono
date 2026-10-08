@@ -127,6 +127,7 @@
     <string name="menu_remote">Otro teléfono</string>
     <string name="menu_machine">Máquina</string>
     <string name="menu_machine_note">Juega la máquina</string>
+    <string name="menu_bot_name">Botty %1$d</string>
     <string name="menu_wait">Esperar al otro teléfono</string>
     <string name="menu_resume">Seguir la partida</string>
     <string name="menu_resume_detail">%1$s · turno %2$d</string>

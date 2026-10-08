@@ -37,6 +37,17 @@ class NewGameFormTest {
     }
 
     @Test
+    fun `D-57 los de la maquina se llaman Botty 1, Botty 2 en orden, sin importar lo escrito`() {
+        assertEquals(listOf("Jacck", "Botty 1", "Caro", "Botty 2"), playerNames(listOf("Jacck", "Luz", ""), defaults, 4, setOf(1, 3)))
+    }
+
+    @Test
+    fun `D-57 el menu abre con 2 y llega hasta 4`() {
+        assertEquals(2, DEFAULT_PLAYERS)
+        assertEquals(4, MAX_PLAYERS)
+    }
+
+    @Test
     fun `FB-4 por defecto cada jugador tiene el personaje de su posicion`() {
         assertEquals(listOf(0, 1, 2), playerTokens(List(6) { it }, 3, 8))
     }

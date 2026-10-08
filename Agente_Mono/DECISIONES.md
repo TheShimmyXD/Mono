@@ -574,3 +574,11 @@
 - **Medido:** `BankruptcyTest`, 3 pruebas D-56 (en su turno al Banco con subasta; en deuda al acreedor aunque alcance; con dos, termina, y en subasta no vale). Motor 187 pruebas en verde. Capturas: `capturas/d56_quiebra.png` (deuda) y `capturas/d56_seguro.png` (las dos confirmaciones).
 - **Cómo se revierte:** `declareBankruptcy` vuelve a pedir `Debt` y el chequeo de lo que se puede juntar; se quitan el botón de la hoja y `ConfirmBankruptcy`.
 - **Estado:** vigente.
+
+### D-57 · Menú: la máquina se llama «Botty N», de 2 a 4 jugadores y abre en 2
+
+- **Del autor (2026-10-08):** «si se selecciona el robot, haz que los nombres sean Botty 1, Botty 2, etc.; la cantidad máxima de jugadores debe ser 4; por defecto debe ser 2 jugadores, no 3».
+- **Decisión:** `playerNames` recibe los puestos de la máquina y los nombra `Botty k` (k = 1, 2… en el orden de la mesa), sin importar lo escrito; en el menú, con el robot, el campo muestra ese nombre y no se escribe (lo escrito vuelve al quitar el robot). `MAX_PLAYERS = 4` y `DEFAULT_PLAYERS = 2` en `NewGameForm.kt`; el extra `jugadores` también se limita a 4 y el extra `maquina` usa los mismos nombres. El límite es solo de la app: el motor sigue aceptando de 2 a 6 (D-05) y sus pruebas no cambian. Texto en `menu_bot_name` («Botty %1$d»).
+- **Medido:** `NewGameFormTest`, 2 pruebas D-57; app 78 pruebas en verde, motor 187. Captura `capturas/d57_botty.png` (menú con 2 · 3 · 4 y el 2 elegido; partida con Botty 1 y Botty 2).
+- **Cómo se revierte:** `MAX_PLAYERS = 6`, `DEFAULT_PLAYERS = 3` y `playerNames` sin `bots`.
+- **Estado:** vigente.

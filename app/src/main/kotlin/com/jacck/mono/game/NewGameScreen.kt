@@ -48,7 +48,7 @@ import com.jacck.mono.board.Personajes
 import com.jacck.mono.engine.model.GameState
 
 /**
- * Menú de nueva partida (F3.5, maqueta A, D-25): preset, cuántos juegan (2-6) y sus nombres, todo
+ * Menú de nueva partida (F3.5, maqueta A, D-25): preset, cuántos juegan (2-4, D-57) y sus nombres, todo
  * en una pantalla. Una casilla vacía juega con el nombre de muestra (gris); con nombres repetidos
  * no se puede empezar. `rememberSaveable` guarda lo elegido si Android recrea la pantalla.
  * Con una partida guardada (`saved`), arriba va «Seguir la partida» (F3.6, D-26). Estilo chiva (FB.2c, D-33).
@@ -68,7 +68,7 @@ fun NewGameScreen(
     val board = boards.firstOrNull { it.key == selected } ?: boards.first()
     var nameText by rememberSaveable(board.key) { mutableStateOf(board.config.name) }
     var asking by rememberSaveable { mutableStateOf(false) }
-    var count by rememberSaveable { mutableStateOf(3) }
+    var count by rememberSaveable { mutableStateOf(DEFAULT_PLAYERS) }
     var typed by rememberSaveable { mutableStateOf(List(defaults.size) { "" }) }
     var picks by rememberSaveable { mutableStateOf(List(defaults.size) { it }) }
     // Quién juega en el otro teléfono (F5.3, D-47, D-48); con alguno, «Empezar» abre la sala.
@@ -78,13 +78,15 @@ fun NewGameScreen(
     val bots = (0 until count).filter { machine[it] }.toSet()
     val seats = (0 until count).filter { remote[it] && !machine[it] }.toSet()
     val tokens = playerTokens(picks, count, Personajes.size)
-    val names = playerNames(typed, defaults, count)
+    val botName = stringResource(R.string.menu_bot_name)
+    val names = playerNames(typed, defaults, count, bots) { botName.format(it) }
     val repeated = repeatedNames(names)
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
         unfocusedBorderColor = Chiva.Tinta, focusedBorderColor = Chiva.Techo,
         unfocusedContainerColor = Color.White, focusedContainerColor = Color.White,
         unfocusedPlaceholderColor = Chiva.Tinta.copy(alpha = 0.4f), focusedPlaceholderColor = Chiva.Tinta.copy(alpha = 0.4f),
+        disabledTextColor = Chiva.Tinta, disabledBorderColor = Chiva.Tinta.copy(alpha = 0.4f), disabledContainerColor = Color.White,
     )
     PantallaChiva {
         Column(
@@ -146,14 +148,16 @@ fun NewGameScreen(
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Text(stringResource(R.string.menu_players), fontSize = 18.sp)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        (2..defaults.size).forEach { n -> OpcionChiva("$n", n == count, { count = n }, Modifier.weight(1f)) }
+                        (2..MAX_PLAYERS).forEach { n -> OpcionChiva("$n", n == count, { count = n }, Modifier.weight(1f)) }
                     }
                     (0 until count).forEach { i ->
                         Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                             Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                // Con el robot, el nombre es «Botty N» y no se escribe; lo escrito vuelve al quitarlo (D-57).
                                 OutlinedTextField(
-                                    value = typed[i],
+                                    value = if (machine[i]) names[i] else typed[i],
                                     onValueChange = { v -> typed = typed.toMutableList().also { it[i] = v.take(MAX_NAME) } },
+                                    enabled = !machine[i],
                                     placeholder = { Text(defaults[i]) },
                                     singleLine = true,
                                     isError = i in repeated,

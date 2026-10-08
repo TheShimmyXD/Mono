@@ -32,11 +32,13 @@ import com.jacck.mono.game.EditorViewModel
 import com.jacck.mono.game.RuleTab
 import com.jacck.mono.game.GameScreen
 import com.jacck.mono.game.GameViewModel
+import com.jacck.mono.game.MAX_PLAYERS
 import com.jacck.mono.game.NewGameScreen
 import com.jacck.mono.game.SaveFile
 import com.jacck.mono.game.boardChoices
 import com.jacck.mono.game.boardName
 import com.jacck.mono.game.copyName
+import com.jacck.mono.game.playerNames
 
 /** Etiqueta de los Log.* de la app; `telefono.py log` filtra por ella. */
 const val LOG_TAG = "Mono"
@@ -59,7 +61,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val players = intent.getIntExtra("jugadores", 4).coerceIn(2, 6)
+        val players = intent.getIntExtra("jugadores", 4).coerceIn(2, MAX_PLAYERS)
         val demo = if (intent.hasExtra("n")) intent.getIntExtra("n", 40) else null
         val preset = if (intent.getBooleanExtra("tio_rico", false)) Preset.TIO_RICO else Preset.CLASSIC
         val seed = intent.getLongExtra("semilla", System.currentTimeMillis())
@@ -74,7 +76,9 @@ class MainActivity : ComponentActivity() {
         val direct = GAME_EXTRAS.any(intent::hasExtra)
         val saveFile = SaveFile(filesDir)
         val shelf = BoardShelf(filesDir)
-        val names = resources.getStringArray(R.array.default_names).take(players)
+        val names = playerNames(emptyList(), resources.getStringArray(R.array.default_names).toList(), players, machineSeats.toSet()) {
+            getString(R.string.menu_bot_name, it)
+        }
         Log.i(LOG_TAG, "MainActivity creada: ${demo?.let { "muestra de $it" } ?: "$preset"}, $players jugadores, semilla $seed")
         setContent {
             ChivaTheme {

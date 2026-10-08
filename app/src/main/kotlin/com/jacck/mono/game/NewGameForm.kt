@@ -3,13 +3,25 @@ package com.jacck.mono.game
 /** Largo máximo de un nombre: cabe en la ficha del panel y en los diálogos (D-25). */
 const val MAX_NAME = 12
 
+/** Cuántos juegan como máximo desde el menú (D-57); el motor acepta hasta 6 (D-05). */
+const val MAX_PLAYERS = 4
+
+/** Cuántos juegan al abrir el menú (D-57). */
+const val DEFAULT_PLAYERS = 2
+
 /**
  * Los nombres con que empieza la partida (F3.5, D-25): sin espacios en los bordes y, si la casilla
  * quedó vacía, el nombre de muestra de esa posición (Ana, Beto…). `typed` y `defaults` van en el
- * mismo orden; se toman los `count` primeros.
+ * mismo orden; se toman los `count` primeros. Los de la máquina (`bots`) se llaman `botName(k)`,
+ * con k = 1, 2… en el orden de la mesa, sin importar lo escrito (D-57).
  */
-fun playerNames(typed: List<String>, defaults: List<String>, count: Int): List<String> =
-    (0 until count).map { i -> typed.getOrElse(i) { "" }.trim().take(MAX_NAME).trim().ifEmpty { defaults[i] } }
+fun playerNames(
+    typed: List<String>, defaults: List<String>, count: Int,
+    bots: Set<Int> = emptySet(), botName: (Int) -> String = { "Botty $it" },
+): List<String> = (0 until count).map { i ->
+    if (i in bots) botName((0..i).count { it in bots })
+    else typed.getOrElse(i) { "" }.trim().take(MAX_NAME).trim().ifEmpty { defaults[i] }
+}
 
 /** Posiciones cuyo nombre se repite (sin distinguir mayúsculas): el menú no deja empezar así. */
 fun repeatedNames(names: List<String>): Set<Int> {
