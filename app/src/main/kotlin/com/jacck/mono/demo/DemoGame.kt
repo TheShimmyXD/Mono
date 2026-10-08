@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.jacck.mono.board.Board
 import com.jacck.mono.Calcomania
 import com.jacck.mono.PantallaChiva
-import com.jacck.mono.board.PlayersPanel
+import com.jacck.mono.board.PlayersRow
 import com.jacck.mono.engine.Engine
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.GameConfig
@@ -49,7 +49,7 @@ fun DemoBoardScreen(n: Int, players: Int) {
                     "${config.name} · ${config.squares.size}", fontSize = 18.sp, fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center, modifier = Modifier.align(Alignment.CenterHorizontally),
                 )
-                Calcomania { PlayersPanel(state, Modifier.padding(8.dp)) }
+                Calcomania { PlayersRow(state, showMoney = true, Modifier.padding(8.dp)) }
             }
         }
     }

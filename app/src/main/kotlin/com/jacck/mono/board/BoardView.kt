@@ -4,19 +4,18 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -64,12 +63,13 @@ data class Hop(val from: Int, val to: Int, val f: Float = 0f)
  * El tablero en anillo (D-20) dibujado desde la configuración y el estado de la partida, para
  * cualquier N; [center] va dentro del anillo (dados, casilla, jugadores, botones). Las fichas de
  * [hops] (por jugador) no van en su casilla del estado: se dibujan donde dice su [Hop] (FC.1, D-59).
+ * Las casillas de [marks] llevan un marco de [markColor] (las de un jugador elegido, FC.3, D-60).
  */
 @Composable
 fun Board(
     config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
     highlight: Int? = state.players[state.current].position, showTokens: Boolean = true, hops: Map<Int, Hop> = emptyMap(),
-    center: @Composable () -> Unit,
+    marks: Set<Int> = emptySet(), markColor: Color = Chiva.Tinta, center: @Composable () -> Unit,
 ) {
     BoxWithConstraints(modifier) {
         val n = config.squares.size
@@ -88,6 +88,7 @@ fun Board(
                 width = cw,
                 modifier = Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).clickable { onSquare(i) },
             )
+            if (i in marks) Box(Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).border(4.dp, markColor))
         }
         Box(Modifier.offset(cw, ch).size(cw * (grid.cols - 2), ch * (grid.rows - 2)).padding(6.dp)) { center() }
         if (showTokens) hops.forEach { (k, hop) ->
@@ -203,21 +204,29 @@ fun Medallon(pj: Int, color: Color, size: Dp, modifier: Modifier = Modifier) {
     }
 }
 
-/** Jugadores con su ficha y su dinero; el de turno, marcado. Va dentro del panel del centro (D-33). */
+/**
+ * Los jugadores en fila (FC.3, D-60): su ícono y, debajo, su dinero si [showMoney]; el de quien
+ * juega, 15 % más grande, con fondo y aro. Un toque es [onTap] y una pulsación larga [onLongPress].
+ */
 @Composable
-fun PlayersPanel(state: GameState, modifier: Modifier = Modifier) {
-    Column(modifier.fillMaxWidth()) {
+fun PlayersRow(
+    state: GameState, showMoney: Boolean, modifier: Modifier = Modifier, size: Dp = 46.dp,
+    onTap: (Int) -> Unit = {}, onLongPress: () -> Unit = {},
+) {
+    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.Top) {
         state.players.forEachIndexed { k, p ->
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(vertical = 1.dp).alpha(if (p.bankrupt) 0.4f else 1f)) {
-                PlayerToken(state, k, 20.dp)
-                Spacer(Modifier.width(6.dp))
-                if (k == state.current) IconImage(Icon.TURNO, 14.dp, Modifier.padding(end = 3.dp))
-                Text(
-                    p.name,
-                    fontWeight = if (k == state.current) FontWeight.Bold else FontWeight.Normal,
-                    modifier = Modifier.weight(1f), fontSize = 15.sp,
-                )
-                Text(stringResource(R.string.money, p.money), fontSize = 15.sp)
+            val turn = k == state.current
+            Column(
+                Modifier.combinedClickable(onLongClick = onLongPress) { onTap(k) }.alpha(if (p.bankrupt) 0.4f else 1f),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Box(
+                    Modifier.background(if (turn) Chiva.Turno else Color.Transparent, CircleShape)
+                        .border(if (turn) 2.5.dp else 0.dp, if (turn) Chiva.Tinta else Color.Transparent, CircleShape).padding(4.dp),
+                ) {
+                    PlayerToken(state, k, if (turn) size * 1.15f else size)
+                }
+                if (showMoney) Text(stringResource(R.string.money, p.money), fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
         }
     }

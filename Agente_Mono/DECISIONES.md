@@ -604,3 +604,10 @@
 - **Decisión:** en la partida, los íconos de los jugadores van en fila arriba del centro del tablero, pegados a la fila de casillas de arriba (46 dp; el de quien juega, 15 % más grande, con fondo y aro); debajo de cada uno, su dinero. Una pulsación larga en cualquier ícono oculta o muestra el dinero de todos (se lee así: «se oculta el dinero»; si el autor lo quiere por jugador, se cambia en FC.3). Un toque abre la tarjeta de ese jugador en el centro, en lugar del turno: medallón, nombre, dinero, «Propiedades (n)» y «Cerrar»; mientras está abierta, sus casillas llevan un marco de su color (4 dp). Sin nombres a la vista en el panel. Se aplica en FC.3.
 - **Cómo se revierte:** vuelve `PlayersPanel` (nombre y dinero en lista) dentro de la calcomanía del turno.
 - **Estado:** vigente.
+
+### D-61 · FC.3: la tarjeta reemplaza al turno; la hoja es de cualquiera y solo la propia, en tu turno, tiene jugadas
+
+- **Contexto:** D-60 fijó la fila, la tarjeta y el marco; faltaba cómo convive con el turno y con «Mis propiedades».
+- **Decisión:** un toque en un ícono abre su tarjeta en el centro en lugar del turno (sin «Tirar» a la vista hasta «Cerrar»); tocar el mismo ícono la cierra. «Propiedades (n)» abre la hoja de ese jugador; lleva jugadas y «Declararme en quiebra» solo si `canManage` (es quien juega, su turno es de este teléfono y la fase es tirar o terminar, como antes en «Mis propiedades»); si no, solo se mira. El dinero oculto (pulsación larga) vale para todos y se recuerda al girar la pantalla. Se quitan «Mis propiedades» y `PlayersPanel` (la demo `n` usa `PlayersRow`). Extra `tarjeta=k` abre la tarjeta de k sin el aviso «Lo que pasó»; con `hoja=true`, la hoja de k. La muestra `propiedades` le da además 11, 13 y 15 al siguiente jugador.
+- **Cómo se revierte:** `Center` vuelve a llevar «Mis propiedades» y la hoja vuelve a ser solo de quien juega.
+- **Estado:** vigente.

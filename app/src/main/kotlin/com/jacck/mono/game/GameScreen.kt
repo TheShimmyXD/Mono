@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
@@ -54,7 +55,8 @@ import com.jacck.mono.board.Hop
 import com.jacck.mono.board.BuildingIcons
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
-import com.jacck.mono.board.PlayersPanel
+import com.jacck.mono.board.PlayerColors
+import com.jacck.mono.board.PlayersRow
 import com.jacck.mono.board.SquareCard
 import com.jacck.mono.board.PlayerToken
 import com.jacck.mono.engine.Dice
@@ -73,15 +75,21 @@ import com.jacck.mono.engine.model.Utility
 
 /**
  * La partida en el tablero (F3.3, D-22): en el centro, de quién es el turno, los dados, los
- * jugadores y la acción principal; cada decisión del motor sale en un diálogo encima. Las
- * propiedades de quien juega se manejan en una hoja que sube desde abajo (F3.4, D-24).
+ * jugadores y la acción principal; cada decisión del motor sale en un diálogo encima. Arriba, los
+ * íconos de los jugadores con su dinero; un toque abre su tarjeta y marca sus casillas (FC.3, D-60).
+ * Las propiedades de cada uno van en una hoja que sube desde abajo (F3.4, D-24): la propia, en su
+ * turno, con sus jugadas; la de otro, solo para mirar.
  */
 @Composable
 fun GameScreen(
-    vm: GameViewModel, openProperties: Boolean = false, openSquare: Int? = null, askBankruptcy: Boolean = false, newSeed: () -> Long,
+    vm: GameViewModel, openProperties: Boolean = false, openSquare: Int? = null, askBankruptcy: Boolean = false,
+    openCard: Int? = null, newSeed: () -> Long,
 ) {
     val state = vm.state
-    var showProperties by remember { mutableStateOf(openProperties) }
+    // Hoja abierta: la de quién (null, ninguna). La del extra `hoja` es la de `tarjeta` o, sin ella, la de quien juega.
+    var sheetOf by remember { mutableStateOf(if (openProperties) openCard?.takeIf { it in state.players.indices } ?: state.current else null) }
+    var cardOf by rememberSaveable { mutableStateOf(openCard?.takeIf { it in state.players.indices }) }
+    var showMoney by rememberSaveable { mutableStateOf(true) }
     var shownSquare by remember { mutableStateOf(openSquare) }
     // La ficha camina con un saltito por casilla (FC.1, D-59): `steps` va de 0 al largo del recorrido.
     val walk = vm.walking.firstOrNull()
@@ -108,8 +116,18 @@ fun GameScreen(
         Board(
             vm.config, state, Modifier.fillMaxSize().padding(4.dp), onSquare = { shownSquare = it },
             highlight = if (walk == null) state.players[state.current].position else null, hops = hops,
+            marks = cardOf?.let { k -> state.holdings.filterValues { it.owner == k }.keys }.orEmpty(),
+            markColor = cardOf?.let { PlayerColors[it] } ?: Color.Unspecified,
         ) {
-            Center(vm) { showProperties = true }
+            Column(Modifier.fillMaxSize()) {
+                PlayersRow(
+                    state, showMoney, onTap = { cardOf = if (cardOf == it) null else it }, onLongPress = { showMoney = !showMoney },
+                )
+                val k = cardOf
+                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
+                    if (k != null) PlayerCard(state, k, onProperties = { sheetOf = k }) { cardOf = null } else Center(vm)
+                }
+            }
         }
     }
     if (walk != null) return // lo que pasó y la decisión salen cuando la ficha llega
@@ -118,8 +136,8 @@ fun GameScreen(
         SquareCard(vm.config, state, it) { shownSquare = null }
         return
     }
-    if (showProperties && vm.waitingFor == null && vm.machineTurn == null && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
-        PropertiesSheet(vm, askBankruptcy) { showProperties = false }
+    sheetOf?.let { k ->
+        PropertiesSheet(vm, k, canManage(state, k, vm.waitingFor == null && vm.machineTurn == null), askBankruptcy) { sheetOf = null }
         return
     }
     val lines = vm.notices.mapNotNull { eventLine(it, vm.config, state) }
@@ -141,7 +159,7 @@ fun GameScreen(
 }
 
 @Composable
-private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
+private fun Center(vm: GameViewModel) {
     val state = vm.state
     val player = state.players[state.current]
     Column(Modifier.fillMaxSize().padding(2.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
@@ -151,7 +169,6 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
                 modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
             )
             vm.lastDice?.let { DiceRow(it) }
-            PlayersPanel(state, Modifier.padding(horizontal = 10.dp).padding(top = 4.dp, bottom = 8.dp))
             vm.error?.let {
                 Text(
                     stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp,
@@ -180,9 +197,6 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
             }
             return@Column
         }
-        if (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn) {
-            BotonChiva(stringResource(R.string.my_properties), onProperties, principal = false, icono = Icon.CASA)
-        }
         when {
             state.phase == TurnPhase.Roll && player.jailTurns == null ->
                 BotonChiva(stringResource(R.string.roll), { vm.act(Action.Roll) })
@@ -205,16 +219,16 @@ private fun DiceRow(dice: Dice) {
 }
 
 /**
- * Hoja «Mis propiedades» (F3.4, D-24): las casillas de quien juega en orden del anillo, con su
- * franja, sus edificios y un botón por cada jugada que el motor acepta ahora (`propertyMoves`).
+ * Hoja de propiedades de [owner] (F3.4, D-24; FC.3, D-60): sus casillas en orden del anillo, con su
+ * franja y sus edificios. Si [manage], un botón por cada jugada que el motor acepta ahora
+ * (`propertyMoves`) y «Declararme en quiebra» (D-56); si no, solo se mira.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PropertiesSheet(vm: GameViewModel, ask: Boolean, onClose: () -> Unit) {
+private fun PropertiesSheet(vm: GameViewModel, owner: Int, manage: Boolean, ask: Boolean, onClose: () -> Unit) {
     val state = vm.state
-    val owner = state.current
     val mine = state.holdings.filter { it.value.owner == owner }.toSortedMap()
-    var confirm by remember { mutableStateOf(ask) }
+    var confirm by remember { mutableStateOf(ask && manage) }
     if (confirm) {
         ConfirmBankruptcy(vm, owner, null, onCancel = { confirm = false }) { onClose() }
         return
@@ -238,17 +252,17 @@ private fun PropertiesSheet(vm: GameViewModel, ask: Boolean, onClose: () -> Unit
                     Text(money(state.players[owner].money), color = Color.White, fontSize = 20.sp)
                 }
             }
-            Rejected(vm)
+            if (manage) Rejected(vm)
             if (mine.isEmpty()) Text(stringResource(R.string.properties_none), fontSize = 16.sp)
-            mine.forEach { (square, holding) -> PropertyRow(vm, square, holding) }
-            BotonChiva(stringResource(R.string.bankruptcy_me), { confirm = true }, principal = false)
+            mine.forEach { (square, holding) -> PropertyRow(vm, square, holding, manage) }
+            if (manage) BotonChiva(stringResource(R.string.bankruptcy_me), { confirm = true }, principal = false)
         }
     }
 }
 
 /** Una propiedad en su tarjeta: franja del grupo, nombre, estado y edificios; debajo, sus jugadas. */
 @Composable
-private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
+private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding, manage: Boolean) {
     val sq = vm.config.squares[square]
     val band = (sq as? Property)?.let { p -> vm.config.groups.firstOrNull { it.id == p.group } }
         ?.let { Color(android.graphics.Color.parseColor(it.color)) } ?: Color.LightGray
@@ -258,7 +272,7 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding) {
         sq is Property -> stringResource(R.string.no_houses)
         else -> null
     }
-    val moves = propertyMoves(vm.config, vm.state, square)
+    val moves = if (manage) propertyMoves(vm.config, vm.state, square) else emptyList()
     Calcomania(sombra = 3.dp, borde = 2.dp, forma = RoundedCornerShape(10.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(12.dp, 44.dp).background(band))

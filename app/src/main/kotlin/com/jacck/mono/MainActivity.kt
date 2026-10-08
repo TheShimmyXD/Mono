@@ -55,7 +55,7 @@ const val LOG_TAG = "Mono"
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
-private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "casilla", "fase", "maquina", "seguro")
+private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "tarjeta", "casilla", "fase", "maquina", "seguro")
 
 class MainActivity : ComponentActivity() {
 
@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
         val sample = intent.getBooleanExtra("propiedades", false)
         val sheet = intent.getBooleanExtra("hoja", false)
         val sure = intent.getBooleanExtra("seguro", false)
+        val card = if (intent.hasExtra("tarjeta")) intent.getIntExtra("tarjeta", 0) else null
         val square = if (intent.hasExtra("casilla")) intent.getIntExtra("casilla", 0) else null
         val mockup = intent.getStringExtra("maqueta")
         val phase = intent.getStringExtra("fase")
@@ -193,10 +194,10 @@ class MainActivity : ComponentActivity() {
                                         sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines).also { if (phase != null) it.dismissNotices() }
+                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines).also { if (phase != null || card != null) it.dismissNotices() }
                                 }
                             }
-                            GameScreen(vm, openProperties = sheet, openSquare = square, askBankruptcy = sure) { System.currentTimeMillis() }
+                            GameScreen(vm, openProperties = sheet, openSquare = square, askBankruptcy = sure, openCard = card) { System.currentTimeMillis() }
                         }
                     }
                 }

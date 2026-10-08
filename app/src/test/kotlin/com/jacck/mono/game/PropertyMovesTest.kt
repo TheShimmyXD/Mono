@@ -4,7 +4,10 @@ import com.jacck.mono.engine.Engine
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.Holding
+import com.jacck.mono.engine.model.TurnPhase
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 /** En el Clásico, Ana tiene los marrones (1 y 3) y la Estación de la Sabana (5) hipotecada. */
@@ -42,5 +45,14 @@ class PropertyMovesTest {
     @Test
     fun `con lo ajeno no hay jugadas`() {
         assertEquals(emptyList<Move>(), propertyMoves(config, state(11 to Holding(1)), 11))
+    }
+
+    @Test
+    fun `D-60 la hoja propia en tu turno lleva jugadas, la de otro, la del otro teléfono o en una compra, solo se mira`() {
+        assertTrue(canManage(start, 0, localTurn = true))
+        assertTrue(canManage(start.copy(phase = TurnPhase.EndOfTurn), 0, localTurn = true))
+        assertFalse(canManage(start, 1, localTurn = true))
+        assertFalse(canManage(start, 0, localTurn = false))
+        assertFalse(canManage(start.copy(phase = TurnPhase.Buy(1)), 0, localTurn = true))
     }
 }
