@@ -200,7 +200,7 @@ class MainActivity : ComponentActivity() {
                                         test && sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines, pause = if (test) pause else 900).also { if (test && (phase != null || card != null || back)) it.dismissNotices() }
+                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines, pause = if (test) pause else 900).also { if (test && (phase != null || card != null || back)) it.clearLog() }
                                 }
                             }
                             GameScreen(

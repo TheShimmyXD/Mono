@@ -39,12 +39,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.zIndex
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jacck.mono.BotonChiva
@@ -66,6 +68,7 @@ import com.jacck.mono.board.PlayersRow
 import com.jacck.mono.board.SquareCard
 import com.jacck.mono.board.PlayerToken
 import com.jacck.mono.engine.Dice
+import com.jacck.mono.engine.Event
 import com.jacck.mono.engine.minimumBid
 import com.jacck.mono.engine.mortgageValue
 import com.jacck.mono.engine.model.Action
@@ -176,8 +179,8 @@ fun GameScreen(
                     }
                 }
                 val k = cardOf
-                Box(Modifier.weight(1f), contentAlignment = Alignment.Center) {
-                    if (k != null) PlayerCard(state, k, onProperties = { sheetOf = k }) { cardOf = null } else Center(vm)
+                Box(Modifier.weight(1f).padding(top = 10.dp), contentAlignment = Alignment.Center) {
+                    if (k != null) PlayerCard(state, k, onProperties = { sheetOf = k }) { cardOf = null } else Window(vm)
                 }
             }
         }
@@ -186,7 +189,7 @@ fun GameScreen(
         ConfirmMenu(linked = vm.remote != null, onCancel = { askMenu = false }) { vm.leave(); onMenu() }
         return
     }
-    if (motion != null) return // lo que pasó y la decisión salen cuando la ficha llega y la casilla vuela
+    if (motion != null) return // la decisión sale cuando la ficha llega y la casilla vuela
     // La carta de una casilla (FA.3) va primero: los diálogos del turno vuelven al cerrarla.
     shownSquare?.let {
         SquareCard(vm.config, state, it) { shownSquare = null }
@@ -194,11 +197,6 @@ fun GameScreen(
     }
     sheetOf?.let { k ->
         PropertiesSheet(vm, k, canManage(state, k, vm.waitingFor == null && vm.machineTurn == null), askBankruptcy) { sheetOf = null }
-        return
-    }
-    val lines = vm.notices.mapNotNull { eventLine(it, vm.config, state) }
-    if (lines.isNotEmpty()) {
-        NoticesDialog(lines, vm::dismissNotices)
         return
     }
     // Las decisiones del turno van en el letrero (FD.4); el final de la partida, hasta FD.6, en ventana.
@@ -281,15 +279,16 @@ private fun buttonLabel(b: BarButton): String {
 }
 
 /**
- * El centro del tablero: los dados, lo que hizo la máquina en su última jugada (FD.4, D-70) y lo que
- * decían los diálogos del turno (la subasta, la deuda); al comprar, la escritura. Hasta FD.5.
+ * La ventana «Lo que pasa» (FD.5, D-71): una tarjeta por turno, la de ahora arriba y entera, la
+ * anterior debajo y atenuada; en la de ahora, lo que decían los diálogos del turno (la subasta, la
+ * deuda) y el último rechazo. Al comprar, la escritura en lugar de la tarjeta anterior.
  */
 @Composable
-private fun Center(vm: GameViewModel) {
+private fun Window(vm: GameViewModel) {
     val state = vm.state
     val players = state.players
     val phase = state.phase
-    val lines = vm.said.mapNotNull { eventLine(it, vm.config, state) }.toMutableList()
+    val lines = mutableListOf<String>()
     when (phase) {
         is TurnPhase.Auction -> {
             val leader = phase.highestBidder
@@ -302,30 +301,57 @@ private fun Center(vm: GameViewModel) {
         else -> Unit
     }
     if (vm.waitingFor != null && vm.remote?.connected == false) lines += stringResource(R.string.bar_cut)
-    Column(Modifier.fillMaxSize().padding(2.dp), verticalArrangement = Arrangement.spacedBy(12.dp, Alignment.CenterVertically)) {
-        val dice = vm.lastDice
-        if (dice != null || lines.isNotEmpty() || vm.error != null) {
-            Calcomania {
-                dice?.let { DiceRow(it) }
-                Column(Modifier.padding(horizontal = 10.dp, vertical = 6.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    lines.forEach { Text(it, fontSize = 15.sp) }
-                    vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+    val cards = vm.log.ifEmpty { listOf(TurnLog(state.current, emptyList())) }.asReversed()
+    Calcomania(Modifier.fillMaxSize()) {
+        Text(
+            stringResource(R.string.win_title), Modifier.fillMaxWidth().background(Chiva.Azul).padding(horizontal = 10.dp, vertical = 4.dp),
+            color = Color.White, fontSize = 15.sp,
+        )
+        Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            TurnCard(vm, cards.first(), faded = false) {
+                lines.forEach { Text("• $it", fontSize = 14.sp) }
+                vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
+            }
+            if (phase is TurnPhase.Buy) Deed(vm.config, state, phase.square)
+            else cards.getOrNull(1)?.let { TurnCard(vm, it, faded = true) }
+        }
+    }
+}
+
+/**
+ * Una tarjeta de la ventana: medallón, nombre y los primeros dados del turno; debajo, lo que pasó en
+ * orden (los dados de un tiro más tras dobles, en su sitio) y [more].
+ */
+@Composable
+private fun TurnCard(vm: GameViewModel, turn: TurnLog, faded: Boolean, more: @Composable () -> Unit = {}) {
+    val state = vm.state
+    val first = turn.events.indexOfFirst { it is Event.DiceRolled }
+    Calcomania(Modifier.fillMaxWidth().alpha(if (faded) 0.5f else 1f), sombra = 2.dp, borde = 1.5.dp) {
+        Row(Modifier.fillMaxWidth().background(Chiva.Turno).padding(6.dp), verticalAlignment = Alignment.CenterVertically) {
+            PlayerToken(state, turn.player, 24.dp)
+            Spacer(Modifier.width(6.dp))
+            Text(state.players[turn.player].name, Modifier.weight(1f), fontSize = 15.sp, maxLines = 1)
+            (turn.events.getOrNull(first) as? Event.DiceRolled)?.let { DiceIcons(it.dice, 24.dp) }
+        }
+        Column(Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            turn.events.forEachIndexed { i, e ->
+                if (e is Event.DiceRolled) {
+                    if (i != first) DiceIcons(e.dice, 20.dp)
+                } else {
+                    eventLine(e, vm.config, state)?.let { Text("• $it", fontSize = 14.sp) }
                 }
             }
+            more()
         }
-        if (phase is TurnPhase.Buy) Deed(vm.config, state, phase.square)
     }
 }
 
 @Composable
-private fun DiceRow(dice: Dice) {
-    Row(
-        Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        IconImage(Icon.dado(dice.first), 48.dp)
-        IconImage(Icon.dado(dice.second), 48.dp)
-        Text("= ${dice.total}", fontSize = 24.sp)
+private fun DiceIcons(dice: Dice, size: Dp) {
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        IconImage(Icon.dado(dice.first), size)
+        IconImage(Icon.dado(dice.second), size)
+        Text("= ${dice.total}", fontSize = (size.value / 2).sp)
     }
 }
 
@@ -415,16 +441,6 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding, manage
 @Composable
 private fun Rejected(vm: GameViewModel) {
     vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
-}
-
-@Composable
-private fun NoticesDialog(lines: List<String>, onDone: () -> Unit) {
-    DialogoChiva(
-        stringResource(R.string.what_happened), color = Chiva.Azul,
-        botones = { BotonChiva(stringResource(R.string.next), onDone) },
-    ) {
-        lines.forEach { Text("• $it", fontSize = 16.sp) }
-    }
 }
 
 /** «¿Volver al menú?» con «atrás» (D-63): la local queda guardada; la enlazada corta la conexión. */

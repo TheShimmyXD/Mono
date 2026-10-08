@@ -684,3 +684,12 @@
 - **Cambio del autor (2026-10-08, tras su partida):** el «+$x/−$x» de un pago, que cuelga bajo el dinero, se montaba sobre el título del letrero: el letrero deja 26 dp arriba (la cifra es de 15 sp, ~20 dp; con 22 dp quedaban ~3 dp, `capturas/fd4_hueco_pago.png`).
 - **Cómo se revierte:** `git revert` del commit de FD.4: vuelven los cinco diálogos y la máquina sin espera.
 - **Estado:** vigente (aprobada por el autor tras su partida contra la máquina, 2026-10-08).
+
+
+### D-71 · FD.5: la ventana «Lo que pasa» es una tarjeta por turno; todo queda escrito
+
+- **Del autor (2026-10-08):** entre tres maquetas en el Redmi (`capturas/fd5_maquetas.png`, commit `63db264`: A bitácora corrida, B solo la última jugada, C una tarjeta por turno), eligió la **C**, la recomendada (la más barata era la B). Con las capturas de la ventana (`capturas/fd5_ventana.png`) eligió también la recomendada: lo que ya se anima (compra, subasta ganada, alquiler, sueldo, impuesto, pagos de carta, multa de la Cárcel) queda escrito en la tarjeta.
+- **Decisión:** `game/TurnLog.kt` (función pura `logged`, `TurnLogTest` 4): cada jugada suma sus eventos a la tarjeta del jugador de turno o abre una nueva; quedan las 2 últimas. `GameViewModel.log` reemplaza `notices`, `said` y `lastDice`; fuera `NoticesDialog`, `isNotable` y `what_happened`. `GameScreen.Window`: calcomanía con franja azul «Lo que pasa» (`win_title`) bajo el letrero; arriba la tarjeta del turno de ahora (medallón, nombre, primeros dados; debajo sus líneas en orden, los dados de un tiro más tras dobles en su sitio, las líneas de la subasta o la deuda y el rechazo), debajo la anterior a media opacidad; al comprar, la escritura en su lugar. Se desliza si no cabe. Vuelven 9 textos `ev_*` con la redacción que tenían antes de FD.1-FD.3. Las pantallas de prueba (`fase`, `carta`) abren con la ventana vacía (`clearLog`).
+- **Medido:** app 102 pruebas, motor 187. En el Redmi: `capturas/fd5_ventana.png` (compra con escritura, subasta, deuda, «Botty 1 jugó» con sus dados) y `fd5_lineas.png` («Botty 1 paga $25 a Ana por Estación del Norte.»).
+- **Cómo se revierte:** `git revert` del commit de FD.5: vuelven el centro de FD.4 y «Lo que pasó».
+- **Estado:** vigente.

@@ -8,9 +8,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jacck.mono.LOG_TAG
-import com.jacck.mono.engine.Dice
 import com.jacck.mono.engine.Engine
-import com.jacck.mono.engine.Event
 import com.jacck.mono.engine.IllegalActionException
 import com.jacck.mono.engine.Result
 import com.jacck.mono.engine.model.Action
@@ -32,8 +30,9 @@ import kotlin.random.Random
  * Con `remote` la partida está enlazada con otro teléfono (F5.4, D-51): las jugadas de aquí van por
  * `remote.play`, las de allá llegan por `remote.listen`, y no se guarda ni se vuelve a empezar.
  * Los jugadores de `bots` los juega la máquina (F5.8b, D-55): cuando le toca, su jugada (`Machine`)
- * después de `pause` ms; lo que hizo va entero a `said`, en el centro, y si hay una persona en este
- * teléfono y la máquina sigue decidiendo, espera su «Seguir» (`held`, FD.4, D-70).
+ * después de `pause` ms; si hay una persona en este teléfono y la máquina sigue decidiendo, espera
+ * su «Seguir» (`held`, FD.4, D-70). Lo que deja cada jugada va a `log`, una tarjeta por turno, para
+ * la ventana «Lo que pasa» (FD.5, D-71).
  * Cada jugada deja en `moving` los recorridos de las fichas (FC.1, D-59) y las casillas que vuelan al
  * ícono de quien las compra (FD.1, D-65) y los pagos entre jugadores (FD.2, D-66); la pantalla los
  * anima uno a uno y avisa con `moved`; la máquina no juega mientras queden.
@@ -56,12 +55,8 @@ class GameViewModel(
     var state: GameState by mutableStateOf(first.state)
         private set
 
-    /** Lo que pasó y aún no se ha mostrado; solo si hubo algo notable (`isNotable`, D-22). */
-    var notices: List<Event> by mutableStateOf(first.events)
-        private set
-
-    /** Últimos dados tirados por alguien, para el centro del tablero. */
-    var lastDice: Dice? by mutableStateOf(null)
+    /** Lo que pasó en el turno de ahora y en el anterior, para la ventana «Lo que pasa» (FD.5, D-71). */
+    var log: List<TurnLog> by mutableStateOf(logged(emptyList(), first.state.current, first.events))
         private set
 
     var error: String? by mutableStateOf(null)
@@ -73,10 +68,6 @@ class GameViewModel(
 
     /** Cuántos ya se animaron: la pantalla anima el siguiente cuando cambia. */
     var moved: Int by mutableStateOf(0)
-        private set
-
-    /** Lo que dejó la última jugada de la máquina, entero, para el centro del tablero (FD.4, D-70). */
-    var said: List<Event> by mutableStateOf(emptyList())
         private set
 
     /** La máquina que acaba de jugar y espera «Seguir» (`next`); null si no espera nadie. */
@@ -155,14 +146,11 @@ class GameViewModel(
         val player = decider(state)
         Log.i(LOG_TAG, "turno ${state.turn} · ${state.players[player].name}$who: ${action ?: "otro teléfono"} → ${result.events}")
         moving = moving + motions(result.events, config, state.players.map { it.position })
+        log = logged(log, state.current, result.events)
         state = result.state
         onState(config, state)
-        // Lo del otro teléfono no se vio aquí: se cuenta todo, no solo lo notable (D-51). Lo de la
-        // máquina va al centro y, si ella sigue, espera «Seguir»; la jugada de una persona lo borra.
-        said = if (byMachine) result.events else emptyList()
+        // Si la máquina sigue decidiendo, espera «Seguir» para que se lea lo que hizo (D-70).
         held = player.takeIf { byMachine && people && machineTurn != null }
-        if (action == null || (!byMachine && result.events.any { it.isNotable() })) notices = notices + result.events
-        result.events.filterIsInstance<Event.DiceRolled>().lastOrNull()?.let { lastDice = it.dice }
         error = null
         playMachine()
     }
@@ -173,16 +161,16 @@ class GameViewModel(
         moved++
     }
 
-    /** «Seguir»: se borra lo que hizo la máquina y ella juega lo siguiente. */
+    /** «Seguir»: la máquina juega lo siguiente. */
     fun next() {
         held = null
-        said = emptyList()
         Log.i(LOG_TAG, "seguir")
         playMachine()
     }
 
-    fun dismissNotices() {
-        notices = emptyList()
+    /** Ventana vacía: las pantallas de prueba (`fase`, `carta`) abren sin el sorteo de inicio. */
+    fun clearLog() {
+        log = emptyList()
     }
 
     /** Otra partida con la misma configuración y los mismos jugadores. */
@@ -191,11 +179,9 @@ class GameViewModel(
         val fresh = start(seed)
         state = fresh.state
         onState(config, state)
-        notices = fresh.events
+        log = logged(emptyList(), fresh.state.current, fresh.events)
         moving = emptyList()
-        said = emptyList()
         held = null
-        lastDice = null
         error = null
         playMachine()
     }
