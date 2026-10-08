@@ -14,7 +14,7 @@ import kotlinx.serialization.json.Json
  * las mismas en orden y compara el resumen del estado. El azar va dentro de `GameState.random`
  * (D-03), así que los dados no viajan. Cada mensaje es una línea de JSON (`encode`/`decode`).
  */
-const val PROTOCOL_VERSION = 1
+const val PROTOCOL_VERSION = 2 // 2: `Alive` (F5.5)
 
 @Serializable
 sealed interface Message {
@@ -48,6 +48,14 @@ sealed interface Message {
     @Serializable
     @SerialName("resync")
     data class Resync(val after: Int, val full: Boolean = false) : Message
+
+    /**
+     * Anfitrión → invitado: «sigo aquí y voy en `last`», cuando un `Resync` no tenía nada que reenviar.
+     * Así el invitado distingue un anfitrión pensando de una red caída (F5.5, D-74).
+     */
+    @Serializable
+    @SerialName("alive")
+    data class Alive(val last: Int) : Message
 
     /** Cualquiera: se acaba la conexión (p. ej. versiones distintas). */
     @Serializable

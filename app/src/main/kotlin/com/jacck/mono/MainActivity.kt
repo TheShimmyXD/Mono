@@ -88,7 +88,8 @@ class MainActivity : ComponentActivity() {
             ChivaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     if (link == "sala") {
-                        LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), emptySet(), seed) { finish() }
+                        // `--es maquina 0`: el jugador de aquí juega solo, para probar el enlace sin nadie al teléfono (F5.5).
+                        LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), machineSeats.toSet() - names.lastIndex, seed) { finish() }
                     } else if (link == "unirme") {
                         GuestScreen { finish() }
                     } else if (mockup != null) {

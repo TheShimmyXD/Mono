@@ -4,6 +4,7 @@ package com.jacck.mono.enlace
 sealed interface LinkEvent {
     /** Esperando a un invitado en [port]. */
     data class Listening(val port: Int) : LinkEvent
-    data class Connected(val peer: String) : LinkEvent
+    /** Llegó un invitado; [replaced]: su conexión reemplaza a otra que seguía abierta (vuelve tras un corte, F5.5). */
+    data class Connected(val peer: String, val replaced: Boolean = false) : LinkEvent
     data class Closed(val reason: String?) : LinkEvent
 }

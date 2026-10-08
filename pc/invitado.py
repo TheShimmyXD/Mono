@@ -22,7 +22,7 @@ import subprocess
 import sys
 import time
 
-PROTOCOLO = 1  # PROTOCOL_VERSION de engine/.../link/Messages.kt
+PROTOCOLO = 2  # PROTOCOL_VERSION de engine/.../link/Messages.kt
 TIPO = "_mono._tcp"  # SERVICE_TYPE de app/.../enlace/LanServer.kt
 
 

@@ -108,6 +108,7 @@ class LinkTest {
             Message.Applied(5, Action.Roll, digest(state)),
             Message.Rejected(4, "no le toca al invitado"),
             Message.Resync(3, full = true),
+            Message.Alive(9),
             Message.Bye("adiós"),
         )
         for (m in all) {
@@ -171,6 +172,46 @@ class LinkTest {
         guest.receive(first)
         assertEquals(2, guest.last)
         assertEquals(host.state, guest.state)
+    }
+
+    @Test
+    fun `F5-5 tras un corte el invitado pide desde su ultima accion y acaba igual`() {
+        for (seed in 1L..20L) {
+            val config = Preset.CLASSIC.load()
+            val host = Host(config, Engine.newGame(config, listOf("J0", "J1", "J2"), seed).state, setOf(1))
+            val guest = Guest("PC")
+            val hostMind = Chooser(seed * 2)
+            val guestMind = Chooser(seed * 2 + 1)
+            assertEquals(Message.Hello(PROTOCOL_VERSION, "PC"), guest.resume(), "sin partida, saluda")
+            guest.receive(host.receive(guest.resume()).single())
+            // Un rato conectados; después se corta y el anfitrión sigue con sus jugadores hasta que le toca al invitado.
+            var cut = false
+            var lostWhileCut = 0
+            for (step in 0 until 400) {
+                if (host.state.phase is TurnPhase.Over) break
+                val action = hostMind.pick(config, host.state, setOf(0, 2))
+                if (step >= 60 && action != null) cut = true
+                if (action != null) {
+                    val applied = host.play(action)
+                    if (cut) lostWhileCut++ else guest.receive(applied)
+                } else if (!cut) {
+                    val p = guestMind.pick(config, guest.state!!, setOf(1))?.let(guest::propose) ?: continue
+                    host.receive(p).forEach { guest.receive(it) }
+                } else break
+            }
+            assertTrue(lostWhileCut > 0, "semilla $seed: el corte no se perdió nada")
+            val back = guest.resume()
+            assertEquals(Message.Resync(guest.last), back, "semilla $seed: pide desde su última acción, no la partida entera")
+            val replies = host.receive(back)
+            assertTrue(replies.all { it is Message.Applied }, "semilla $seed: le reenvía solo lo que le falta")
+            assertEquals(lostWhileCut, replies.size, "semilla $seed")
+            replies.forEach { assertTrue(guest.receive(it).isEmpty()) }
+            assertEquals(0, guest.mismatches)
+            assertEquals(host.last, guest.last)
+            assertEquals(digest(host.state), digest(guest.state!!), "semilla $seed")
+            // Ya al día: el anfitrión contesta igual, para que el invitado sepa que la red sigue viva.
+            assertEquals(listOf(Message.Alive(host.last)), host.receive(Message.Resync(guest.last)))
+        }
     }
 
     @Test

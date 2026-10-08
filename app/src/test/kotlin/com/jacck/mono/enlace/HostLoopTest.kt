@@ -28,15 +28,16 @@ class HostLoopTest {
     }
 
     @Test
-    fun `al saludo responde la partida entera y a un pedido al dia no responde nada`() {
+    fun `al saludo responde la partida entera y a un pedido al dia que sigue vivo`() {
         val h = host()
         val (counts, seen, sent) = run(
             h, encode(Message.Hello(PROTOCOL_VERSION, "PC")), encode(Message.Resync(0)), "no es json", encode(Message.Resync(0, full = true)),
         )
         assertEquals(4 to 1, counts)
         assertEquals(3, seen.size)
-        assertEquals(2, sent.size)
-        sent.forEach { m ->
+        assertEquals(3, sent.size)
+        assertEquals(Message.Alive(0), sent[1], "F5.5: el silencio queda para una red caída")
+        sent.filter { it !is Message.Alive }.forEach { m ->
             assertTrue(m is Message.Snapshot)
             m as Message.Snapshot
             assertEquals(setOf(2), m.seats)

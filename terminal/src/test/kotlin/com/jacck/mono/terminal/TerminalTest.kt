@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.io.IOException
 import java.net.ServerSocket
 import java.net.Socket
 import kotlin.concurrent.thread
@@ -84,6 +85,79 @@ class TerminalTest {
             val (host, guest) = play(4, setOf(1, 3), seed)
             assertEquals(digest(host.state), digest(guest.state!!), "semilla $seed")
         }
+    }
+
+    /**
+     * Una partida por TCP con cortes (F5.5): la sala de la prueba atiende una conexión tras otra; cuando
+     * llega a cada número de [cuts] deja la conexión muda ([silent], como una red caída: ni la cierra) o la
+     * cierra, y mientras tanto juega sus turnos (esas jugadas se pierden). La sala atiende hasta que el PC
+     * se va, aunque la partida acabe durante un corte. Devuelve las reconexiones y los cortes que hubo.
+     */
+    private fun playWithCuts(seed: Long, cuts: List<Int>, silent: Boolean): Triple<GuestResult, Int, Int> {
+        val host = Host(short, Engine.newGame(short, listOf("J0", "J1"), seed).state, setOf(1))
+        val guest = Guest("PC")
+        val random = Random(seed + 1)
+        val pending = cuts.toMutableList()
+        val dead = mutableListOf<Socket>()
+        var greeted = false
+        fun cutNow() = pending.isNotEmpty() && host.last >= pending.first()
+        ServerSocket(0).use { server ->
+            val side = thread {
+                while (host.last < 5_000) {
+                    val socket = try { server.accept() } catch (_: IOException) { break }
+                    socket.soTimeout = 5000
+                    val reader = socket.getInputStream().bufferedReader(Charsets.UTF_8)
+                    val writer = socket.getOutputStream().bufferedWriter(Charsets.UTF_8)
+                    try {
+                        while (!cutNow()) {
+                            while (greeted && !cutNow()) writer.write(encode(host.play(choose(host.config, host.state, setOf(0), random) ?: break)) + "\n")
+                            writer.flush()
+                            if (cutNow()) break
+                            val message = decode(reader.readLine() ?: break)
+                            if (message is Message.Hello) greeted = true
+                            for (reply in host.receive(message)) writer.write(encode(reply) + "\n")
+                            writer.flush()
+                        }
+                    } catch (_: IOException) {}
+                    if (!cutNow()) { socket.close(); if (host.state.phase is TurnPhase.Over) break else continue }
+                    pending.removeAt(0)
+                    if (silent) dead += socket else socket.close()
+                    // Corte: el anfitrión sigue con sus turnos; el invitado no se entera hasta volver.
+                    while (true) host.play(choose(host.config, host.state, setOf(0), random) ?: break)
+                }
+            }
+            val mine = mutableListOf<Socket>()
+            val (result, returns) = guestLink(
+                guest, seed + 2,
+                connect = {
+                    try {
+                        Socket("127.0.0.1", server.localPort).also { mine += it; it.soTimeout = 300 }
+                            .let { it.getInputStream().bufferedReader(Charsets.UTF_8) to it.getOutputStream().bufferedWriter(Charsets.UTF_8) }
+                    } catch (_: IOException) { null }
+                },
+                beatMs = 150, retryMs = 100, giveUpMs = 10_000,
+            )
+            mine.forEach(Socket::close)
+            side.join(10_000)
+            dead.forEach(Socket::close)
+            assertTrue(result.over, "semilla $seed: sin terminar tras ${host.last} acciones (${result.lost ?: result.closed})")
+            assertEquals(0, result.mismatches, "semilla $seed")
+            assertEquals(host.last, guest.last, "semilla $seed")
+            assertEquals(digest(host.state), digest(guest.state!!), "semilla $seed")
+            val done = cuts.size - pending.size
+            println("cortes ${if (silent) "mudos" else "cerrados"}, semilla $seed: ${host.last} acciones, ${result.proposals} del PC, $done cortes, $returns reconexiones")
+            return Triple(result, returns, done)
+        }
+    }
+
+    @Test
+    fun `F5_5 la red del PC se cae sin aviso y la partida sigue igual al volver`() {
+        for (seed in 1L..5L) playWithCuts(seed, listOf(30, 90), silent = true).let { (_, returns, cuts) -> assertTrue(cuts > 0); assertEquals(cuts, returns, "semilla $seed") }
+    }
+
+    @Test
+    fun `F5_5 la sala cierra la conexion y el PC vuelve y termina la partida`() {
+        for (seed in 6L..10L) playWithCuts(seed, listOf(30, 90), silent = false).let { (_, returns, cuts) -> assertTrue(cuts > 0); assertEquals(cuts, returns, "semilla $seed") }
     }
 
     @Test

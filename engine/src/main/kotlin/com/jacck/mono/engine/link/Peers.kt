@@ -5,6 +5,7 @@ import com.jacck.mono.engine.Event
 import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
+import com.jacck.mono.engine.link.Message.Alive
 import com.jacck.mono.engine.link.Message.Applied
 import com.jacck.mono.engine.link.Message.Bye
 import com.jacck.mono.engine.link.Message.Hello
@@ -45,7 +46,8 @@ class Host(val config: GameConfig, start: GameState, val guestSeats: Set<Int>) {
         else listOf(Bye("versión del protocolo ${message.version}; el anfitrión usa $PROTOCOL_VERSION"))
         // Una propuesta vieja (repetida o hecha sin ver lo último) no se aplica: se le manda lo que le falta.
         is Propose -> if (message.after != last) resend(message.after) else listOf(judge(message))
-        is Resync -> if (message.full) listOf(snapshot()) else resend(message.after)
+        // Siempre se contesta, aunque no falte nada: el silencio queda solo para una red caída (F5.5).
+        is Resync -> if (message.full) listOf(snapshot()) else resend(message.after).ifEmpty { listOf(Alive(last)) }
         else -> emptyList()
     }
 
@@ -130,6 +132,12 @@ class Guest(private val name: String) {
         Engine.tryApply(c, s, action) ?: return null
         return Propose(action, last).also { pending = it }
     }
+
+    /**
+     * Primer mensaje de cada conexión: `Hello` si aún no tiene partida; si vuelve tras un corte (F5.5),
+     * pide lo que pasó desde su última acción, y la propuesta que quedó en el aire se olvida.
+     */
+    fun resume(): Message = if (state == null) hello() else { pending = null; Resync(last) }
 
     /** Nada llegó en un rato: pide lo que falta (o todo, si aún no tiene partida) y olvida la propuesta. */
     fun timeout(): List<Message> {

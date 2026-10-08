@@ -79,7 +79,8 @@ class HostRoom(context: Context, private val host: Host) : Remote {
         Log.i(LOG_TAG, "anfitrión: $e")
         main.post {
             if (e is LinkEvent.Listening) port = e.port
-            if (e is LinkEvent.Connected) { since = System.currentTimeMillis(); messages = 0; guest = "?" }
+            // Tras un corte (F5.5) el invitado vuelve con `Resync`, sin `Hello`: conserva su nombre.
+            if (e is LinkEvent.Connected) { since = System.currentTimeMillis(); messages = 0 }
             if (e is LinkEvent.Closed && event is LinkEvent.Connected) {
                 cuts++
                 Log.i(LOG_TAG, "anfitrión: corte $cuts tras ${clock((System.currentTimeMillis() - since) / 1000)}")
@@ -88,7 +89,10 @@ class HostRoom(context: Context, private val host: Host) : Remote {
         }
     }
 
-    /** Un invitado conectado (hilo del servidor): lee con [hostLoop] y escribe por su propio [Outbox]. */
+    /**
+     * Un invitado conectado (hilo de su sesión): lee con [hostLoop] y escribe por su propio [Outbox].
+     * La conexión que vuelve tras un corte reemplaza a la vieja (`acceptLoop`, F5.5).
+     */
     private fun session(input: InputStream, output: OutputStream) {
         Outbox(output).use { box ->
             outbox = box
@@ -103,7 +107,7 @@ class HostRoom(context: Context, private val host: Host) : Remote {
                 },
                 onApplied = { n, result -> main.post { listener(n, result) } },
             )
-            outbox = null
+            if (outbox === box) outbox = null // una conexión nueva ya puede tener su propio buzón
             Log.i(LOG_TAG, "anfitrión: fin de la sesión, $read mensajes ($bad sin entender), ${box.written} enviados")
         }
     }
