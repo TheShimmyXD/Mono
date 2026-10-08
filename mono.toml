@@ -44,6 +44,7 @@ estado_md = 5000
 pasos = [
   ["motor", "./gradlew --console=plain -q :engine:test"],
   ["app", "./gradlew --console=plain -q :app:testDebugUnitTest :app:assembleDebug"],
+  ["pc", "./gradlew --console=plain -q :terminal:test"],
   ["arte", "python3 arte/arte.py --revisar"],
 ]
 entorno = { JAVA_HOME = "~/android-studio/jbr" }

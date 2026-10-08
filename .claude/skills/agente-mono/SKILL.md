@@ -44,13 +44,13 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 
 - **Pasos de 30-45 min** con **punto de control** al terminar cada uno: primero la pregunta (AskUserQuestion: Aprobar / Con un cambio / Todavía no) y, solo con «Aprobar» y el *Terminado* cumplido, la casilla `[x]` y el contador de ESTADO (otro pedido sin aprobar = sin `[x]`, a «Pendiente del autor»), ESTADO al día (fase y contador, lo hecho con su ruta, siguiente paso) y dentro de su tope. Una tarea sin *Terminado*: propón uno medible como pregunta cerrada.
 - **Primero el motor; cada regla, su prueba** (`motor.md` §4): una prueba JUnit por R-## con el ID en el nombre y dados fijados, en `engine/src/test`. No se escribe interfaz para algo que el motor no resuelva ya, probado. `engine` no importa Android ni usa azar sin semilla (D-02, D-03).
-- **Interfaz:** 2-3 opciones con captura antes de una pantalla nueva, y `telefono.py instalar` + `captura` después de cambiarla, antes de mostrarla (`interfaz.md`).
+- **Interfaz:** 2-3 opciones con captura antes de una pantalla nueva, y `telefono.py pantallas <extras>… --salida` después de cambiarla, antes de mostrarla (instala, espera y une; `am start` + `captura` seguidos salen en blanco; `interfaz.md`).
 - **Tarea grande** (más de ~6 R-##): pártela en sub-pasos (a, b, c), cada uno con `cierre_paso.py` y su commit; la casilla se marca con el último; ESTADO dice solo qué sub-pasos faltan (hashes y capturas, a SESIONES). Entre llamadas el árbol compila: el modelo nuevo va en la misma tanda que el código que lo usa.
 - **Cierre de cada paso:** `python3 .claude/skills/agente-mono/scripts/cierre_paso.py` (pruebas del motor y de la app, `assembleDebug`, tope de ESTADO; su salida se lee entera, sin `| tail`, que tapa los AVISO y el código de salida) y un commit local, antes del punto de control (ESTADO, SESIONES, trazas, `capturas/` y `fuentes/` están fuera de Git a propósito: el commit lleva el plan, el código, `REGLAS.md` y `DECISIONES.md`). Una dependencia nueva va a `gradle/libs.versions.toml` en el mismo commit y a ESTADO con su versión.
 - **Cada cifra se mide.** Lo que se afirma (también en una D-##, un comentario del código o el chat) lleva el número real de una corrida, un `grep -c` o una fuente; lo que juzga el autor (calidad, estética) no lo declaras tú.
 - **Decisiones:** toda elección no trivial va como ficha D-## en el mismo paso. Un cambio de pila o de enfoque se consulta antes, y la misma pregunta lleva las líneas del plan que cambia (casillas, *Terminado*): sin su respuesta no se tocan (M-081).
 - **Lo visible primero:** cuando algo nuevo se puede correr o ver, deja el comando en ESTADO («Qué ya funciona») y muéstralo en una línea con números.
-- **Borrar archivos** del proyecto: pídeselo al autor con `! git rm <rutas>` y sigue.
+- **Borrar archivos** del proyecto: pídeselo al autor con `! git rm <rutas>` y sigue; si el paso espera el borrado, pregunta cerrada con «Bórralos tú» (esas rutas exactas).
 - **Antes de cada tanda de lecturas o de un script,** una línea al autor con qué haces y para qué; no más de ~6 llamadas seguidas sin una línea.
 
 ## Economía de contexto
