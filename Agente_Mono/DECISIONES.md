@@ -666,3 +666,11 @@
 - **Medido:** en el Redmi (Clásico, semilla 7, `pausa=4000`): sueldo Banco → Botty 2 $200 en 1571 ms (`capturas/fd3_sueldo.mp4`), impuesto Botty 2 → Banco $150 en 1571 ms (`fd3_impuesto.mp4`), carta Banco → Botty 2 $50 en 1539 ms (`fd3_banco.mp4`). App: `WalkTest` +3 y `SamplePhasesTest` con `sueldo` y `banco` en los dos presets.
 - **Cómo se revierte:** `motions` sin las ramas del Banco, `Bills` sin `BankColor` y los cinco textos de vuelta en `EventText.kt` y `strings.xml`.
 - **Estado:** vigente (aprobada por el autor, 2026-10-08).
+
+
+### D-69 · FD.4: la botonera del turno es un letrero blanco con título y los botones dentro
+
+- **Del autor (2026-10-08):** entre tres maquetas en el Redmi (`capturas/fd4_maquetas.png`, commit `ef016b4`: A franja roja de una pieza en segmentos, B `BotonChiva` sueltos en fila, C letrero blanco con título y botones), eligió la **C**; la recomendada era la B (la más barata).
+- **Decisión:** bajo `PlayersRow`, a todo el ancho del centro, una `Calcomania` blanca con una línea de título de lo que toca (15 sp, una línea: «Te toca, Andrés», «¿Compras Calle 19?», «Subasta de Calle 19: puja Andrés», «Botty 2 jugó») y debajo una fila de `BotonChiva` con pesos (2 para los de texto largo, 1 para cifras y «Pasar»; secundarios en ocre). En la subasta caben las 3 pujas y «Pasar» en una fila (cifras solas, «$220»). Medido en la maqueta: cada letrero ~95 dp de alto con un botón.
+- **Cómo se revierte:** la forma B (la misma fila sin el letrero) o los diálogos de hoy.
+- **Estado:** vigente.
