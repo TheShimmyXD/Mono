@@ -618,3 +618,10 @@
 - **Decisión:** mientras la tarjeta está abierta, cada casilla del jugador se dibuja otra vez encima del tablero (para que la vecina no la tape al crecer), con su marco de 4 dp (D-60) y una máscara de su color que va del 20 % al 40 % de opacidad, y crece hasta un 12 % (`BREATH_SCALE`) en 1400 ms (`BREATH_MS`) y vuelve en otros tantos, con aceleración suave. Cifras elegidas por el agente; las ajusta el autor al verlo.
 - **Cómo se revierte:** se quita el bloque `marks` de `Board` y vuelve el marco quieto de D-60.
 - **Estado:** vigente.
+
+### D-63 · Volver al menú desde la partida, y «Lo que pasó» sin «X avanza a»
+
+- **Del autor (2026-10-08):** «cuando entro a partida, no hay forma de volver al lobby … la única forma de volver al menú es cerrando la app»; «empezar a quitar esos molestos pop ups … el mensaje de x persona avanza a, ya con la animación se entiende». Ante «¿qué hace atrás?», eligió que pregunte antes.
+- **Decisión:** «atrás» en la partida abre «¿Volver al menú?» (la local queda guardada y sigue con «Seguir la partida»; la enlazada avisa que corta la conexión); el final de la partida suma «Volver al menú» a «Otra partida». Al salir, `GameViewModel.leave()` detiene la máquina y cierra el enlace; cada partida tiene su ViewModel (`partida-N`) y el menú vuelve a leer la guardada. Los extras de prueba valen solo para la primera partida de la app (antes, una partida seguida desde el menú en una app abierta con extras no se guardaba). `Event.Moved` ya no tiene línea en «Lo que pasó» (la ficha camina, D-59). Extra `atras=true` abre la pregunta (adb no manda «atrás» en el Redmi).
+- **Cómo se revierte:** se quitan `BackHandler`, `ConfirmMenu` y el botón; vuelve la línea `ev_moved`.
+- **Estado:** vigente.

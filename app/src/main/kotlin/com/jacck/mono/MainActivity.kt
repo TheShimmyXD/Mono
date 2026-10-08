@@ -55,7 +55,7 @@ const val LOG_TAG = "Mono"
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
-private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "tarjeta", "casilla", "fase", "maquina", "seguro")
+private val GAME_EXTRAS = listOf("jugadores", "tio_rico", "semilla", "propiedades", "hoja", "tarjeta", "atras", "casilla", "fase", "maquina", "seguro")
 
 class MainActivity : ComponentActivity() {
 
@@ -68,6 +68,7 @@ class MainActivity : ComponentActivity() {
         val sample = intent.getBooleanExtra("propiedades", false)
         val sheet = intent.getBooleanExtra("hoja", false)
         val sure = intent.getBooleanExtra("seguro", false)
+        val back = intent.getBooleanExtra("atras", false)
         val card = if (intent.hasExtra("tarjeta")) intent.getIntExtra("tarjeta", 0) else null
         val square = if (intent.hasExtra("casilla")) intent.getIntExtra("casilla", 0) else null
         val mockup = intent.getStringExtra("maqueta")
@@ -100,6 +101,7 @@ class MainActivity : ComponentActivity() {
                         var bots by rememberSaveable { mutableStateOf(machineSeats) } // los de la máquina (F5.8b)
                         var joining by rememberSaveable { mutableStateOf(false) }
                         var rooms by rememberSaveable { mutableStateOf(0) } // una sala nueva cada vez (su ViewModel)
+                        var games by rememberSaveable { mutableStateOf(0) } // y una partida nueva al volver del menú (D-63)
                         // Tableros (F4.4, D-42): los originales y los propios de `files/tableros`; `selected` y
                         // `editing` son su clave (nombre del preset o id). `opened` cuenta las veces que se abre
                         // el editor, para que cada vez empiece de lo guardado y no del ViewModel anterior.
@@ -118,9 +120,9 @@ class MainActivity : ComponentActivity() {
                             selected = id
                         }
                         val menuState = rememberSaveableStateHolder()
-                        val saved = remember {
+                        var saved by remember { mutableStateOf(
                             (if (direct) null else saveFile.read()).also { Log.i(LOG_TAG, "guardada al abrir: ${it?.state?.turn?.let { t -> "turno $t" } ?: "ninguna"}") }
-                        }
+                        ) }
                         val resume = saved.takeIf { resumed }
                         val game = chosen
                         val ed = boards.firstOrNull { it.key == editing }
@@ -178,11 +180,13 @@ class MainActivity : ComponentActivity() {
                             }
                         } else {
                             val machines = resume?.bots ?: bots.toSet()
-                            val keep: (GameConfig, GameState) -> Unit = if (direct) { _, _ -> } else { c, s ->
+                            // Los extras de prueba valen solo para la primera partida; las del menú se guardan (D-63).
+                            val test = direct && games == 0
+                            val keep: (GameConfig, GameState) -> Unit = if (test) { _, _ -> } else { c, s ->
                                 saveFile.write(SavedGame(c, s, machines))
                                 Log.i(LOG_TAG, "guardada: turno ${s.turn}, ${s.phase::class.simpleName}")
                             }
-                            val vm = viewModel {
+                            val vm = viewModel(key = "partida-$games") {
                                 if (resume != null) {
                                     Log.i(LOG_TAG, "sigue la partida guardada: turno ${resume.state.turn}, ${resume.state.players.map { it.name to it.money }}")
                                     GameViewModel(resume.config, resume.state.players.map { it.name }, seed, resumed = resume.state, onState = keep, bots = machines)
@@ -190,14 +194,25 @@ class MainActivity : ComponentActivity() {
                                     val (p, n, t) = requireNotNull(game)
                                     val config = boards.firstOrNull { it.key == p }?.config ?: Preset.CLASSIC.load()
                                     val prepare: (GameState) -> GameState = when {
-                                        phase != null -> withPhase(config, phase)
-                                        sample -> ::withSampleProperties
+                                        test && phase != null -> withPhase(config, phase)
+                                        test && sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines).also { if (phase != null || card != null) it.dismissNotices() }
+                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines).also { if (test && (phase != null || card != null || back)) it.dismissNotices() }
                                 }
                             }
-                            GameScreen(vm, openProperties = sheet, openSquare = square, askBankruptcy = sure, openCard = card) { System.currentTimeMillis() }
+                            GameScreen(
+                                vm, openProperties = test && sheet, openSquare = square.takeIf { test }, askBankruptcy = test && sure,
+                                openCard = card.takeIf { test }, openMenu = test && back,
+                                onMenu = {
+                                    saved = saveFile.read()
+                                    Log.i(LOG_TAG, "partida: vuelve al menú; guardada ${saved?.state?.turn?.let { t -> "turno $t" } ?: "ninguna"}")
+                                    chosen = null
+                                    resumed = false
+                                    bots = emptyList()
+                                    games++
+                                },
+                            ) { System.currentTimeMillis() }
                         }
                     }
                 }

@@ -37,7 +37,7 @@ fun eventLine(event: Event, config: GameConfig, state: GameState): String? {
         is Event.DiceRolled -> stringResource(
             R.string.ev_dice, who(event.player), event.dice.first, event.dice.second, event.dice.total,
         )
-        is Event.Moved -> stringResource(R.string.ev_moved, who(event.player), sq(event.to))
+        is Event.Moved -> null // la ficha camina hasta allá (FC.1, D-63)
         is Event.SalaryPaid -> stringResource(R.string.ev_salary, who(event.player), money(event.amount))
         is Event.Bought -> stringResource(R.string.ev_bought, who(event.player), sq(event.square), money(event.price))
         is Event.AuctionWon -> stringResource(R.string.ev_auction_won, who(event.player), sq(event.square), money(event.amount))

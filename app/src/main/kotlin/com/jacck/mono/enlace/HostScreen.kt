@@ -54,7 +54,7 @@ fun LinkedGame(key: String, config: GameConfig, names: List<String>, tokens: Lis
     }
     val room = vm.remote as HostRoom
     if (room.started) {
-        GameScreen(vm) { System.currentTimeMillis() }
+        GameScreen(vm, onMenu = onCancel) { System.currentTimeMillis() }
     } else {
         HostScreen(room, config, names, seats) {
             room.close()

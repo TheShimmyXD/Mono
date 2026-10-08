@@ -93,6 +93,7 @@ class GameViewModel(
 
     private val random = Random(seed)
     private var machine: Job? = null
+    private var left = false
 
     init {
         onState(config, state)
@@ -112,7 +113,7 @@ class GameViewModel(
 
     /** Si decide la máquina, su jugada después de la pausa; una a la vez. */
     private fun playMachine() {
-        if (machineTurn == null || machine?.isActive == true) return
+        if (left || machineTurn == null || machine?.isActive == true) return
         machine = viewModelScope.launch {
             snapshotFlow { walking.isEmpty() }.first { it } // que la ficha llegue antes de pensar
             delay(pause)
@@ -170,6 +171,13 @@ class GameViewModel(
         lastDice = null
         error = null
         playMachine()
+    }
+
+    /** Se sale al menú (D-63): la máquina deja de jugar y el enlace se cierra. */
+    fun leave() {
+        left = true
+        machine?.cancel()
+        remote?.close()
     }
 
     override fun onCleared() {

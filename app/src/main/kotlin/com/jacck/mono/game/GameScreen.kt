@@ -1,5 +1,6 @@
 package com.jacck.mono.game
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -78,18 +79,21 @@ import com.jacck.mono.engine.model.Utility
  * jugadores y la acción principal; cada decisión del motor sale en un diálogo encima. Arriba, los
  * íconos de los jugadores con su dinero; un toque abre su tarjeta y marca sus casillas (FC.3, D-60).
  * Las propiedades de cada uno van en una hoja que sube desde abajo (F3.4, D-24): la propia, en su
- * turno, con sus jugadas; la de otro, solo para mirar.
+ * turno, con sus jugadas; la de otro, solo para mirar. Con [onMenu], «atrás» pregunta si se vuelve al
+ * menú y el final de la partida lo ofrece (D-63).
  */
 @Composable
 fun GameScreen(
     vm: GameViewModel, openProperties: Boolean = false, openSquare: Int? = null, askBankruptcy: Boolean = false,
-    openCard: Int? = null, newSeed: () -> Long,
+    openCard: Int? = null, onMenu: (() -> Unit)? = null, openMenu: Boolean = false, newSeed: () -> Long,
 ) {
     val state = vm.state
     // Hoja abierta: la de quién (null, ninguna). La del extra `hoja` es la de `tarjeta` o, sin ella, la de quien juega.
     var sheetOf by remember { mutableStateOf(if (openProperties) openCard?.takeIf { it in state.players.indices } ?: state.current else null) }
     var cardOf by rememberSaveable { mutableStateOf(openCard?.takeIf { it in state.players.indices }) }
     var showMoney by rememberSaveable { mutableStateOf(true) }
+    var askMenu by remember { mutableStateOf(openMenu) }
+    BackHandler(enabled = onMenu != null) { askMenu = true }
     var shownSquare by remember { mutableStateOf(openSquare) }
     // La ficha camina con un saltito por casilla (FC.1, D-59): `steps` va de 0 al largo del recorrido.
     val walk = vm.walking.firstOrNull()
@@ -130,6 +134,10 @@ fun GameScreen(
             }
         }
     }
+    if (askMenu && onMenu != null) {
+        ConfirmMenu(linked = vm.remote != null, onCancel = { askMenu = false }) { vm.leave(); onMenu() }
+        return
+    }
     if (walk != null) return // lo que pasó y la decisión salen cuando la ficha llega
     // La carta de una casilla (FA.3) va primero: los diálogos del turno vuelven al cerrarla.
     shownSquare?.let {
@@ -153,7 +161,7 @@ fun GameScreen(
         is TurnPhase.Auction -> AuctionDialog(vm, phase)
         is TurnPhase.TaxChoice -> TaxDialog(vm, phase.square)
         is TurnPhase.Debt -> DebtDialog(vm, phase, askBankruptcy)
-        is TurnPhase.Over -> OverDialog(vm, phase.winners) { vm.restart(newSeed()) }
+        is TurnPhase.Over -> OverDialog(vm, phase.winners, onMenu?.let { { vm.leave(); it() } }) { vm.restart(newSeed()) }
         TurnPhase.EndOfTurn -> Unit
     }
 }
@@ -427,6 +435,20 @@ private fun DebtDialog(vm: GameViewModel, debt: TurnPhase.Debt, ask: Boolean) {
     }
 }
 
+/** «¿Volver al menú?» con «atrás» (D-63): la local queda guardada; la enlazada corta la conexión. */
+@Composable
+private fun ConfirmMenu(linked: Boolean, onCancel: () -> Unit, onYes: () -> Unit) {
+    DialogoChiva(
+        stringResource(R.string.to_menu_sure), color = Chiva.Azul,
+        botones = {
+            BotonChiva(stringResource(R.string.to_menu_yes), onYes)
+            BotonChiva(stringResource(R.string.to_menu_no), onCancel, principal = false)
+        },
+    ) {
+        Text(stringResource(if (linked) R.string.to_menu_link else R.string.to_menu_saved), fontSize = 16.sp)
+    }
+}
+
 /** «¿Seguro?» antes de quebrar (D-56): qué pierde y a quién va lo suyo; con «Sí», `onDone` y la quiebra. */
 @Composable
 private fun ConfirmBankruptcy(vm: GameViewModel, player: Int, creditor: Int?, onCancel: () -> Unit, onDone: () -> Unit = {}) {
@@ -447,10 +469,13 @@ private fun ConfirmBankruptcy(vm: GameViewModel, player: Int, creditor: Int?, on
 }
 
 @Composable
-private fun OverDialog(vm: GameViewModel, winners: List<Int>, onRestart: () -> Unit) {
+private fun OverDialog(vm: GameViewModel, winners: List<Int>, onMenu: (() -> Unit)?, onRestart: () -> Unit) {
     DialogoChiva(
         stringResource(R.string.game_over), color = Chiva.Verde,
-        botones = { if (vm.remote == null) BotonChiva(stringResource(R.string.new_game), onRestart) },
+        botones = {
+            if (vm.remote == null) BotonChiva(stringResource(R.string.new_game), onRestart)
+            if (onMenu != null) BotonChiva(stringResource(R.string.to_menu), onMenu, principal = vm.remote != null)
+        },
     ) {
         Text(
             stringResource(R.string.winners, winners.joinToString(" y ") { vm.state.players[it].name }), fontSize = 20.sp,
