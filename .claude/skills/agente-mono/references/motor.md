@@ -32,6 +32,8 @@
 - **Pregunta de balance o duración** (dinero inicial, tamaño, jugadores): antes de preguntar al autor, mídela con `simulate` en una prueba temporal `engine/src/test/kotlin/com/jacck/mono/engine/TmpMedidaTest.kt` (40 semillas, `println` con un prefijo que se filtra con `grep`), creada y borrada en la misma orden, que termina con `git status --short` (excepción a los scripts en el scratchpad: tiene que compilar con el motor). Las cifras van a la pregunta y a su D-## (D-43, M-073).
 - **Partidas automáticas enteras en una prueba** (`TerminalTest`, enlace): sin tratos el Clásico no termina (más de 20 000 acciones, D-50); usa $300 al empezar, salario $0 y un tope ≤ 5000 acciones, y corre primero una semilla con el tiempo medido antes del bucle (M-085).
 
+- **Tarea grande** (más de ~6 R-##): pártela en sub-pasos (a, b, c), cada uno con `cierre_paso.py` y su commit; la casilla se marca con el último; ESTADO dice solo qué sub-pasos faltan (hashes y capturas, a SESIONES). Entre llamadas el árbol compila: el modelo nuevo va en la misma tanda que el código que lo usa. (M-088)
+
 ## 5. Estilo
 
 - Identificadores en inglés; comentarios y KDoc en español, cortos (la convención de `python-programmer`, reglas 1 y 10, llevada a Kotlin; Azorian A13).

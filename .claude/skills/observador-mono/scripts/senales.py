@@ -143,7 +143,8 @@ def missing_checks(commands: list[str], python: bool) -> list[str]:
     """03: comprobaciones de cierre que no aparecen; cierre_paso.py las cubre todas."""
     joined = "\n".join(commands)
     # Cuenta la ejecución (python ... cierre_paso.py), no escribir el script.
-    if any(re.search(r"python\S*\s+\S*" + re.escape(script), joined) for script in CLOSING):
+    # M-089: con opciones de python en medio (`python3 -u …`, M-079).
+    if any(re.search(r"python\S*(?:\s+-\S+)*\s+\S*" + re.escape(script), joined) for script in CLOSING):
         return []
     return [check for check in CHECKS if check not in joined] if python else ["cierre_paso.py"]
 
@@ -444,7 +445,10 @@ def project_signals(root: Path, conf: dict, data: dict) -> list[tuple[str, str, 
     last_ui = last_screen_write(events, ui, root) if ui else 0
     if last_ui:
         after = commands_after(events, last_ui)
-        if not any("telefono.py" in c and "captura" in c for c in after):
+        # M-090: también vale leer una captura (`Read` de capturas/*.png), la tome quien la tome.
+        seen = any(e.get("herramienta") == "Read" and e["n"] >= last_ui
+                   and re.search(r"capturas/.*\.png$", (e.get("entrada") or {}).get("file_path", "")) for e in tools(events))
+        if not seen and not any("telefono.py" in c and "captura" in c for c in after):
             found.append((f"{x}15", "Media", f"Interfaz cambiada (#{last_ui}) sin captura después"))
     foreign = foreign_messages(events)
     if foreign:

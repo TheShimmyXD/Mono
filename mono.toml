@@ -46,6 +46,7 @@ pasos = [
   ["app", "./gradlew --console=plain -q :app:testDebugUnitTest :app:assembleDebug"],
   ["pc", "./gradlew --console=plain -q :terminal:test"],
   ["arte", "python3 arte/arte.py --revisar"],
+  ["emojis", "python3 .claude/skills/agente-mono/scripts/sin_emojis.py app/src/main"],  # el autor: sin emojis en la app (K18, M-087)
 ]
 entorno = { JAVA_HOME = "~/android-studio/jbr" }
 

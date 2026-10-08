@@ -67,6 +67,8 @@ class TestSenales(unittest.TestCase):
             "pytest", senales.missing_checks(["cat > scripts/cierre_paso.py <<'EOF'"], True)
         )
         self.assertEqual(senales.missing_checks([], False), ["cierre_paso.py"])
+        # M-089: `python3 -u` (M-079) también es correr el cierre.
+        self.assertEqual(senales.missing_checks(["python3 -u .claude/x/cierre_paso.py > /x/c.txt 2>&1"], False), [])
 
     def test_commands_after_include_the_writing_command(self):
         events = [
@@ -218,6 +220,17 @@ class TestSenalesMono(unittest.TestCase):
         self.assertIn("K15", self.signals([write]))
         capture = tool(2, "Bash", command="python3 s/telefono.py captura --salida /x/scratchpad")
         self.assertNotIn("K15", self.signals([write, capture]))
+
+    def test_reading_a_capture_counts_as_capture(self):
+        # M-090: capturas tomadas por un guion propio y miradas con Read.
+        self.write("app/src/main/Board.kt", "@Composable\nfun Board() {}\n")
+        write = tool(1, "Write", file_path=f"{self.root}/app/src/main/Board.kt")
+        script = tool(2, "Bash", command="python3 -u /x/scratchpad/f54b.py")
+        self.assertIn("K15", self.signals([write, script]))
+        old = tool(0, "Read", file_path=f"{self.root}/capturas/vieja.png")
+        self.assertIn("K15", self.signals([old, write, script]))
+        read = tool(3, "Read", file_path=f"{self.root}/capturas/f5_4b_partida.png")
+        self.assertNotIn("K15", self.signals([write, script, read]))
 
     def test_messages_in_english(self):
         # M-051: desde #76 de dfceab09 los mensajes al autor salieron en inglés.
