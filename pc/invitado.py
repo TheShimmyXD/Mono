@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Invitado de terminal de F5.3 (D-44, D-46, D-47): el PC se une a la sala del teléfono por Bluetooth y mide la conexión.
+"""Invitado de terminal de F5.3 (D-44, D-46, D-47, D-48): el PC se une a la sala del teléfono por la red local y mide la conexión.
 
 En el teléfono, la sala del anfitrión: en el menú, un jugador en «📶 Otro teléfono» y «Esperar al otro
 teléfono», o `telefono.py adb -- shell am start -S -n com.jacck.mono/.MainActivity --es enlace sala`.
-En el PC (Bluetooth encendido y emparejado con el teléfono):
+En el PC, en el mismo Wi-Fi que el teléfono (o conectado a su punto de acceso):
 
-    python3 pc/invitado.py                 # 1 minuto
+    python3 pc/invitado.py                 # 1 minuto; busca la sala por mDNS (avahi-browse)
     python3 pc/invitado.py --minutos 10    # la prueba de F5.3
+    python3 pc/invitado.py --ip 192.168.43.1 --puerto 40123   # la dirección que muestra la sala
+    python3 pc/invitado.py --bt            # por Bluetooth (D-45; la sala de hoy ya no escucha ahí)
 
 Habla el protocolo de `engine/.../link/` (un JSON por línea): manda `hello`, recibe la partida
 (`snapshot`) y cada `--cada` segundos pide la partida entera (`resync` con `full`) y mide la ida y
@@ -14,6 +16,7 @@ vuelta. Sale con 0 si no hubo cortes ni respuestas raras.
 """
 import argparse
 import json
+import re
 import socket
 import statistics
 import subprocess
@@ -23,6 +26,20 @@ import time
 from eco import NOMBRE, canal, telefono
 
 PROTOCOLO = 1  # PROTOCOL_VERSION de engine/.../link/Messages.kt
+TIPO = "_mono._tcp"  # SERVICE_TYPE de app/.../enlace/LanServer.kt
+
+
+def salas(salida_avahi: str) -> list[tuple[str, str, int]]:
+    """(nombre, IPv4, puerto) de cada sala resuelta en la salida de `avahi-browse -rpt _mono._tcp`."""
+    vistas = []
+    for linea in salida_avahi.splitlines():
+        c = linea.split(";")
+        if len(c) >= 9 and c[0] == "=" and c[2] == "IPv4" and c[4] == TIPO:
+            # avahi escapa cada byte raro como \ddd (decimal): «Redmi\032Note» = «Redmi Note».
+            nombre = re.sub(rb"\\(\d{3})", lambda m: bytes([int(m.group(1))]), c[3].encode()).decode("utf-8", "replace")
+            if (nombre, c[7], int(c[8])) not in vistas:
+                vistas.append((nombre, c[7], int(c[8])))
+    return vistas
 
 
 def hola(nombre: str) -> str:
@@ -46,36 +63,61 @@ def partida(linea: str) -> dict:
     }
 
 
-def main() -> int:
-    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    ap.add_argument("--mac", help="MAC del teléfono (por defecto, el Redmi de `bluetoothctl devices`)")
-    ap.add_argument("--canal", type=int, help="canal RFCOMM (por defecto, el que anuncia Mono por SDP)")
-    ap.add_argument("--nombre", default="PC", help="nombre del invitado (PC)")
-    ap.add_argument("--minutos", type=float, default=1.0, help="cuánto dura la prueba (1)")
-    ap.add_argument("--cada", type=float, default=10.0, help="segundos entre pedidos (10)")
-    a = ap.parse_args()
+def conectar_red(a) -> socket.socket | None:
+    ip, puerto = a.ip, a.puerto
+    if ip is None or puerto is None:
+        r = subprocess.run(["avahi-browse", "-rpt", TIPO], capture_output=True, text=True, timeout=20)
+        vistas = salas(r.stdout)
+        if not vistas:
+            print(f"No veo ninguna sala {TIPO} en la red (¿mismo Wi-Fi y sala abierta?). Prueba con --ip y --puerto.")
+            return None
+        nombre, ip, puerto = vistas[0]
+        print(f"Sala «{nombre}» en {ip}:{puerto}" + (f" (hay {len(vistas)})" if len(vistas) > 1 else ""))
+    s = socket.create_connection((ip, puerto), timeout=15)
+    s.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+    return s
 
+
+def conectar_bt(a) -> socket.socket | None:
     mac = a.mac or telefono(subprocess.run(["bluetoothctl", "devices"], capture_output=True, text=True).stdout)
     if not mac:
         print("No encuentro el teléfono en `bluetoothctl devices`: emparéjalo o pasa --mac.")
-        return 1
+        return None
     ch = a.canal
     if ch is None:
         sdp = subprocess.run(["sdptool", "browse", mac], capture_output=True, text=True)
         ch = canal(sdp.stdout)
         if ch is None:
             print(f"{mac} no anuncia el servicio {NOMBRE} (¿está abierta la sala?). sdptool: {sdp.stderr.strip() or 'sin el registro'}")
-            return 1
+            return None
     print(f"Conectando con {mac}, canal {ch}…")
-    t0 = time.monotonic()
     s = socket.socket(socket.AF_BLUETOOTH, socket.SOCK_STREAM, socket.BTPROTO_RFCOMM)
     s.settimeout(15)
     s.connect((mac, ch))
+    return s
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    ap.add_argument("--ip", help="dirección de la sala (por defecto, la que se anuncia por mDNS)")
+    ap.add_argument("--puerto", type=int, help="puerto de la sala, con --ip")
+    ap.add_argument("--bt", action="store_true", help="por Bluetooth en vez de la red local")
+    ap.add_argument("--mac", help="con --bt: MAC del teléfono (por defecto, el Redmi de `bluetoothctl devices`)")
+    ap.add_argument("--canal", type=int, help="con --bt: canal RFCOMM (por defecto, el que anuncia Mono por SDP)")
+    ap.add_argument("--nombre", default="PC", help="nombre del invitado (PC)")
+    ap.add_argument("--minutos", type=float, default=1.0, help="cuánto dura la prueba (1)")
+    ap.add_argument("--cada", type=float, default=10.0, help="segundos entre pedidos (10)")
+    a = ap.parse_args()
+
+    t0 = time.monotonic()
+    s = conectar_bt(a) if a.bt else conectar_red(a)
+    if s is None:
+        return 1
     lector = s.makefile("r", encoding="utf-8", newline="\n")
     s.sendall((hola(a.nombre) + "\n").encode("utf-8"))
     p = partida(lector.readline())
     inicio = time.monotonic()
-    print(f"Conectado y con la partida en {(inicio - t0) * 1000:.0f} ms: {p['tablero']} ({p['casillas']} casillas), "
+    print(f"Conectado y con la partida en {(inicio - t0) * 1000:.0f} ms (búsqueda incluida): {p['tablero']} ({p['casillas']} casillas), "
           f"{', '.join(p['jugadores'])}; aquí juega {', '.join(p['jugadores'][i] for i in p['asientos'])}.")
 
     tiempos, raras, corte = [], 0, None

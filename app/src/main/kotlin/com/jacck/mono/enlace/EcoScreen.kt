@@ -33,7 +33,7 @@ fun EcoScreen() {
     Column(Modifier.fillMaxSize().padding(24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Text(stringResource(R.string.eco_title), style = MaterialTheme.typography.headlineSmall)
         BluetoothGate { adapter ->
-            var event by remember { mutableStateOf<RfcommServer.Event?>(null) }
+            var event by remember { mutableStateOf<LinkEvent?>(null) }
             var total by remember { mutableStateOf(0) }
             val lines = remember { mutableStateListOf<String>() }
             DisposableEffect(adapter) {
@@ -42,7 +42,7 @@ fun EcoScreen() {
                     Log.i(LOG_TAG, "eco: $e")
                     main.post {
                         event = e
-                        if (e is RfcommServer.Event.Connected) { total = 0; lines.clear() }
+                        if (e is LinkEvent.Connected) { total = 0; lines.clear() }
                     }
                 }) { input, output ->
                     echoLoop(input, output) { n, line ->
@@ -60,9 +60,9 @@ fun EcoScreen() {
             Text(stringResource(R.string.eco_phone_name, adapter.name ?: "?"))
             Text(
                 when (val e = event) {
-                    null, RfcommServer.Event.Listening -> stringResource(R.string.eco_listening)
-                    is RfcommServer.Event.Connected -> stringResource(R.string.eco_connected, e.peer)
-                    is RfcommServer.Event.Closed -> stringResource(R.string.eco_closed, e.reason ?: "—")
+                    null, is LinkEvent.Listening -> stringResource(R.string.eco_listening)
+                    is LinkEvent.Connected -> stringResource(R.string.eco_connected, e.peer)
+                    is LinkEvent.Closed -> stringResource(R.string.eco_closed, e.reason ?: "—")
                 },
                 style = MaterialTheme.typography.titleMedium,
             )

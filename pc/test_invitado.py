@@ -2,7 +2,7 @@
 import json
 import unittest
 
-from invitado import hola, partida, pedido
+from invitado import hola, partida, pedido, salas
 
 # Recorte de un `snapshot` como lo escribe `encode` de engine/.../link/Messages.kt.
 SNAPSHOT = json.dumps({
@@ -25,6 +25,17 @@ class TestInvitado(unittest.TestCase):
     def test_un_bye_no_es_la_partida(self):
         with self.assertRaisesRegex(ValueError, "bye"):
             partida(json.dumps({"type": "bye", "reason": "versión del protocolo 2"}))
+
+    def test_lee_las_salas_de_avahi(self):
+        avahi = "\n".join([
+            "+;wlo1;IPv4;Redmi\\032Note\\03213\\032Pro;_mono._tcp;local",
+            "=;wlo1;IPv6;Redmi\\032Note\\03213\\032Pro;_mono._tcp;local;Android.local;fe80::1;40123;",
+            "=;wlo1;IPv4;Redmi\\032Note\\03213\\032Pro;_mono._tcp;local;Android.local;10.0.1.50;40123;",
+            "=;wlo1;IPv4;Tel\\195\\169fono;_mono._tcp;local;Otro.local;10.0.1.51;40999;",
+            "=;wlo1;IPv4;Impresora;_ipp._tcp;local;imp.local;10.0.1.9;631;",
+        ])
+        self.assertEqual(salas(avahi), [("Redmi Note 13 Pro", "10.0.1.50", 40123), ("Teléfono", "10.0.1.51", 40999)])
+        self.assertEqual(salas(""), [])
 
 
 if __name__ == "__main__":

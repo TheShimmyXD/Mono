@@ -26,15 +26,9 @@ const val SERVICE_NAME = "Mono"
  */
 class RfcommServer(
     private val adapter: BluetoothAdapter,
-    private val onEvent: (Event) -> Unit,
+    private val onEvent: (LinkEvent) -> Unit,
     private val session: (InputStream, OutputStream) -> Unit,
 ) {
-
-    sealed interface Event {
-        data object Listening : Event
-        data class Connected(val peer: String) : Event
-        data class Closed(val reason: String?) : Event
-    }
 
     @Volatile private var server: BluetoothServerSocket? = null
     @Volatile private var socket: BluetoothSocket? = null
@@ -46,16 +40,16 @@ class RfcommServer(
             try {
                 val listening = adapter.listenUsingRfcommWithServiceRecord(SERVICE_NAME, MONO_UUID)
                 server = listening
-                onEvent(Event.Listening)
+                onEvent(LinkEvent.Listening())
                 val s = listening.accept()
                 listening.close() // RFCOMM atiende un cliente por canal
                 socket = s
-                onEvent(Event.Connected(s.remoteDevice.name ?: s.remoteDevice.address))
+                onEvent(LinkEvent.Connected(s.remoteDevice.name ?: s.remoteDevice.address))
                 session(s.inputStream, s.outputStream)
-                onEvent(Event.Closed(null))
+                onEvent(LinkEvent.Closed(null))
             } catch (e: IOException) {
                 if (stopped) break
-                onEvent(Event.Closed(e.message))
+                onEvent(LinkEvent.Closed(e.message))
                 Thread.sleep(2000) // p. ej. Bluetooth apagado: no reintentar sin pausa
             } finally {
                 socket?.close()

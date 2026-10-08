@@ -1,6 +1,7 @@
 package com.jacck.mono.enlace
 
-import android.annotation.SuppressLint
+import android.os.Build
+import android.provider.Settings
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -18,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -39,12 +41,11 @@ import kotlinx.coroutines.delay
 fun clock(seconds: Long): String = "%d:%02d".format(seconds / 60, seconds % 60)
 
 /**
- * Sala del anfitrión (F5.3, D-47): crea la partida con los jugadores del menú, escucha por RFCOMM
- * y atiende al invitado con [hostLoop]; los jugadores de [seats] juegan en el otro teléfono. Muestra
+ * Sala del anfitrión (F5.3, D-47): crea la partida con los jugadores del menú, la anuncia en la red
+ * local ([LanServer], D-48) y atiende al invitado con [hostLoop]; los jugadores de [seats] juegan en el otro teléfono. Muestra
  * con quién está conectado, desde cuándo, los cortes y los mensajes. La pantalla no se apaga: HyperOS
- * corta el Bluetooth de las apps que pasan a segundo plano.
+ * corta la red de las apps que pasan a segundo plano.
  */
-@SuppressLint("MissingPermission") // `name` solo dentro de BluetoothGate, con el permiso concedido
 @Composable
 fun HostScreen(config: GameConfig, names: List<String>, tokens: List<String>, seats: Set<Int>, seed: Long, onCancel: () -> Unit) {
     val host = remember { Host(config, Engine.newGame(config, names, seed, tokens).state, seats) }
@@ -66,7 +67,7 @@ fun HostScreen(config: GameConfig, names: List<String>, tokens: List<String>, se
             }
             Calcomania {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BluetoothGate { adapter -> HostLink(adapter, host) }
+                    LanGate { addresses -> HostLink(host, addresses) }
                 }
             }
             Text(stringResource(R.string.host_note), fontSize = 14.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
@@ -77,23 +78,26 @@ fun HostScreen(config: GameConfig, names: List<String>, tokens: List<String>, se
     }
 }
 
-/** El servidor y su estado en pantalla; se detiene al salir de la sala. */
-@SuppressLint("MissingPermission")
+/** El servidor de la red local y su estado en pantalla; se detiene al salir de la sala. */
 @Composable
-private fun HostLink(adapter: android.bluetooth.BluetoothAdapter, host: Host) {
-    var event by remember { mutableStateOf<RfcommServer.Event?>(null) }
+private fun HostLink(host: Host, addresses: List<String>) {
+    val context = LocalContext.current
+    val label = remember { Settings.Global.getString(context.contentResolver, Settings.Global.DEVICE_NAME) ?: Build.MODEL }
+    var event by remember { mutableStateOf<LinkEvent?>(null) }
+    var port by remember { mutableStateOf<Int?>(null) }
     var guest by remember { mutableStateOf("?") }
     var since by remember { mutableStateOf(0L) }
     var now by remember { mutableStateOf(System.currentTimeMillis()) }
     var cuts by remember { mutableStateOf(0) }
     var messages by remember { mutableStateOf(0) }
-    DisposableEffect(adapter) {
+    DisposableEffect(Unit) {
         val main = Handler(Looper.getMainLooper())
-        val server = RfcommServer(adapter, { e ->
+        val server = LanServer(context, label, { e ->
             Log.i(LOG_TAG, "anfitrión: $e")
             main.post {
-                if (e is RfcommServer.Event.Connected) { since = System.currentTimeMillis(); messages = 0; guest = "?" }
-                if (e is RfcommServer.Event.Closed && event is RfcommServer.Event.Connected) {
+                if (e is LinkEvent.Listening) port = e.port
+                if (e is LinkEvent.Connected) { since = System.currentTimeMillis(); messages = 0; guest = "?" }
+                if (e is LinkEvent.Closed && event is LinkEvent.Connected) {
                     cuts++
                     Log.i(LOG_TAG, "anfitrión: corte $cuts tras ${clock((System.currentTimeMillis() - since) / 1000)}")
                 }
@@ -113,18 +117,19 @@ private fun HostLink(adapter: android.bluetooth.BluetoothAdapter, host: Host) {
         onDispose { server.stop() }
     }
     LaunchedEffect(event) {
-        while (event is RfcommServer.Event.Connected) { now = System.currentTimeMillis(); delay(1000) }
+        while (event is LinkEvent.Connected) { now = System.currentTimeMillis(); delay(1000) }
     }
-    Text(stringResource(R.string.host_phone, adapter.name ?: "?"), fontSize = 16.sp)
+    Text(stringResource(R.string.host_phone, label), fontSize = 16.sp)
+    port?.let { p -> Text(stringResource(R.string.host_address, addresses.joinToString(" · ") { "$it:$p" }), fontSize = 16.sp) }
     Text(
         when (val e = event) {
-            null, RfcommServer.Event.Listening -> stringResource(R.string.host_listening)
-            is RfcommServer.Event.Connected -> stringResource(R.string.host_connected, e.peer, guest)
-            is RfcommServer.Event.Closed -> stringResource(R.string.host_closed, e.reason ?: "—")
+            null, is LinkEvent.Listening -> stringResource(R.string.host_listening)
+            is LinkEvent.Connected -> stringResource(R.string.host_connected, e.peer, guest)
+            is LinkEvent.Closed -> stringResource(R.string.host_closed, e.reason ?: "—")
         },
         fontSize = 18.sp,
     )
-    if (event is RfcommServer.Event.Connected) {
+    if (event is LinkEvent.Connected) {
         Text(stringResource(R.string.host_time, clock((now - since).coerceAtLeast(0) / 1000), cuts, messages), fontSize = 16.sp)
     } else if (cuts > 0) {
         Text(stringResource(R.string.host_cuts, cuts), fontSize = 16.sp)
