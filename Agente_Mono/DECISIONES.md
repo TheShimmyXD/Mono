@@ -756,3 +756,14 @@
 - **Fuera de alcance:** `telefono.py` (570), `senales.py` (548) y `extraer_sesion.py` (512) son de las skills y le tocan al observador.
 - **Cómo se revierte:** `git revert` de los commits FE.2a a FE.2c.
 - **Estado:** vigente.
+
+### D-79 · FE.3: README en español, licencia MIT y seis capturas en `docs/capturas/`
+
+- **Licencia (del autor):** MIT, elegida entre MIT, GPL-3.0 y ninguna. `LICENSE` con «Copyright (c) 2026 TheShimmyXD» (el usuario de Git, no el nombre real; lo confirma el autor en el punto de control). La letra Lilita One sigue con su OFL 1.1 (`arte/letra/OFL_LilitaOne.txt`), citada en el README.
+- **Capturas (del autor: las 3 que había + menú y editor):** `capturas/` está fuera de Git, así que el README usa copias en `docs/capturas/` (versionada): menú, editor y reglas tomadas hoy del APK instalado (`pantallas - editor=1 reglas=DINERO`), y partida, carta y «Lo que pasó» de `f5_10_maquina_juego`, `fd6_arca` y `f5_8c_final`. Recorte de y=108 a y=2360 (sin barra de estado ni de gestos) y 360 × 751 px; 73-123 KiB cada una.
+- **`.gitignore`:** `capturas/` ignoraba también `docs/capturas/`; pasa a `/capturas/` (solo la de la raíz, que sigue fuera de Git).
+- **Descartada:** `f5_5_sala.png`, porque muestra la IP real de la red local y el nombre de un amigo (lo que limpió FE.1, D-77).
+- **Lo que dice el README, medido:** 2 a 4 jugadores (`MAX_PLAYERS = 4` en `NewGameForm.kt`; el plan decía 2-6), 28 reglas configurables (`_help` en `strings.xml`), 54 fichas R-## (`grep -c` en `REGLAS.md`), Android 8.0 o más (`minSdk = 26`). Sin cifras de pruebas, que cambian con cada paso. 0 IPs, correos o «Santi» en el README (el buscador encontró un caso sembrado).
+- **Créditos:** el autor como TheShimmyXD, Claude Code como ayuda, Lilita One de Juan Montoreano, y Monopoly y Tío Rico como marcas ajenas sin relación con el proyecto (no se incluyen sus reglamentos).
+- **Cómo se revierte:** `git revert` del commit de FE.3.
+- **Estado:** vigente.
