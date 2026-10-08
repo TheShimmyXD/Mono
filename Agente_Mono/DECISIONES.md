@@ -582,3 +582,10 @@
 - **Medido:** `NewGameFormTest`, 2 pruebas D-57; app 78 pruebas en verde, motor 187. Capturas `capturas/d57_botty.png` (menú con 2 · 3 · 4 y el 2 elegido; partida con Botty 1 y Botty 2) y `capturas/d57_botty_tirada.png` (con los dos puntos).
 - **Cómo se revierte:** `MAX_PLAYERS = 6`, `DEFAULT_PLAYERS = 3` y `playerNames` sin `bots`.
 - **Estado:** vigente (aprobada, 2026-10-08).
+
+### D-58 · Fase FC: fichas que caminan y jugadores por su ícono, antes de F5.5
+
+- **Del autor (2026-10-08):** «lo que sigue es añadir animaciones a la pieza que se mueva, es muy difícil de seguir el juego cuando las piezas solo se teletransportan»; «que se muestren solo los íconos de los jugadores; si doy click en ellos puedo ver su nombre, su dinero, un botón de "propiedades" donde pueda ver las propiedades del jugador»; «cuando doy click […] debería ver marcadas en él las propiedades del jugador al que estoy seleccionando, lo mismo aplica para mí, por ende el botón de "Mis propiedades" desaparecería. Anota esto al plan.»
+- **Decisión:** fase con letra FC (D-27) entre F4 y F5, así es la siguiente; F5.5 espera. Tres tareas: FC.1 animación (2-3 formas grabadas antes), FC.2 maquetas del panel de íconos y su tarjeta, FC.3 la tarjeta, la hoja de cualquier jugador y las casillas marcadas en el tablero; «Mis propiedades» se quita y lo que tenía (construir, hipotecar, quiebra de D-56) pasa a la hoja propia. Se leyó «el logo» como el ícono del jugador.
+- **Cómo se revierte:** se quita la sección FC del plan y F5.5 vuelve a ser la siguiente.
+- **Estado:** vigente.
