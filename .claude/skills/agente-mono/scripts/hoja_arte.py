@@ -42,8 +42,13 @@ def alto_comun(tamanos: list[tuple[int, int]], ancho_max: int = ANCHO_MAX, sep: 
     return min(tope, int((ancho_max - sep * (len(tamanos) - 1)) / proporcion))
 
 
+def resolver(i: str, carpeta: Path) -> str | None:
+    """Nombre del SVG de <i>: el lugar tal cual, o el icono (ic_) o el personaje (pj_) con ese id (M-092)."""
+    return next((n for n in (i, f"ic_{i}", f"pj_{i}") if (carpeta / f"{n}.svg").exists()), None)
+
+
 def faltantes(ids: list[str], carpeta: Path) -> list[str]:
-    return [i for i in ids if not (carpeta / f"{i}.svg").exists()]
+    return [i for i in ids if resolver(i, carpeta) is None]
 
 
 def correr_arte(raiz: Path) -> bool:
@@ -63,6 +68,7 @@ def hoja_svg(raiz: Path, ids: list[str], salida: Path) -> int:
     if sin_svg:
         print("Sin SVG (¿registrado en LUGARES?): " + ", ".join(sin_svg))
         return 1
+    ids = [resolver(i, carpeta) for i in ids]
     ancho = celda()
     dibujos = [(i, Image.open(io.BytesIO(cairosvg.svg2png(url=str(carpeta / f"{i}.svg"), output_width=ancho, background_color="white"))).convert("RGB"))
                for i in ids]

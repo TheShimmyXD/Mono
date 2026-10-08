@@ -15,7 +15,7 @@
 ## 2. Revisar antes del teléfono
 
 - El sistema no trae renderizador de SVG. Venv persistente fuera del proyecto, una vez por equipo (~1,5 min): `python3 -m venv ~/.cache/mono-arte && ~/.cache/mono-arte/bin/pip -q install cairosvg`; si ya existe, se reusa (M-034).
-- Hoja de contacto: `~/.cache/mono-arte/bin/python .claude/skills/agente-mono/scripts/hoja_arte.py <id>… --salida <scratchpad>/hoja.png` corre `arte.py` (se detiene si falla) y une los dibujos en ≤ 1600 px; `Read` de esa imagen, no de los PNG uno a uno. Tras corregir, la hoja solo con los cambiados.
+- Hoja de contacto: `~/.cache/mono-arte/bin/python .claude/skills/agente-mono/scripts/hoja_arte.py <id>… --salida <scratchpad>/hoja.png` (`<id>`: clave de `LUGARES`, `ICONOS` o `PERSONAJES`; busca también `ic_<id>` y `pj_<id>`, M-092) corre `arte.py` (se detiene si falla) y une los dibujos en ≤ 1600 px; `Read` de esa imagen, no de los PNG uno a uno. Tras corregir, la hoja solo con los cambiados.
 - Antes de leerla, repasa en el código los fallos ya vistos (M-038): el cerro baja hasta donde empieza el suelo (si no, asoma una franja de cielo); nada útil en las franjas (y < 9 o > 131); detalles sueltos (flores, frutas, animales) con radio ≥ 8, porque el contorno de 1,4 se come los más chicos; ruedas y patas antes que la carrocería; trazos blancos (`wave`, `shine`, `glyph`) nunca sobre papel blanco (`cloud`, `wall`); cables y líneas no cruzan el monumento; nada del tema (bote, sol) detrás de un árbol, un poste o un vehículo.
 - Lo que se corrige ahí no gasta una instalación. Después, el Redmi: `telefono.py cartas <casilla>… --salida capturas/<paso>_cartas.png [--tio-rico]` instala, abre cada carta, captura y las une (M-037). La captura es lo que juzga el autor.
 

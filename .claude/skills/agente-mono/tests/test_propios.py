@@ -199,6 +199,14 @@ class TestCartasYHoja(unittest.TestCase):
             (Path(d) / "niza.svg").write_text("<svg/>")
             self.assertEqual(hoja_arte.faltantes(["niza", "zona_t"], Path(d)), ["zona_t"])
 
+    def test_resolver_con_prefijo(self):
+        with tempfile.TemporaryDirectory() as d:
+            for n in ("niza", "ic_enlace", "pj_mono"):
+                (Path(d) / f"{n}.svg").write_text("<svg/>")
+            self.assertEqual([hoja_arte.resolver(i, Path(d)) for i in ("niza", "enlace", "ic_enlace", "mono", "nada")],
+                             ["niza", "ic_enlace", "ic_enlace", "pj_mono", None])
+            self.assertEqual(hoja_arte.faltantes(["enlace", "nada"], Path(d)), ["nada"])
+
 
 if __name__ == "__main__":
     unittest.main()
