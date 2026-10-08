@@ -597,3 +597,10 @@
 - **Medido:** `WalkTest`, 4 pruebas D-59; app 82 en verde, motor 187. En el Redmi (partida Botty 1 contra Botty 2, semilla 7, `capturas/fc1_partida.mp4`), el log: 184-191 ms por salto con los dados, una carta de 38 saltos en 2748 ms (72 ms por salto) y el salto a la Cárcel en 527 ms.
 - **Cómo se revierte:** `walking` vacío (sin `walks` en `show`) y `Board` sin `hops`.
 - **Estado:** vigente.
+
+### D-60 · FC.2: íconos en fila arriba con el dinero, que se oculta con una pulsación larga; la tarjeta va en el centro
+
+- **Del autor (2026-10-08):** vio dos vueltas de maquetas en el Redmi (`capturas/fc2_maquetas.png`: fila y columna, con y sin dinero, tarjeta en diálogo; `capturas/fc2_maquetas2.png`: fila pegada arriba, dos a cada lado, tarjeta en el centro). Eligió: «fusiona A y B: el programa arranca mostrando, como en B, pero si mantengo presionado en alguno de los íconos se oculta el dinero; si mantengo presionado cuando está oculto, se muestra». Para la tarjeta, «tarjeta en el centro» (E, sin oscurecer el tablero).
+- **Decisión:** en la partida, los íconos de los jugadores van en fila arriba del centro del tablero, pegados a la fila de casillas de arriba (46 dp; el de quien juega, 15 % más grande, con fondo y aro); debajo de cada uno, su dinero. Una pulsación larga en cualquier ícono oculta o muestra el dinero de todos (se lee así: «se oculta el dinero»; si el autor lo quiere por jugador, se cambia en FC.3). Un toque abre la tarjeta de ese jugador en el centro, en lugar del turno: medallón, nombre, dinero, «Propiedades (n)» y «Cerrar»; mientras está abierta, sus casillas llevan un marco de su color (4 dp). Sin nombres a la vista en el panel. Se aplica en FC.3.
+- **Cómo se revierte:** vuelve `PlayersPanel` (nombre y dinero en lista) dentro de la calcomanía del turno.
+- **Estado:** vigente.
