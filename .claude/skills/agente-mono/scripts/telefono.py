@@ -20,8 +20,11 @@ Desde la raiz del proyecto:
        con hasta 24 fotogramas por GStreamer; M-099). Los extras van en UN argumento, separados por comas
        (jugadores=2,semilla=7,maquina=0-1). Dice a que hora del telefono empezo el video y, si pasa de 30 MiB,
        deja <nombre>_envio.mp4 para SendUserFile (ffmpeg de [herramientas] en mono.toml; M-107, M-108)
-  python3 .claude/skills/agente-mono/scripts/telefono.py fotogramas capturas/FD.1.mp4 --desde 12.5 --segundos 3 [--fps 8] --salida <png>
-      (hoja con los fotogramas seguidos de ese tramo, 8 por fila, con ffmpeg; no usa el telefono; M-107)
+  python3 .claude/skills/agente-mono/scripts/telefono.py fotogramas capturas/FD.1.mp4 --desde 12.5 --segundos 3 [--fps 8] [--alto 0.3 --columnas 2] --salida <png>
+      (hoja con los fotogramas seguidos de ese tramo, 8 por fila, con ffmpeg; no usa el telefono; M-107. Con --alto,
+      solo la franja de arriba de cada fotograma; con --columnas, menos por fila y mas grandes: la hoja sigue en 2160 px, M-113)
+  instalar, cartas, pantallas y grabar no siguen si el autor jugo en el Redmi hace poco (una partida suya escribe
+      «guardada: turno N» en el log; las de los extras no se guardan): avisan con la hora; --ya sigue igual (M-112)
 Con varios dispositivos se prefiere el fisico (el Redmi); --serie elige uno.
 """
 
@@ -29,6 +32,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import math
 import os
 import subprocess
 import sys
@@ -46,7 +50,7 @@ PANTALLA_ESPERA_S = 6
 PRIMERA_EXTRA_S = 6
 # Grabar (M-099): espera tras abrir antes de grabar (FC.1: 5 s con una maqueta, 2 s para ver el
 # comienzo de una partida), tope de fotogramas en la hoja y su tamano (la proporcion del Redmi, 1080 x 2400).
-GRABAR_ESPERA_S = 3
+GRABAR_ARRANQUE_S = 1
 GRABAR_BIT_RATE = "4000000"
 MAX_FOTOGRAMAS = 24
 FOTOGRAMA = (180, 400)
@@ -55,6 +59,7 @@ COLUMNAS_FOTOGRAMAS = 8
 ENVIO_MAX_BYTES = 30 * 1024 * 1024
 ENVIO_ANCHO = 720
 TRAMO_ANCHO = 270
+AUTOR_RECIENTE_S = 180
 # Extras que la app lee con getLongExtra: van con --el
 LONG_EXTRAS = {"semilla"}
 # Lineas de salida de gradle que se muestran si la instalacion falla.
@@ -98,11 +103,20 @@ def ffmpeg_path(conf: dict) -> Path | None:
     return path if path is not None and path.exists() else None
 
 
-def tramo_command(ffmpeg: Path, video: Path, desde: float, segundos: float, fps: int, salida: Path) -> list[str]:
-    """ffmpeg que pone en una sola imagen los fotogramas seguidos de [desde, desde + segundos), 8 por fila."""
-    filas = max(1, -(-round(segundos * fps) // COLUMNAS_FOTOGRAMAS))
+def tramo_command(ffmpeg: Path, video: Path, desde: float, segundos: float, fps: int, salida: Path,
+                  alto: float = 1.0, columnas: int = COLUMNAS_FOTOGRAMAS) -> list[str]:
+    """ffmpeg que pone en una sola imagen los fotogramas seguidos de [desde, desde + segundos), `columnas` por fila.
+
+    Con `alto` < 1 solo la franja de arriba de cada fotograma; con menos columnas, cada uno mas grande
+    (la hoja sigue en TRAMO_ANCHO * COLUMNAS_FOTOGRAMAS px de ancho, M-113).
+    """
+    if not 0 < alto <= 1 or columnas < 1:
+        raise ValueError(f"--alto entre 0 y 1 y --columnas >= 1: {alto}, {columnas}")
+    filas = max(1, -(-round(segundos * fps) // columnas))
+    ancho = TRAMO_ANCHO * COLUMNAS_FOTOGRAMAS // columnas
+    recorte = f"crop=iw:ih*{alto}:0:0," if alto < 1 else ""
     return [str(ffmpeg), "-v", "error", "-ss", str(desde), "-t", str(segundos), "-i", str(video),
-            "-vf", f"fps={fps},scale={TRAMO_ANCHO}:-1,tile={COLUMNAS_FOTOGRAMAS}x{filas}", "-frames:v", "1", "-y", str(salida)]
+            "-vf", f"fps={fps},{recorte}scale={ancho}:-1,tile={columnas}x{filas}", "-frames:v", "1", "-y", str(salida)]
 
 
 def envio_command(ffmpeg: Path, video: Path, salida: Path) -> list[str]:
@@ -168,6 +182,33 @@ def buffer_size(output: str) -> str | None:
         if line.startswith("main:") and "ring buffer is" in line:
             return line.split("ring buffer is", 1)[1].split("(")[0].strip()
     return None
+
+
+def autor_jugando(lines: list[str], ahora: str, ventana_s: int = AUTOR_RECIENTE_S) -> str | None:
+    """La ultima linea «guardada: turno» del log si es de hace menos de `ventana_s` segundos, o None (M-112).
+
+    Solo la partida del autor se guarda (las de los extras no, D-63). `ahora` y las lineas llevan la hora
+    del telefono como `logcat -v time`: `10-08 02:03:05.697`.
+    """
+    def hora(texto: str) -> dt.datetime | None:
+        try:
+            return dt.datetime.strptime("2000-" + texto[:14], "%Y-%m-%d %H:%M:%S")
+        except ValueError:
+            return None
+    now = hora(ahora)
+    for line in reversed(lines):
+        if "guardada: turno" in line:
+            when = hora(line)
+            if now is None or when is None:
+                return None
+            return line if 0 <= (now - when).total_seconds() < ventana_s else None
+    return None
+
+
+def grabar_ordenes(adb: str, serial: str, target: str, item: str, segundos: float, remoto: str) -> list[list[str]]:
+    """screenrecord primero y despues am start: el video empieza antes que la app y no pierde la primera jugada (M-111)."""
+    return [[adb, "-s", serial, "shell", "screenrecord", "--time-limit", str(math.ceil(segundos)), "--bit-rate", GRABAR_BIT_RATE, remoto],
+            pantalla_command(adb, serial, target, item)]
 
 
 def logcat_command(adb: str, serial: str, tag: str) -> list[str]:
@@ -257,9 +298,12 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="adb: telefono.py adb -- <argumentos>")
     parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas", "grabar", "fotogramas"])
     parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura; grabar: un juego de extras; fotogramas: el video")
-    parser.add_argument("--segundos", type=int, default=10, help="grabar: duracion del video (screenrecord admite hasta 180); fotogramas: largo del tramo")
+    parser.add_argument("--segundos", type=float, default=10, help="grabar: duracion del video (screenrecord admite hasta 180; se redondea hacia arriba); fotogramas: largo del tramo")
     parser.add_argument("--desde", type=float, default=0.0, help="fotogramas: segundo del video donde empieza el tramo")
     parser.add_argument("--fps", type=int, default=8, help="fotogramas: fotogramas por segundo del tramo")
+    parser.add_argument("--alto", type=float, default=1.0, help="fotogramas: franja de arriba de cada fotograma (0 a 1)")
+    parser.add_argument("--columnas", type=int, default=COLUMNAS_FOTOGRAMAS, help="fotogramas: por fila (menos = mas grandes)")
+    parser.add_argument("--ya", action="store_true", help="instalar, cartas, pantallas, grabar: sigue aunque el autor haya jugado hace poco")
     parser.add_argument("--tio-rico", action="store_true", help="cartas: preset Tio Rico (si no, el Clasico)")
     parser.add_argument("--serie")
     parser.add_argument("--salida", type=Path)
@@ -343,17 +387,19 @@ def grabar(args, root: Path, adb: str, serial: str, target: str | None) -> int:
     if len(args.objetivos) != 1 or args.salida is None or args.salida.suffix.lower() != ".mp4" or target is None:
         print("Uso: telefono.py grabar <extras> --segundos N --salida capturas/<paso>.mp4  ('-' sin extras)")
         return 1
-    started = run(pantalla_command(adb, serial, target, args.objetivos[0]))
-    warning = am_warning(started.stdout + started.stderr)
-    if warning:
-        print(warning)
-    time.sleep(GRABAR_ESPERA_S)
     if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
         print("Pantalla apagada: pide al autor que desbloquee el Redmi. Sin video.")
         return 1
     remoto = "/sdcard/mono_grabar.mp4"
+    grabacion, abrir = grabar_ordenes(adb, serial, target, args.objetivos[0], args.segundos, remoto)
     inicio = run([adb, "-s", serial, "shell", "date", "+%H:%M:%S"]).stdout.strip()
-    run([adb, "-s", serial, "shell", "screenrecord", "--time-limit", str(args.segundos), "--bit-rate", GRABAR_BIT_RATE, remoto])
+    recorder = subprocess.Popen(grabacion, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(GRABAR_ARRANQUE_S)
+    started = run(abrir)
+    warning = am_warning(started.stdout + started.stderr)
+    if warning:
+        print(warning)
+    recorder.wait()
     video = args.salida if args.salida.is_absolute() else root / args.salida
     video.parent.mkdir(parents=True, exist_ok=True)
     pulled = run([adb, "-s", serial, "pull", remoto, str(video)])
@@ -363,7 +409,7 @@ def grabar(args, root: Path, adb: str, serial: str, target: str | None) -> int:
         return 1
     carpeta = root / "capturas" / "tmp" / f"grabar_{dt.datetime.now():%H%M%S}"
     carpeta.mkdir(parents=True)
-    frames = run(fotogramas_command(video, carpeta, args.segundos))
+    frames = run(fotogramas_command(video, carpeta, math.ceil(args.segundos)))
     if frames.returncode != 0:
         print("gst-launch-1.0: FALLA " + (frames.stdout + frames.stderr).strip()[-300:])
         return 1
@@ -371,8 +417,9 @@ def grabar(args, root: Path, adb: str, serial: str, target: str | None) -> int:
     venv = Path("~/.cache/mono-arte/bin/python").expanduser()
     done = run([str(venv), str(hoja), "--unir", str(carpeta), "--salida", str(hoja_de(video)),
                 "--columnas", str(COLUMNAS_FOTOGRAMAS)], cwd=root)
-    print(f"{video} ({video.stat().st_size // 1024} KB, {args.segundos} s, {serial}). " + (done.stdout + done.stderr).strip())
-    print(f"El video empieza a las {inicio} (hora del telefono): una linea del log a las T esta en el segundo T - {inicio} (M-108).")
+    print(f"{video} ({video.stat().st_size // 1024} KB, {math.ceil(args.segundos)} s, {serial}). " + (done.stdout + done.stderr).strip())
+    print(f"El video empieza a las {inicio} (hora del telefono), {GRABAR_ARRANQUE_S} s antes de abrir la app: "
+          f"una linea del log a las T esta en el segundo T - {inicio} (M-108, M-111).")
     ffmpeg = ffmpeg_path(args.conf)
     if video.stat().st_size > ENVIO_MAX_BYTES:
         if ffmpeg is None:
@@ -393,11 +440,17 @@ def fotogramas(args, root: Path) -> int:
     video = video if video.is_absolute() else root / video
     salida = args.salida if args.salida.is_absolute() else root / args.salida
     salida.parent.mkdir(parents=True, exist_ok=True)
-    done = run(tramo_command(ffmpeg, video, args.desde, args.segundos, args.fps, salida))
+    try:
+        argv = tramo_command(ffmpeg, video, args.desde, args.segundos, args.fps, salida, args.alto, args.columnas)
+    except ValueError as e:
+        print(e)
+        return 1
+    done = run(argv)
     if done.returncode != 0:
         print("ffmpeg: FALLA " + (done.stdout + done.stderr).strip()[-300:])
         return 1
-    print(f"{salida}: {round(args.segundos * args.fps)} fotogramas desde el segundo {args.desde}, {COLUMNAS_FOTOGRAMAS} por fila.")
+    print(f"{salida}: {round(args.segundos * args.fps)} fotogramas desde el segundo {args.desde}, {args.columnas} por fila"
+          + (f", franja de arriba {args.alto:.0%}." if args.alto < 1 else "."))
     return 0
 
 
@@ -452,6 +505,14 @@ def main() -> int:
         return done.returncode
 
     if args.orden in ("instalar", "cartas", "pantallas", "grabar"):
+        if not args.ya:
+            tag = conf["android"].get("etiqueta_log") or conf["proyecto"]["nombre"]
+            ahora = run([adb, "-s", serial, "shell", "date", "+%m-%d %H:%M:%S"]).stdout.strip()
+            jugando = autor_jugando(run(logcat_command(adb, serial, tag)).stdout.splitlines(), ahora)
+            if jugando:
+                print(f"AVISO: el autor jugo en el Redmi hace menos de {AUTOR_RECIENTE_S // 60} min ({jugando.strip()[:40]}); "
+                      "instalar o abrir la app le cierra la partida. Preguntale antes; con --ya sigue (M-112).")
+                return 1
         env = gradle_env(conf) | {"ANDROID_SERIAL": serial}
         done = run(["./gradlew", "--console=plain", "-q", ":app:installDebug"], cwd=root, env=env)
         if done.returncode != 0:

@@ -71,6 +71,35 @@ class TestTelefono(unittest.TestCase):
         # 22 fotogramas de 180 x 400 en 8 columnas: 3 filas.
         self.assertEqual(hoja_arte.rejilla(22, 8, 180, 400), (8 * 188 - 8, 3 * 408 - 8))
         self.assertEqual(hoja_arte.rejilla(3, 8, 180, 400), (3 * 188 - 8, 400))
+    def test_grabar_empieza_a_grabar_antes_de_abrir(self):
+        grabacion, abrir = telefono.grabar_ordenes("adb", "S", "pkg/.A", "jugadores=2", 14.2, "/sdcard/v.mp4")
+        self.assertIn("screenrecord", grabacion)
+        self.assertEqual(grabacion[grabacion.index("--time-limit") + 1], "15")  # hacia arriba (M-114)
+        self.assertEqual(abrir[4:7], ["am", "start", "-S"])
+
+    def test_segundos_con_decimales(self):
+        args = telefono.build_parser().parse_args(["fotogramas", "v.mp4", "--segundos", "1.5"])
+        self.assertEqual(args.segundos, 1.5)
+        self.assertFalse(args.ya)
+
+    def test_autor_jugando_por_la_partida_guardada(self):
+        lines = [
+            "10-08 01:56:44.950 I/Mono    (21127): MainActivity creada: CLASSIC, 2 jugadores, semilla 7",
+            "10-08 02:03:50.404 I/Mono    (22478): guardada: turno 0, Roll",
+            "10-08 02:04:10.000 I/Mono    (22478): turno 0 · xd: Roll -> []",
+        ]
+        self.assertIn("02:03:50", telefono.autor_jugando(lines, "10-08 02:05:00"))
+        self.assertIsNone(telefono.autor_jugando(lines, "10-08 02:07:00"))  # hace mas de 3 min
+        self.assertIsNone(telefono.autor_jugando(lines[:1], "10-08 02:05:00"))  # solo partidas de extras
+        self.assertIsNone(telefono.autor_jugando(lines, ""))
+
+    def test_fotogramas_franja_de_arriba_y_mas_grandes(self):
+        argv = " ".join(telefono.tramo_command(Path("/ff"), Path("v.mp4"), 4, 2, 4, Path("h.png"), alto=0.3, columnas=2))
+        self.assertIn("fps=4,crop=iw:ih*0.3:0:0,scale=1080:-1,tile=2x4", argv)
+        self.assertNotIn("crop", " ".join(telefono.tramo_command(Path("/ff"), Path("v.mp4"), 4, 2, 4, Path("h.png"))))
+        with self.assertRaises(ValueError):
+            telefono.tramo_command(Path("/ff"), Path("v.mp4"), 0, 1, 4, Path("h.png"), alto=0)
+
     def test_fotogramas_de_un_tramo_con_ffmpeg(self):
         # M-107: 3 s a 8 por segundo son 24 fotogramas, 3 filas de 8.
         argv = telefono.tramo_command(Path("/ff"), Path("v.mp4"), 12.5, 3, 8, Path("h.png"))
