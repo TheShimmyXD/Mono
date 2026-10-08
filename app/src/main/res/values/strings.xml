@@ -68,10 +68,10 @@
 
     <!-- Nombres hasta que exista el menú de nueva partida (F3.5). -->
     <string-array name="default_names">
-        <item>Ana</item>
-        <item>Beto</item>
-        <item>Caro</item>
-        <item>Dani</item>
+        <item>Andrés</item>
+        <item>Santi</item>
+        <item>Gabi</item>
+        <item>Ximena</item>
         <item>Eva</item>
         <item>Fede</item>
     </string-array>

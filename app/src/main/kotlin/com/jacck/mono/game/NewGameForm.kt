@@ -11,7 +11,7 @@ const val DEFAULT_PLAYERS = 2
 
 /**
  * Los nombres con que empieza la partida (F3.5, D-25): sin espacios en los bordes y, si la casilla
- * quedó vacía, el nombre de muestra de esa posición (Ana, Beto…). `typed` y `defaults` van en el
+ * quedó vacía, el nombre de muestra de esa posición (Andrés, Santi…). `typed` y `defaults` van en el
  * mismo orden; se toman los `count` primeros. Los de la máquina (`bots`) se llaman `botName(k)`,
  * con k = 1, 2… en el orden de la mesa, sin importar lo escrito (D-57).
  */

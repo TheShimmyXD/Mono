@@ -27,7 +27,7 @@ sealed interface BarTitle {
     data class Machine(val player: Int) : BarTitle
     /** «Botty 2 jugó»: la máquina espera «Seguir». */
     data class MachinePlayed(val player: Int) : BarTitle
-    /** «Esperando a Beto»: decide el otro teléfono. */
+    /** «Esperando a Santi»: decide el otro teléfono. */
     data class Waiting(val player: Int) : BarTitle
 }
 

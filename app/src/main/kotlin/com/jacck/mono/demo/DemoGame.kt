@@ -74,7 +74,7 @@ private fun resized(base: GameConfig, n: Int): GameConfig {
     return base.copy(squares = squares)
 }
 
-private val names = listOf("Ana", "Beto", "Caro", "Dani", "Eva", "Fede")
+private val names = listOf("Andrés", "Santi", "Gabi", "Ximena", "Eva", "Fede")
 
 /** Estado inicial del motor con fichas, dueños, casas, un hotel y una hipoteca puestos a mano. */
 private fun demoState(config: GameConfig, players: Int): GameState {
