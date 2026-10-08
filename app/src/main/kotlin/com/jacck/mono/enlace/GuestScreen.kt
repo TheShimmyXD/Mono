@@ -179,7 +179,7 @@ private fun JoinLink() {
             found.forEach { info -> BotonChiva(info.serviceName, { pick(info) }, principal = false) }
             Text(stringResource(R.string.join_by_address), fontSize = 14.sp, color = Chiva.Tinta.copy(alpha = 0.7f))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                OutlinedTextField(typed, { typed = it.take(21) }, placeholder = { Text("10.0.1.192:46199") }, singleLine = true, modifier = Modifier.weight(1f))
+                OutlinedTextField(typed, { typed = it.take(21) }, placeholder = { Text(stringResource(R.string.join_example), color = Chiva.Tinta.copy(alpha = 0.4f)) }, singleLine = true, modifier = Modifier.weight(1f))
                 val address = parseAddress(typed)
                 BotonChiva(stringResource(R.string.join_connect), { address?.let { (ip, port) -> connect(ip, ip, port) } }, Modifier.weight(0.6f), enabled = address != null)
             }

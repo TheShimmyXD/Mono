@@ -332,11 +332,12 @@
     <string name="host_cuts">Cortes hasta ahora: %1$d</string>
     <string name="host_note">Deja esta pantalla abierta: HyperOS corta la red de las apps en segundo plano.</string>
     <string name="host_cancel">Cancelar</string>
-    <string name="join_title">Unirme por Bluetooth</string>
+    <string name="join_title">Unirme a una partida</string>
     <string name="join_choose">¿A qué sala te unes?</string>
     <string name="join_searching">Buscando salas en esta red… (tu amigo debe tener la sala abierta y estar en el mismo Wi-Fi o punto de acceso)</string>
     <string name="join_by_address">¿No sale? Escribe la dirección que muestra su sala:</string>
     <string name="join_connect">Unirme</string>
+    <string name="join_example">p. ej. 192.168.1.5:40000</string>
     <string name="join_connecting">Conectando con %1$s…</string>
     <string name="join_mine">En este teléfono juega: %1$s</string>
     <string name="join_closed">Se cortó con %1$s (%2$s).</string>
