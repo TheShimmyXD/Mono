@@ -495,7 +495,7 @@
 - **Decisión:** con alguno en «Otro teléfono», «Empezar» pasa a «Esperar al otro teléfono» y abre la sala (`enlace/HostScreen.kt`): crea la partida con `Engine.newGame`, la pone en un `Host` con esos asientos (D-46) y la atiende por RFCOMM (`RfcommServer`, `hostLoop`). Hace falta al menos uno «Aquí». La sala no deja apagar la pantalla (`keepScreenOn`): HyperOS corta el Bluetooth en segundo plano. El permiso y el encendido del Bluetooth van en `BluetoothGate`, que comparte con la prueba del eco. Para probar sin tocar la pantalla: `--es enlace sala` (Clásico, el último de `jugadores` allá). En el PC, `pc/invitado.py` hace de invitado (`hello`, y cada 10 s `resync` con la partida entera para medir).
 - **Cómo se revierte:** quitar el interruptor del menú; la sala y el bucle no tocan el motor.
 - **Transporte:** la sala pasó de RFCOMM a la red local (D-48); el menú, `hostLoop` y `guestLoop` no cambian.
-- **Estado:** propuesta (F5.3 sin aprobar).
+- **Estado:** vigente (aprobada por el autor, 2026-10-07).
 
 ### D-48 · Transporte de la partida: la red local (Wi-Fi o punto de acceso), TCP y anuncio NSD; el Bluetooth queda de prueba
 
@@ -504,6 +504,7 @@
 - **Del autor (2026-10-07):** la red local. Los dos en el mismo Wi-Fi o, si no hay, el anfitrión enciende su punto de acceso y el invitado se conecta (funciona sin internet). Dos teléfonos solo con datos móviles no se ven.
 - **Decisión:** la sala abre un `ServerSocket` en un puerto libre y lo anuncia por NSD (mDNS) como `_mono._tcp` con el nombre del teléfono (`enlace/LanServer.kt`); muestra además su dirección (`En la red: 10.0.1.192:46199`) por si la búsqueda falla. `LanGate` espera a tener una IPv4 local (descarta datos móviles `ccmni`/`rmnet`, VPN y bucle; `lanAddresses`, probada con las interfaces reales del Redmi) y pide `ACCESS_LOCAL_NETWORK` solo desde Android 17 (API 37): con `targetSdk 37` hace falta para hablar con la red local y anunciar por NSD lo exige siempre (`NsdManager.java` del SDK 37, líneas 129-130 y 362). El Redmi es Android 16 (SDK 36): no lo pide. `pc/invitado.py` busca la sala con `avahi-browse -rpt _mono._tcp` (o `--ip`/`--puerto`; `--bt` para el Bluetooth).
 - **Medido (Redmi y PC en el mismo Wi-Fi, 1 min):** el PC encontró la sala solo (8,4 s con la búsqueda); 6/6 pedidos de la partida entera, ida y vuelta mediana 34 ms (mín 25, máx 58) frente a 539 ms por Bluetooth (10 min, D-45).
-- **Por medir:** la prueba de 10 min por Wi-Fi; la sala con el punto de acceso del Redmi encendido (que el anuncio NSD salga por esa interfaz).
+- **Medido (10 min por Wi-Fi):** 10,0 min sin cortes, 59/59 pedidos bien, ida y vuelta mediana 49 ms (mín 18, un pico de 3737 ms en el minuto 9).
+- **Por medir (F5.4):** la sala con el punto de acceso del Redmi encendido (que el anuncio NSD salga por esa interfaz).
 - **Cómo se revierte:** `HostLink` vuelve a crear `RfcommServer` en vez de `LanServer` (los dos dan los mismos `LinkEvent`).
-- **Estado:** propuesta (F5.3 sin aprobar).
+- **Estado:** vigente (aprobada por el autor, 2026-10-07).
