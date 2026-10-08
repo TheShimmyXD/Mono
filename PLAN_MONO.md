@@ -218,7 +218,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 *Pedida por el autor el 2026-10-08 (D-73): antes del hito F5.6, dejar el proyecto listo para subirlo a GitHub. Va después de F5.5 y F5.10 (D-75); F5.6 espera a que FE cierre (al cerrarla se quita «FE» de su espera). Nada se publica sin la orden del autor (regla 3).*
 
-- [ ] **FE.1** Datos sensibles: barrido de lo versionado y del historial de Git (correo, nombres reales, rutas absolutas, serial del Redmi, IP de la red local, `local.properties`, firma) y lista de qué sube (`Agente_Mono/`, `.claude/`, `REGLAS.md`, arte y letras con su licencia). *Terminado:* 0 hallazgos en lo versionado y en el historial (o el historial reescrito con el visto bueno del autor) y la lista aprobada por el autor.
+- [x] **FE.1** Datos sensibles: barrido de lo versionado y del historial de Git (correo, nombres reales, rutas absolutas, serial del Redmi, IP de la red local, `local.properties`, firma) y lista de qué sube (`Agente_Mono/`, `.claude/`, `REGLAS.md`, arte y letras con su licencia). *Terminado:* 0 hallazgos en lo versionado y en el historial (o el historial reescrito con el visto bueno del autor) y la lista aprobada por el autor.
 - [ ] **FE.2** Optimización del código: código muerto, avisos del compilador y archivos de más de 400 líneas divididos (`GameScreen.kt`). *Terminado:* 0 avisos de nuestro código, pruebas en verde y las mismas capturas antes y después.
 - [ ] **FE.3** README: qué es, capturas, cómo compilar e instalar, cómo jugar, reglas configurables, estructura, créditos y licencia (la elige el autor). *Terminado:* el autor lo aprueba leído.
 - [ ] **FE.4** Repositorio en GitHub y primer push, solo cuando el autor lo ordene (privado o público, lo decide él). *Terminado:* el autor lo ve en GitHub.
@@ -266,7 +266,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - **Reglamentos:** «tienes los dos en mi carpeta de Descargas» → `Monopoly(Spanish).pdf` y `tio_rico.pdf` (escaneos; H4).
 - **P1** Jugadores: 2-6 en el motor (D-05); 2-4 en la app (D-57).
 - **P2** Tablero: anillo de N casillas (D-05; el rango exacto de N sale de F1.4).
-- **P3** ¿Se publicará algún día? → **resuelta para los presets** (2026-10-06): nombres propios, sin los de terceros (D-18).
+- **P3** ¿Se publicará algún día? → **resuelta para los presets** (2026-10-06): nombres propios, sin los de terceros (D-18); el paquete `com.jacck.mono` se queda (2026-10-08, D-77).
 - **P4** Segundo Android: no hay → el Bluetooth se prueba con el teléfono de un amigo, y el protocolo, en la JVM.
 - **P5** Kotlin y Android: los conoce poco → el agente explica sus decisiones al tomarlas.
 - **P6** Nombre visible de la app en el teléfono → **pendiente** («Mono» mientras tanto).
