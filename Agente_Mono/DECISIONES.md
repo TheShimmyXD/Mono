@@ -702,3 +702,10 @@
 - **Del autor, tras probarla:** las casillas sin cifras (Arca Comunal) conservaban el hueco y la franja de cierre de la carta en diálogo; ahora terminan en la franja del arte (`80d559b`, `capturas/fd6_cartas.png`).
 - **Cómo se revierte:** `git revert` del commit de FD.6: vuelven la carta en diálogo, la tarjeta, la hoja y el final en ventana.
 - **Estado:** vigente (aprobada por el autor, 2026-10-08, con su grabación `capturas/fd6_deslizar.mp4`: 7 casillas y un jugador deslizados, de 243 a 258 ms).
+
+### D-73 · FE: limpieza de datos sensibles, optimización y README antes del hito «Enlace»
+
+- **Del autor (2026-10-08):** «en el plan, añade un paso entre f5 y f6 que sea de limpieza de datos sensibles y optimizacion del codigo, redaccion de un buen readme para poder subir el proyecto a github». Como no hay F6, se le propusieron 4 casillas y tres lugares; eligió **antes del hito F5.6** (la recomendada era después de F5).
+- **Decisión:** fase FE (letra, sin renumerar, D-27) con FE.1 datos sensibles (lo versionado y el historial), FE.2 optimización, FE.3 README y FE.4 GitHub (solo con su orden, regla 3). Va en su propia sección tras F5; F5.6 lleva «*(Espera a FE)*» para que `tablero.py` la salte hasta cerrar FE. Orden: F5.5 → FE.1-FE.4 → F5.6.
+- **Cómo se revierte:** se quita la sección FE y la marca de F5.6.
+- **Estado:** vigente.
