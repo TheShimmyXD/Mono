@@ -87,7 +87,7 @@ sealed interface Action {
         val giveJailCards: Int = 0,
     ) : Action
 
-    /** Declararse en quiebra, si ni vendiendo ni hipotecando alcanza (R-34, R-35). */
+    /** Declararse en quiebra: el deudor, o quien juega en su turno, cuando quiera (R-34, R-35, D-56). */
     @Serializable
     @SerialName("declareBankruptcy")
     data object DeclareBankruptcy : Action

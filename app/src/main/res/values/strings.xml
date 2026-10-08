@@ -109,6 +109,12 @@
     <string name="debt_mortgage">Hipotecar %1$s (+%2$s)</string>
     <string name="debt_sell">Vender un edificio de %1$s</string>
     <string name="bankruptcy">Declararse en quiebra</string>
+    <string name="bankruptcy_me">Declararme en quiebra</string>
+    <string name="bankruptcy_sure">¿Seguro que %1$s se declara en quiebra?</string>
+    <string name="bankruptcy_to_bank">Sale de la partida: sus casas vuelven al Banco, sus propiedades se subastan entre los demás y su dinero se pierde.</string>
+    <string name="bankruptcy_to_player">Sale de la partida: todo lo suyo pasa a %1$s.</string>
+    <string name="bankruptcy_yes">Sí, me declaro en quiebra</string>
+    <string name="bankruptcy_no">No, sigo jugando</string>
     <string name="game_over">Fin de la partida</string>
     <string name="winners">Gana %1$s.</string>
     <string name="new_game">Otra partida</string>

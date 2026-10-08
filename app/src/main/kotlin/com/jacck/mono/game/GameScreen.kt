@@ -70,7 +70,9 @@ import com.jacck.mono.engine.model.Utility
  * propiedades de quien juega se manejan en una hoja que sube desde abajo (F3.4, D-24).
  */
 @Composable
-fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: Int? = null, newSeed: () -> Long) {
+fun GameScreen(
+    vm: GameViewModel, openProperties: Boolean = false, openSquare: Int? = null, askBankruptcy: Boolean = false, newSeed: () -> Long,
+) {
     val state = vm.state
     var showProperties by remember { mutableStateOf(openProperties) }
     var shownSquare by remember { mutableStateOf(openSquare) }
@@ -85,7 +87,7 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
         return
     }
     if (showProperties && vm.waitingFor == null && vm.machineTurn == null && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
-        PropertiesSheet(vm) { showProperties = false }
+        PropertiesSheet(vm, askBankruptcy) { showProperties = false }
         return
     }
     val lines = vm.notices.mapNotNull { eventLine(it, vm.config, state) }
@@ -100,7 +102,7 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
         is TurnPhase.Buy -> BuyDialog(vm, phase.square)
         is TurnPhase.Auction -> AuctionDialog(vm, phase)
         is TurnPhase.TaxChoice -> TaxDialog(vm, phase.square)
-        is TurnPhase.Debt -> DebtDialog(vm, phase)
+        is TurnPhase.Debt -> DebtDialog(vm, phase, askBankruptcy)
         is TurnPhase.Over -> OverDialog(vm, phase.winners) { vm.restart(newSeed()) }
         TurnPhase.EndOfTurn -> Unit
     }
@@ -176,10 +178,15 @@ private fun DiceRow(dice: Dice) {
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun PropertiesSheet(vm: GameViewModel, onClose: () -> Unit) {
+private fun PropertiesSheet(vm: GameViewModel, ask: Boolean, onClose: () -> Unit) {
     val state = vm.state
     val owner = state.current
     val mine = state.holdings.filter { it.value.owner == owner }.toSortedMap()
+    var confirm by remember { mutableStateOf(ask) }
+    if (confirm) {
+        ConfirmBankruptcy(vm, owner, null, onCancel = { confirm = false }) { onClose() }
+        return
+    }
     ModalBottomSheet(
         onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
         containerColor = Chiva.Sol,
@@ -202,6 +209,7 @@ private fun PropertiesSheet(vm: GameViewModel, onClose: () -> Unit) {
             Rejected(vm)
             if (mine.isEmpty()) Text(stringResource(R.string.properties_none), fontSize = 16.sp)
             mine.forEach { (square, holding) -> PropertyRow(vm, square, holding) }
+            BotonChiva(stringResource(R.string.bankruptcy_me), { confirm = true }, principal = false)
         }
     }
 }
@@ -342,10 +350,15 @@ private fun JailDialog(vm: GameViewModel) {
 }
 
 @Composable
-private fun DebtDialog(vm: GameViewModel, debt: TurnPhase.Debt) {
+private fun DebtDialog(vm: GameViewModel, debt: TurnPhase.Debt, ask: Boolean) {
     val state = vm.state
     val debtor = debt.debts.first().debtor
     val player = state.players[debtor]
+    var confirm by remember { mutableStateOf(ask) }
+    if (confirm) {
+        ConfirmBankruptcy(vm, debtor, debt.debts.first().creditor, onCancel = { confirm = false })
+        return
+    }
     DialogoChiva(
         stringResource(R.string.debt_title, player.name, money(player.money)),
         botones = {
@@ -360,11 +373,30 @@ private fun DebtDialog(vm: GameViewModel, debt: TurnPhase.Debt) {
                     )
                 }
             }
-            BotonChiva(stringResource(R.string.bankruptcy), { vm.act(Action.DeclareBankruptcy) })
+            BotonChiva(stringResource(R.string.bankruptcy), { confirm = true })
         },
     ) {
         Text(stringResource(R.string.debt_text), fontSize = 16.sp)
         Rejected(vm)
+    }
+}
+
+/** «¿Seguro?» antes de quebrar (D-56): qué pierde y a quién va lo suyo; con «Sí», `onDone` y la quiebra. */
+@Composable
+private fun ConfirmBankruptcy(vm: GameViewModel, player: Int, creditor: Int?, onCancel: () -> Unit, onDone: () -> Unit = {}) {
+    val players = vm.state.players
+    DialogoChiva(
+        stringResource(R.string.bankruptcy_sure, players[player].name), color = Chiva.Techo,
+        botones = {
+            BotonChiva(stringResource(R.string.bankruptcy_yes), { onDone(); vm.act(Action.DeclareBankruptcy) })
+            BotonChiva(stringResource(R.string.bankruptcy_no), onCancel, principal = false)
+        },
+    ) {
+        Text(
+            if (creditor != null) stringResource(R.string.bankruptcy_to_player, players[creditor].name)
+            else stringResource(R.string.bankruptcy_to_bank),
+            fontSize = 16.sp,
+        )
     }
 }
 

@@ -4,7 +4,6 @@ import com.jacck.mono.engine.model.EndCondition
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.model.Holding
-import com.jacck.mono.engine.model.MortgageValue
 import com.jacck.mono.engine.model.OwnableSquare
 import com.jacck.mono.engine.model.PlayerDebt
 import com.jacck.mono.engine.model.Property
@@ -41,24 +40,27 @@ private fun creditorOf(player: Int, events: List<Event>): PlayerDebt {
 }
 
 /**
- * El primer deudor se declara en quiebra, solo si ni vendiendo edificios ni hipotecando alcanza.
- * Ante un jugador (R-34) o el Banco (R-35); con `SECOND_BANKRUPTCY`, la segunda quiebra entrega
+ * Se declara en quiebra el primer deudor o, sin deuda, quien juega en su turno; cuando quiera,
+ * aunque aún le alcance vendiendo o hipotecando (D-56; R-34 lo pedía). Ante un jugador (R-34) o
+ * el Banco (R-35), también sin deber nada; con `SECOND_BANKRUPTCY`, la segunda quiebra entrega
  * todo entero y termina la partida (R-39). Si quien quiebra es quien juega, pasa el turno.
  */
 internal fun declareBankruptcy(config: GameConfig, state: GameState): Result {
-    val phase = state.phase as? TurnPhase.Debt ?: throw IllegalActionException("no hay deuda: ${state.phase}")
-    val debt = phase.debts.first()
-    val player = debt.debtor
-    if (state.players[player].money + raisable(config, state, player) >= 0) {
-        throw IllegalActionException("aún alcanza vendiendo o hipotecando (R-34)")
+    val phase = state.phase
+    val debts = when (phase) {
+        is TurnPhase.Debt -> phase.debts
+        TurnPhase.Roll, TurnPhase.EndOfTurn, is TurnPhase.Buy, is TurnPhase.TaxChoice -> listOf(PlayerDebt(state.current, null))
+        else -> throw IllegalActionException("no se quiebra ahora: $phase")
     }
+    val debt = debts.first()
+    val player = debt.debtor
     val events = mutableListOf<Event>(Event.Bankrupt(player, debt.creditor))
     val whole = config.rules.endCondition == EndCondition.SECOND_BANKRUPTCY && state.players.any { it.bankrupt }
     val owned = state.holdings.filterValues { it.owner == player }.keys.sorted()
     val standing = state.players.indices.filter { it != player && !state.players[it].bankrupt }
     val over = whole || standing.size == 1
     var after = state
-    var resume = phase.resume
+    var resume = if (phase is TurnPhase.Debt) phase.resume else phase
     // Antes del traspaso: pasar el turno borra `feePaid` (R-34).
     if (!over && player == state.current) {
         after = Engine.passTurn(after, events)
@@ -73,7 +75,7 @@ internal fun declareBankruptcy(config: GameConfig, state: GameState): Result {
         after = startAuction(config, after, owned.first(), events, owned.drop(1), then = resume)
         resume = after.phase
     }
-    val rest = phase.debts.drop(1)
+    val rest = debts.drop(1)
     return Result(after.copy(phase = if (rest.isEmpty()) resume else TurnPhase.Debt(rest, resume)), events)
 }
 
@@ -139,29 +141,6 @@ internal fun buildingsRefund(config: GameConfig, property: Property, holding: Ho
         if (rules.hotelReturnsHouses) total += rules.maxHouses * house
     }
     return total
-}
-
-/**
- * Lo más que `player` puede juntar vendiendo todos sus edificios (si `sellBuildingsToBank`) e
- * hipotecando lo que no lo está (R-30, R-31, R-49). Sin vender y sin `mortgageWithBuildings`,
- * un grupo con edificios no se hipoteca.
- */
-internal fun raisable(config: GameConfig, state: GameState, player: Int): Int {
-    val rules = config.rules
-    return state.holdings.filterValues { it.owner == player && !it.mortgaged }.keys.sumOf { square ->
-        val holding = state.holdings.getValue(square)
-        val sq = config.squares[square] as OwnableSquare
-        val bare = state.copy(holdings = state.holdings + (square to holding.copy(houses = 0, hotel = false)))
-        val built = sq is Property && groupSquares(config, sq.group).any { state.holdings[it].let { h -> h != null && (h.houses > 0 || h.hotel) } }
-        val canMortgage = rules.mortgageValue == MortgageValue.HALF_TOTAL || sq.mortgage != null
-        when {
-            !canMortgage -> if (rules.sellBuildingsToBank && sq is Property) buildingsRefund(config, sq, holding) else 0
-            rules.sellBuildingsToBank && sq is Property -> buildingsRefund(config, sq, holding) + mortgageValue(config, bare, square)
-            rules.mortgageWithBuildings -> mortgageValue(config, state, square)
-            built -> 0
-            else -> mortgageValue(config, state, square)
-        }
-    }
 }
 
 /**

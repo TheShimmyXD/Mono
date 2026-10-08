@@ -52,8 +52,7 @@ class BankruptcyTest {
         assertEquals(-15, owing.players[0].money)
         assertEquals(TurnPhase.Debt(listOf(PlayerDebt(0, 1, 25)), TurnPhase.EndOfTurn), owing.phase)
         assertTrue(Event.InDebt(0, 1) in events)
-        // Hipotecando Rojo 1 junta 30: no puede quebrar, y al hipotecar sale de la deuda.
-        assertThrows<IllegalActionException> { Engine.apply(config, owing, Action.DeclareBankruptcy) }
+        // Hipotecando Rojo 1 junta 30: al hipotecar sale de la deuda (quebrar también puede, D-56).
         assertThrows<IllegalActionException> { Engine.apply(config, owing, Action.EndTurn) }
         val (paid, _) = Engine.apply(config, owing, Action.Mortgage(1))
         assertEquals(15, paid.players[0].money)
@@ -104,6 +103,43 @@ class BankruptcyTest {
         val (won, _) = Engine.apply(config, bid, Action.PassBid(2))
         assertEquals(Holding(1), won.holdings[1])
         assertEquals(3, (won.phase as TurnPhase.Auction).square)
+    }
+
+    @Test
+    fun `D-56 en su turno quiebra cuando quiere - todo al Banco y subasta`() {
+        // Ana, sin deber nada y con $500, antes de tirar.
+        val start = inDebt(config, 3, money = 500, creditor = null, owed = 0, holdings = redHouses)
+        val state = start.copy(phase = TurnPhase.Roll)
+        val (after, events) = Engine.apply(config, state, Action.DeclareBankruptcy)
+        assertTrue(after.players[0].bankrupt)
+        assertEquals(0, after.players[0].money)
+        assertEquals(state.bankHouses + 2, after.bankHouses)
+        assertEquals(TurnPhase.Auction(1, listOf(1, 2), 0, null, queue = listOf(3, 9), then = TurnPhase.Roll), after.phase)
+        assertEquals(listOf(Event.Bankrupt(0, null), Event.TurnPassed(1), Event.AuctionStarted(1, 1)), events)
+        // También después de tirar.
+        val (late, _) = Engine.apply(config, state.copy(phase = TurnPhase.EndOfTurn), Action.DeclareBankruptcy)
+        assertTrue(late.players[0].bankrupt)
+    }
+
+    @Test
+    fun `D-56 en deuda quiebra aunque alcance hipotecando - todo al acreedor`() {
+        // Ana debe 25 a Beto con −15; hipotecando Rojo 1 juntaría 30.
+        val state = inDebt(config, 3, money = -15, creditor = 1, owed = 25, holdings = mapOf(1 to Holding(0)))
+        val (after, events) = Engine.apply(config, state, Action.DeclareBankruptcy)
+        assertEquals(Holding(1), after.holdings[1])
+        assertEquals(1500 - 15, after.players[1].money)
+        assertEquals(listOf(Event.Bankrupt(0, 1), Event.TurnPassed(1)), events)
+    }
+
+    @Test
+    fun `D-56 la quiebra voluntaria con dos jugadores termina la partida y no vale en turno ajeno`() {
+        val state = twoPlayers(config, mapOf(1 to Holding(0)))
+        val (after, events) = Engine.apply(config, state, Action.DeclareBankruptcy)
+        assertEquals(TurnPhase.Over(listOf(1)), after.phase)
+        assertEquals(listOf(Event.Bankrupt(0, null), Event.GameOver(listOf(1))), events)
+        // En la subasta puja cada uno, no es el turno de nadie: no se quiebra.
+        val auction = state.copy(phase = TurnPhase.Auction(1, listOf(0, 1), 0, null))
+        assertThrows<IllegalActionException> { Engine.apply(config, auction, Action.DeclareBankruptcy) }
     }
 
     @Test

@@ -566,3 +566,11 @@
 - **Ojo:** el aviso «Lo que pasó» tapa el letrero «Juega X» casi siempre (la máquina sigue jugando debajo); se juzga en F5.8c.
 - **Cómo se revierte:** se quitan `bots` del `GameViewModel`, del menú y de `SavedGame`, y `Machine.kt`.
 - **Estado:** vigente.
+
+### D-56 · Quiebra voluntaria: en tu turno, cuando quieras, con «¿Seguro?»
+
+- **Del autor (2026-10-07, tras F5.8c):** «que si me da gana pueda declararme en quiebra, eso sí, que haya un mensaje que pregunte si estoy seguro». Eligió: en tu turno, siempre (antes o después de tirar y en una deuda, aunque aún alcance hipotecando); si debes a un jugador, todo a él; si no, al Banco. El pedido de no mostrar «Comprar» sin dinero lo retiró («déjalo como está»).
+- **Decisión:** `declareBankruptcy` vale en `Debt` (el primer deudor) y en `Roll`, `Buy`, `EndOfTurn` y `TaxChoice` (quien juega, sin deuda: ante el Banco); ya no exige que ni vendiendo ni hipotecando alcance (R-34 lo pedía: el reglamento queda en su ficha, el motor sigue al autor). Ante un jugador, lo de R-34; ante el Banco, lo de R-35 (casas al Banco, subasta de lo demás, el dinero se pierde). En una subasta no vale. Se quita `raisable`, que solo servía a ese chequeo. En la app: «Declararme en quiebra» al final de «Mis propiedades» y el botón de la deuda; ambos abren «¿Seguro que X se declara en quiebra?» con a quién va lo suyo, «Sí, me declaro en quiebra» y «No, sigo jugando». Extra de prueba `seguro` (true). La máquina y el simulador solo quiebran cuando ya no pueden vender ni hipotecar (la quiebra va última en su lista).
+- **Medido:** `BankruptcyTest`, 3 pruebas D-56 (en su turno al Banco con subasta; en deuda al acreedor aunque alcance; con dos, termina, y en subasta no vale). Motor 187 pruebas en verde. Capturas: `capturas/d56_quiebra.png` (deuda) y `capturas/d56_seguro.png` (las dos confirmaciones).
+- **Cómo se revierte:** `declareBankruptcy` vuelve a pedir `Debt` y el chequeo de lo que se puede juntar; se quitan el botón de la hoja y `ConfirmBankruptcy`.
+- **Estado:** vigente.
