@@ -60,6 +60,10 @@ actividad = ".MainActivity"
 # etiqueta de Log.* que usa la app: telefono.py log filtra por ella (regla 2)
 etiqueta_log = "Mono"
 
+[herramientas]
+# ffmpeg no está en el PATH: el de imageio-ffmpeg del .venv de vid2aud (el autor, 2026-10-08; M-107)
+ffmpeg = "~/Escritorio/0_Python_Codes/vid2aud/.venv/lib/python3.12/site-packages/imageio_ffmpeg/binaries/ffmpeg-linux-x86_64-v7.0.2"
+
 [fuentes]
 # reglamentos escaneados (sin texto): solo lectura, fuera de Git (regla 3); F0.1 los copia
 # desde ~/Descargas. pagina.py los lee por página o recorte (regla 2).

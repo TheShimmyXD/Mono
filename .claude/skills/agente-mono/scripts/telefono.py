@@ -17,7 +17,11 @@ Desde la raiz del proyecto:
       (instala, abre la app con cada juego de extras -'-' sin extras: el menu-, espera 6 s, captura y une; M-048)
   python3 .claude/skills/agente-mono/scripts/telefono.py grabar maqueta=A --segundos 11 --salida capturas/FC.1_A.mp4
       (instala, abre con esos extras, graba con screenrecord, baja el video y deja al lado <nombre>_hoja.png
-       con hasta 24 fotogramas por GStreamer -no hay ffmpeg ni cv2-; M-099)
+       con hasta 24 fotogramas por GStreamer; M-099). Los extras van en UN argumento, separados por comas
+       (jugadores=2,semilla=7,maquina=0-1). Dice a que hora del telefono empezo el video y, si pasa de 30 MiB,
+       deja <nombre>_envio.mp4 para SendUserFile (ffmpeg de [herramientas] en mono.toml; M-107, M-108)
+  python3 .claude/skills/agente-mono/scripts/telefono.py fotogramas capturas/FD.1.mp4 --desde 12.5 --segundos 3 [--fps 8] --salida <png>
+      (hoja con los fotogramas seguidos de ese tramo, 8 por fila, con ffmpeg; no usa el telefono; M-107)
 Con varios dispositivos se prefiere el fisico (el Redmi); --serie elige uno.
 """
 
@@ -47,6 +51,10 @@ GRABAR_BIT_RATE = "4000000"
 MAX_FOTOGRAMAS = 24
 FOTOGRAMA = (180, 400)
 COLUMNAS_FOTOGRAMAS = 8
+# SendUserFile no sube archivos de mas de 30 MiB: grabar deja una copia mas liviana (M-107).
+ENVIO_MAX_BYTES = 30 * 1024 * 1024
+ENVIO_ANCHO = 720
+TRAMO_ANCHO = 270
 # Extras que la app lee con getLongExtra: van con --el
 LONG_EXTRAS = {"semilla"}
 # Lineas de salida de gradle que se muestran si la instalacion falla.
@@ -81,6 +89,31 @@ def find_config(start: Path) -> Path | None:
 
 def sdk_path(conf: dict) -> Path:
     return Path(conf["android"]["sdk"]).expanduser()
+
+
+def ffmpeg_path(conf: dict) -> Path | None:
+    """El ffmpeg de [herramientas] en mono.toml, o None si no esta configurado o no existe (M-107)."""
+    raw = conf.get("herramientas", {}).get("ffmpeg")
+    path = Path(raw).expanduser() if raw else None
+    return path if path is not None and path.exists() else None
+
+
+def tramo_command(ffmpeg: Path, video: Path, desde: float, segundos: float, fps: int, salida: Path) -> list[str]:
+    """ffmpeg que pone en una sola imagen los fotogramas seguidos de [desde, desde + segundos), 8 por fila."""
+    filas = max(1, -(-round(segundos * fps) // COLUMNAS_FOTOGRAMAS))
+    return [str(ffmpeg), "-v", "error", "-ss", str(desde), "-t", str(segundos), "-i", str(video),
+            "-vf", f"fps={fps},scale={TRAMO_ANCHO}:-1,tile={COLUMNAS_FOTOGRAMAS}x{filas}", "-frames:v", "1", "-y", str(salida)]
+
+
+def envio_command(ffmpeg: Path, video: Path, salida: Path) -> list[str]:
+    """ffmpeg que deja una copia de 720 px de ancho, sin audio, que cabe en SendUserFile."""
+    return [str(ffmpeg), "-v", "error", "-i", str(video), "-vf", f"scale={ENVIO_ANCHO}:-2", "-c:v", "libx264",
+            "-crf", "26", "-an", "-y", str(salida)]
+
+
+def envio_de(video: Path) -> Path:
+    """La copia para enviar va al lado del video: FD.1.mp4 -> FD.1_envio.mp4."""
+    return video.with_name(f"{video.stem}_envio.mp4")
 
 
 def parse_devices(output: str) -> list[str]:
@@ -222,9 +255,11 @@ def pantalla_command(adb: str, serial: str, target: str, item: str) -> list[str]
 def build_parser() -> argparse.ArgumentParser:
     """Opciones propias; lo que va tras `--` lo separa `split_passthrough` antes."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="adb: telefono.py adb -- <argumentos>")
-    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas", "grabar"])
-    parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura; grabar: un juego de extras")
-    parser.add_argument("--segundos", type=int, default=10, help="grabar: duracion del video (screenrecord admite hasta 180)")
+    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas", "grabar", "fotogramas"])
+    parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura; grabar: un juego de extras; fotogramas: el video")
+    parser.add_argument("--segundos", type=int, default=10, help="grabar: duracion del video (screenrecord admite hasta 180); fotogramas: largo del tramo")
+    parser.add_argument("--desde", type=float, default=0.0, help="fotogramas: segundo del video donde empieza el tramo")
+    parser.add_argument("--fps", type=int, default=8, help="fotogramas: fotogramas por segundo del tramo")
     parser.add_argument("--tio-rico", action="store_true", help="cartas: preset Tio Rico (si no, el Clasico)")
     parser.add_argument("--serie")
     parser.add_argument("--salida", type=Path)
@@ -317,6 +352,7 @@ def grabar(args, root: Path, adb: str, serial: str, target: str | None) -> int:
         print("Pantalla apagada: pide al autor que desbloquee el Redmi. Sin video.")
         return 1
     remoto = "/sdcard/mono_grabar.mp4"
+    inicio = run([adb, "-s", serial, "shell", "date", "+%H:%M:%S"]).stdout.strip()
     run([adb, "-s", serial, "shell", "screenrecord", "--time-limit", str(args.segundos), "--bit-rate", GRABAR_BIT_RATE, remoto])
     video = args.salida if args.salida.is_absolute() else root / args.salida
     video.parent.mkdir(parents=True, exist_ok=True)
@@ -336,7 +372,33 @@ def grabar(args, root: Path, adb: str, serial: str, target: str | None) -> int:
     done = run([str(venv), str(hoja), "--unir", str(carpeta), "--salida", str(hoja_de(video)),
                 "--columnas", str(COLUMNAS_FOTOGRAMAS)], cwd=root)
     print(f"{video} ({video.stat().st_size // 1024} KB, {args.segundos} s, {serial}). " + (done.stdout + done.stderr).strip())
+    print(f"El video empieza a las {inicio} (hora del telefono): una linea del log a las T esta en el segundo T - {inicio} (M-108).")
+    ffmpeg = ffmpeg_path(args.conf)
+    if video.stat().st_size > ENVIO_MAX_BYTES:
+        if ffmpeg is None:
+            print("Pasa de 30 MiB y no hay ffmpeg en [herramientas] de mono.toml: no cabe en SendUserFile.")
+        elif run(envio_command(ffmpeg, video, envio_de(video))).returncode == 0:
+            print(f"Para SendUserFile: {envio_de(video)} ({envio_de(video).stat().st_size // 1024} KB).")
     return done.returncode
+
+
+def fotogramas(args, root: Path) -> int:
+    """Hoja con los fotogramas seguidos de un tramo del video (M-107): para ver una animacion corta."""
+    ffmpeg = ffmpeg_path(args.conf)
+    if len(args.objetivos) != 1 or args.salida is None or ffmpeg is None:
+        print("Uso: telefono.py fotogramas <video.mp4> --desde S --segundos N [--fps 8] --salida <png>"
+              + ("" if ffmpeg else "  (falta [herramientas] ffmpeg en mono.toml)"))
+        return 1
+    video = Path(args.objetivos[0])
+    video = video if video.is_absolute() else root / video
+    salida = args.salida if args.salida.is_absolute() else root / args.salida
+    salida.parent.mkdir(parents=True, exist_ok=True)
+    done = run(tramo_command(ffmpeg, video, args.desde, args.segundos, args.fps, salida))
+    if done.returncode != 0:
+        print("ffmpeg: FALLA " + (done.stdout + done.stderr).strip()[-300:])
+        return 1
+    print(f"{salida}: {round(args.segundos * args.fps)} fotogramas desde el segundo {args.desde}, {COLUMNAS_FOTOGRAMAS} por fila.")
+    return 0
 
 
 def main() -> int:
@@ -349,7 +411,13 @@ def main() -> int:
         print("No se encontro mono.toml hacia arriba de la carpeta actual.")
         return 1
     root, conf = cfg.parent, tomllib.loads(cfg.read_text(encoding="utf-8"))
+    args.conf = conf
     adb = str(sdk_path(conf) / "platform-tools" / "adb")
+    if args.orden == "fotogramas":
+        return fotogramas(args, root)
+    if args.orden == "grabar" and len(args.objetivos) > 1:  # antes de instalar: no toca el telefono
+        print("Los extras van en un solo argumento, separados por comas: grabar jugadores=2,semilla=7,maquina=0-1 (M-108).")
+        return 1
 
     if args.orden == "emulador":
         emulator = sdk_path(conf) / "emulator" / "emulator"

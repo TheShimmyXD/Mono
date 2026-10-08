@@ -148,6 +148,14 @@ class TestSenales(unittest.TestCase):
         ]
         self.assertEqual(senales.code_before_style(events, ["src/"]), [1])
 
+    def test_author_complaints_catch_si_que_hay(self):
+        # M-109: «si que hay ffmpeg busca en la carpeta del vid2aud» corregía un «no hay ffmpeg».
+        events = [
+            {"n": 1, "tipo": "AUTOR", "texto": "si que hay ffmpeg busca en la carpeta del vid2aud"},
+            {"n": 2, "tipo": "AUTOR", "texto": "busca en la carpeta de capturas"},
+        ]
+        self.assertEqual([1], senales.author_complaints(events))
+
     def test_audit_uses_prefix_and_skips_python_checks_for_documents(self):
         data = {
             "eventos": [

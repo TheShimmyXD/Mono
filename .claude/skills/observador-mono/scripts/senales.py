@@ -43,7 +43,7 @@ CLOSING = ("cierre_paso.py",)
 CHECKS = ("ruff", "pytest", "check_structure.py", "check_secrets.py")
 COMPLAINTS = re.compile(
     r"(?i)\b(no era|no es as[ií]|est[aá] mal|otra vez|te dije|no funciona|no sirve|"
-    r"no quiero|por qu[eé] hiciste|deshaz|equivocad)"
+    r"no quiero|por qu[eé] hiciste|deshaz|equivocad|s[ií] que (hay|existe|se puede|est[aá]|tiene))"
 )
 SELF_FIXES = re.compile(
     r"(?i)\b(corrijo|me equivoqu[eé]|en realidad no|no dice|error m[ií]o|lo arreglo|"

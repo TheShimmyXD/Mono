@@ -71,6 +71,19 @@ class TestTelefono(unittest.TestCase):
         # 22 fotogramas de 180 x 400 en 8 columnas: 3 filas.
         self.assertEqual(hoja_arte.rejilla(22, 8, 180, 400), (8 * 188 - 8, 3 * 408 - 8))
         self.assertEqual(hoja_arte.rejilla(3, 8, 180, 400), (3 * 188 - 8, 400))
+    def test_fotogramas_de_un_tramo_con_ffmpeg(self):
+        # M-107: 3 s a 8 por segundo son 24 fotogramas, 3 filas de 8.
+        argv = telefono.tramo_command(Path("/ff"), Path("v.mp4"), 12.5, 3, 8, Path("h.png"))
+        self.assertEqual(argv[argv.index("-ss") + 1], "12.5")
+        self.assertIn("fps=8,scale=270:-1,tile=8x3", argv)
+        self.assertIn("tile=8x1", " ".join(telefono.tramo_command(Path("/ff"), Path("v.mp4"), 0, 1, 5, Path("h.png"))))
+
+    def test_copia_para_enviar(self):
+        self.assertEqual(telefono.envio_de(Path("capturas/fd1.mp4")), Path("capturas/fd1_envio.mp4"))
+        self.assertIn("scale=720:-2", telefono.envio_command(Path("/ff"), Path("a.mp4"), Path("b.mp4")))
+        self.assertIsNone(telefono.ffmpeg_path({}))
+        self.assertIsNone(telefono.ffmpeg_path({"herramientas": {"ffmpeg": "/no/existe/ffmpeg"}}))
+
     def test_parse_devices_only_ready(self):
         out = (
             "List of devices attached\n"

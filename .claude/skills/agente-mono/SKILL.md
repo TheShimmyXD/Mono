@@ -23,7 +23,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 | `scripts/tablero.py` | Cuenta las casillas y dice el siguiente paso (`--tasks N`). |
 | `scripts/cierre_paso.py` | Pruebas del motor y la app, compilación, arte, tope de ESTADO y fichas R-## en una orden; sale 1 si algo falla. |
 | `scripts/pagina.py` | Reglamento a PNG por página o recorte (`reglas.md`); nunca el PDF entero. |
-| `scripts/telefono.py` | `dispositivos`, `instalar`, `captura --salida`, `log -n 60`, `cartas <casilla>… --salida`, `pantallas <extras>… --salida`, `emulador`, `adb -- <args>` (`adb` no está en el PATH). |
+| `scripts/telefono.py` | El Redmi por adb (no está en el PATH): instalar, capturas, grabaciones, fotogramas, log; órdenes en `interfaz.md` §2. |
 
 ## Arranque
 
@@ -44,7 +44,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 
 - **Pasos de 30-45 min** con **punto de control** al terminar cada uno: primero la pregunta (AskUserQuestion: Aprobar / Con un cambio / Todavía no) y, solo con «Aprobar» y el *Terminado* cumplido, la casilla `[x]` y el contador de ESTADO (otro pedido sin aprobar = sin `[x]`, a «Pendiente del autor»), ESTADO al día (fase y contador, lo hecho con su ruta, siguiente paso) y dentro de su tope. Una tarea sin *Terminado*: propón uno medible como pregunta cerrada.
 - **Primero el motor; cada regla, su prueba** (`motor.md` §4): una prueba JUnit por R-## con el ID en el nombre y dados fijados, en `engine/src/test`. No se escribe interfaz para algo que el motor no resuelva ya, probado. `engine` no importa Android ni usa azar sin semilla (D-02, D-03). Más de ~6 R-## van en sub-pasos (`motor.md` §4).
-- **Interfaz:** 2-3 opciones con captura antes de una pantalla nueva; después de cambiarla, `telefono.py pantallas <extras>… --salida` antes de mostrarla (`interfaz.md`); la que solo sale con el enlace, con la receta de `enlace.md` §3. **Sin emojis en la app** (K18): tampoco en `strings.xml`, logs ni comentarios; en su lugar, un ícono de `arte.py` (`arte.md` §1); el cierre falla con uno.
+- **Interfaz:** antes de tocarla o de usar el Redmi, `interfaz.md` (opciones con captura, grabar, el autor con el teléfono); la que solo sale con el enlace, `enlace.md` §3. **Sin emojis en la app** (K18), tampoco en `strings.xml`, logs ni comentarios: un ícono de `arte.py` (`arte.md` §1).
 - **Cierre de cada paso:** `python3 .claude/skills/agente-mono/scripts/cierre_paso.py` (pruebas del motor y de la app, `assembleDebug`, tope de ESTADO; su salida se lee entera, sin `| tail`, que tapa los AVISO y el código de salida) y un commit local, antes del punto de control (ESTADO, SESIONES, trazas, `capturas/` y `fuentes/` están fuera de Git a propósito: el commit lleva el plan, el código, `REGLAS.md` y `DECISIONES.md`). Una dependencia nueva va a `gradle/libs.versions.toml` en el mismo commit y a ESTADO con su versión.
 - **Cada cifra se mide.** Lo que se afirma (también en una D-##, un comentario del código o el chat) lleva el número real de una corrida, un `grep -c` o una fuente; lo que juzga el autor (calidad, estética) no lo declaras tú.
 - **Decisiones:** toda elección no trivial va como ficha D-## en el mismo paso. Un cambio de pila o de enfoque se consulta antes, y la misma pregunta lleva las líneas del plan que cambia (casillas, *Terminado*): sin su respuesta no se tocan (M-081).
