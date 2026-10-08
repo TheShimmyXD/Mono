@@ -113,25 +113,51 @@ def written_paths(event: dict) -> list[str]:
 RX_BASH_WRITE = re.compile(r"write_text|sed -i|>>?\s*\S")
 
 
+RX_CD = re.compile(r"^\s*cd\s+(\S+)\s*&&")
+RX_CAT = re.compile(r"\bcat\s+([^|;&<>]+)")
+
+
+def cat_paths(command: str, root: Path) -> list[str]:
+    """Rutas absolutas que lee un `cat` de la orden (relativas al `cd` inicial, o a la raíz), M-124."""
+    m = RX_CD.match(command)
+    base = Path(m.group(1)) if m else root
+    if not base.is_absolute():
+        base = root / base
+    paths = []
+    for args in RX_CAT.findall(command):
+        paths += [str(t if t.is_absolute() else base / t) for t in map(Path, args.split()) if not str(t).startswith("-")]
+    return paths
+
+
+def edited_later(path: str, root: Path, later: list[dict], n: int) -> bool:
+    """La sesión escribe `path` después del evento n (Write, Edit o una escritura desde Bash)."""
+    rel = path[len(str(root)) + 1:] if path.startswith(str(root) + "/") else path
+    return any(
+        path in written_paths(f)
+        or (f.get("herramienta") == "Bash" and rel in (f.get("entrada") or {}).get("command", "")
+            and RX_BASH_WRITE.search((f.get("entrada") or {}).get("command", "")))
+        for f in later if f["n"] > n
+    )
+
+
 def large_results(events: list[dict], root: Path) -> list[int]:
-    """Resultados de más de LARGE car., sin la lectura entera de un archivo que la sesión escribe
-    después (lo permite la economía de contexto: «entero, solo el archivo que vas a editar», M-105)."""
+    """Resultados de más de LARGE car., sin la lectura entera de archivos que la sesión escribe
+    después (lo permite la economía de contexto: «entero, solo el archivo que vas a editar», M-105):
+    un `Read`, o un `cat` desde Bash cuyos archivos se escriben todos después (M-124)."""
     found = []
     later = tools(events)
     for e in later:
         if e.get("chars_resultado", 0) <= LARGE:
             continue
-        path = (e.get("entrada") or {}).get("file_path", "") if e.get("herramienta") == "Read" else ""
-        if path:
-            rel = path[len(str(root)) + 1:] if path.startswith(str(root) + "/") else path
-            edited = any(
-                path in written_paths(f)
-                or (f.get("herramienta") == "Bash" and rel in (f.get("entrada") or {}).get("command", "")
-                    and RX_BASH_WRITE.search((f.get("entrada") or {}).get("command", "")))
-                for f in later if f["n"] > e["n"]
-            )
-            if edited:
-                continue
+        entry = e.get("entrada") or {}
+        if e.get("herramienta") == "Read":
+            paths = [entry.get("file_path", "")] if entry.get("file_path") else []
+        elif e.get("herramienta") == "Bash":
+            paths = cat_paths(entry.get("command", ""), root)
+        else:
+            paths = []
+        if paths and all(edited_later(p, root, later, e["n"]) for p in paths):
+            continue
         found.append(e["n"])
     return found
 

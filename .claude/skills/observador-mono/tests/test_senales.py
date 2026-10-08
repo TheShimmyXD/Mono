@@ -55,6 +55,17 @@ class TestSenales(unittest.TestCase):
         ]
         self.assertEqual(senales.large_results(events, root), [3, 4])
 
+    def test_large_cat_counts_only_if_some_file_is_not_edited_later(self):
+        root = Path("/p")
+        big = lambda e: {**e, "chars_resultado": 9000}
+        events = [
+            big(tool(1, "Bash", command="cd /p/app && cat A.kt B.kt")),
+            big(tool(2, "Bash", command="cat app/A.kt app/C.kt; echo ----")),
+            tool(3, "Write", file_path="/p/app/A.kt"),
+            tool(4, "Bash", command="python3 - <<'EOF'\np = Path(\"app/B.kt\"); p.write_text(s)\nEOF"),
+        ]
+        self.assertEqual(senales.large_results(events, root), [2])
+
     def test_a_call_the_author_rejects_is_not_a_tool_error(self):
         asked = {**tool(80, "AskUserQuestion"), "error": True, "resultado_inicio": senales.REJECTED + " with this tool use."}
         broken = {**tool(95, "Bash", command="python3 x.py"), "error": True, "resultado_inicio": "Exit code 1"}

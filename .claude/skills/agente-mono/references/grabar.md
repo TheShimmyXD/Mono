@@ -8,6 +8,7 @@
 - Los extras van en un argumento con comas (`jugadores=2,semilla=7,maquina=0-1`); listas con `-` o `+`. Si el autor toca algo mientras graba: pregunta cerrada («¿Listo? Al responder abro la app y grabo N s»), con los gestos en orden y cuánto dura, y `grabar` justo tras su respuesta, con `--segundos` ≥ 60. Con un aviso en el chat, el video sale vacío (M-108, M-119).
 - Un video de más de 30 MiB no sube a SendUserFile: va su `<paso>_envio.mp4` (M-107). `ffmpeg` sale de `[herramientas]` en `mono.toml`; sin guiones de `screenrecord`, ffmpeg ni Pillow sueltos (M-099).
 - Si el autor jugó hace menos de 3 min (su partida escribe «guardada: turno» en el log), `instalar`, `pantallas`, `grabar` y `cartas` paran con un AVISO: se le pregunta antes y solo con su permiso se repite con `--ya` (M-112).
+- **Bajo la fila de íconos** (letrero, ventana): el «+$x/−$x» de un pago cuelga ~20 dp bajo el dinero sin ocupar sitio (D-66); lo que va ahí se mira también durante un pago: `grabar 'fase=alquiler,jugadores=2,semilla=7,maquina=0-1,pausa=4000' --segundos 15` y `fotogramas --alto 0.4` (M-117).
 
 ## 2. Que pase lo que se quiere grabar, sin tocar
 
