@@ -1,6 +1,6 @@
 # Grabar una animación en el Redmi
 
-*Se lee antes de `telefono.py grabar` o `fotogramas`: una animación nueva (recorridos, vuelos, pagos) o un video para el autor (M-110).*
+*Se lee antes de escribir un extra `fase` o de `telefono.py grabar` o `fotogramas`: una animación nueva (recorridos, vuelos, pagos) o un video para el autor (M-110, M-116).*
 
 ## 1. Grabar
 

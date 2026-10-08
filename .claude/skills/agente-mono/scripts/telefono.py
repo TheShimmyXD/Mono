@@ -382,6 +382,11 @@ def hoja_de(video: Path) -> Path:
     return video.with_name(f"{video.stem}_hoja.png")
 
 
+def pide_pantalla(orden: str) -> bool:
+    """Las órdenes que abren la app y miran la pantalla: sin ella encendida no se compila ni se instala (M-115)."""
+    return orden in ("pantallas", "grabar", "cartas")
+
+
 def grabar(args, root: Path, adb: str, serial: str, target: str | None) -> int:
     """Graba la app abierta con unos extras y deja el video y su hoja de fotogramas (M-099)."""
     if len(args.objetivos) != 1 or args.salida is None or args.salida.suffix.lower() != ".mp4" or target is None:
@@ -513,6 +518,9 @@ def main() -> int:
                 print(f"AVISO: el autor jugo en el Redmi hace menos de {AUTOR_RECIENTE_S // 60} min ({jugando.strip()[:40]}); "
                       "instalar o abrir la app le cierra la partida. Preguntale antes; con --ya sigue (M-112).")
                 return 1
+        if pide_pantalla(args.orden) and not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
+            print("Pantalla apagada: pide al autor que desbloquee el Redmi. No se instaló nada (M-115).")
+            return 1
         env = gradle_env(conf) | {"ANDROID_SERIAL": serial}
         done = run(["./gradlew", "--console=plain", "-q", ":app:installDebug"], cwd=root, env=env)
         if done.returncode != 0:

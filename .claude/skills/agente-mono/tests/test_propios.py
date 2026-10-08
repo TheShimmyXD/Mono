@@ -82,6 +82,13 @@ class TestTelefono(unittest.TestCase):
         self.assertEqual(args.segundos, 1.5)
         self.assertFalse(args.ya)
 
+    def test_pide_pantalla_antes_de_instalar(self):
+        # M-115: sin la pantalla encendida, estas no compilan ni instalan.
+        for orden in ("pantallas", "grabar", "cartas"):
+            self.assertTrue(telefono.pide_pantalla(orden), orden)
+        for orden in ("instalar", "log", "fotogramas", "captura"):
+            self.assertFalse(telefono.pide_pantalla(orden), orden)
+
     def test_autor_jugando_por_la_partida_guardada(self):
         lines = [
             "10-08 01:56:44.950 I/Mono    (21127): MainActivity creada: CLASSIC, 2 jugadores, semilla 7",

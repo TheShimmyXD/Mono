@@ -32,7 +32,7 @@ Todo se resuelve desde la raíz del proyecto (donde está `mono.toml`). No escri
 2. Corre `python3 .claude/skills/agente-mono/scripts/tablero.py --tasks 1`. Si ESTADO y las casillas no coinciden, corrígelo antes de seguir.
 3. Muestra el tablero, **10 líneas como máximo**: *Dónde vamos* (fase y contador), *Qué ya funciona* (con su comando), *Qué sigue hoy* y, solo si hace falta, *Qué necesito de ti*.
 4. **Empieza a trabajar sin esperar confirmación**, salvo que el paso necesite al autor (F0.4 conectar el Redmi, F1.3 y F1.4 aprobar reglas, F3.1 elegir maqueta, los hitos F4.5 y F5.6) o él pida otra cosa.
-5. Según la fase, lee la referencia que toca; si ya la tienes, no la releas.
+5. **Antes de leer código**, la referencia de la fase (FC, FD: `interfaz.md`; con animación o un extra `fase` nuevo, también `grabar.md`); si ya la tienes, no la releas (M-116).
 
 ## Las tres reglas que no se negocian
 
