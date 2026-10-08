@@ -236,7 +236,8 @@ private fun TurnSign(vm: GameViewModel, bar: TurnBar, enabled: Boolean, onButton
         is BarTitle.Waiting -> Icon.ENLACE
         else -> null
     }
-    Calcomania(Modifier.fillMaxWidth().padding(top = 6.dp)) {
+    // Arriba, el hueco del «+$x/−$x» que cuelga bajo el dinero en un pago (15 sp, D-66): sin él tapa el título.
+    Calcomania(Modifier.fillMaxWidth().padding(top = 26.dp)) {
         Column(Modifier.padding(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 icon?.let { IconImage(it, 22.dp); Spacer(Modifier.width(6.dp)) }
