@@ -63,35 +63,41 @@ fun artKey(name: String): String =
  */
 @Composable
 fun SquareCard(config: GameConfig, state: GameState, square: Int, onClose: () -> Unit) {
+    Dialog(onDismissRequest = onClose) {
+        Card(Modifier.fillMaxWidth().border(3.dp, Ink, RoundedCornerShape(16.dp)), shape = RoundedCornerShape(16.dp)) {
+            SquareFace(config, state, square, Modifier.verticalScroll(rememberScrollState()))
+        }
+    }
+}
+
+/** Lo que lleva la carta de una casilla, sin la ventana que la contiene: franjas, nombre, arte y cifras. */
+@Composable
+fun SquareFace(config: GameConfig, state: GameState, square: Int, modifier: Modifier = Modifier) {
     val sq = config.squares[square]
     val holding = state.holdings[square]
     val group = (sq as? Property)?.let { p -> config.groups.firstOrNull { it.id == p.group } }
     val band = group?.let { Color(android.graphics.Color.parseColor(it.color)) } ?: Ink
-    Dialog(onDismissRequest = onClose) {
-        Card(Modifier.fillMaxWidth().border(3.dp, Ink, RoundedCornerShape(16.dp)), shape = RoundedCornerShape(16.dp)) {
-            Column(Modifier.verticalScroll(rememberScrollState())) {
-                FranjaChiva(8.dp)
-                Box(Modifier.fillMaxWidth().background(band).padding(8.dp), contentAlignment = Alignment.Center) {
-                    Text(sq.name.uppercase(), color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp, textAlign = TextAlign.Center)
-                }
-                val art = ArteLugares[sq.art ?: artKey(sq.name)]
-                val icon = sq.icon()
-                if (art != null) {
-                    Image(painterResource(art), null, Modifier.fillMaxWidth().aspectRatio(200f / 140f), contentScale = ContentScale.FillWidth)
-                } else if (icon != null) {
-                    Box(Modifier.fillMaxWidth().height(120.dp).background(Sky), contentAlignment = Alignment.Center) { IconImage(icon, 88.dp) }
-                }
-                if (art != null || icon != null) FranjaChiva(8.dp)
-                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                    when (sq) {
-                        is OwnableSquare -> OwnableDetails(config, state, square, sq, holding, group?.name)
-                        is Tax -> TaxDetails(sq)
-                        else -> Unit
-                    }
-                }
-                FranjaChiva(8.dp)
+    Column(modifier) {
+        FranjaChiva(8.dp)
+        Box(Modifier.fillMaxWidth().background(band).padding(8.dp), contentAlignment = Alignment.Center) {
+            Text(sq.name.uppercase(), color = Color.White, fontWeight = FontWeight.Black, fontSize = 20.sp, textAlign = TextAlign.Center)
+        }
+        val art = ArteLugares[sq.art ?: artKey(sq.name)]
+        val icon = sq.icon()
+        if (art != null) {
+            Image(painterResource(art), null, Modifier.fillMaxWidth().aspectRatio(200f / 140f), contentScale = ContentScale.FillWidth)
+        } else if (icon != null) {
+            Box(Modifier.fillMaxWidth().height(120.dp).background(Sky), contentAlignment = Alignment.Center) { IconImage(icon, 88.dp) }
+        }
+        if (art != null || icon != null) FranjaChiva(8.dp)
+        Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+            when (sq) {
+                is OwnableSquare -> OwnableDetails(config, state, square, sq, holding, group?.name)
+                is Tax -> TaxDetails(sq)
+                else -> Unit
             }
         }
+        FranjaChiva(8.dp)
     }
 }
 
