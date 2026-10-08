@@ -356,7 +356,6 @@
     <string name="join_connect">Unirme</string>
     <string name="join_example">p. ej. 192.168.1.5:40000</string>
     <string name="join_connecting">Conectando con %1$s…</string>
-    <string name="join_mine">En este teléfono juega: %1$s</string>
     <string name="join_closed">Se cortó con %1$s (%2$s).</string>
     <string name="join_again">Elegir otra vez</string>
     <string name="menu_join">Unirme a la partida de un amigo</string>

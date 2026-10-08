@@ -2,6 +2,7 @@ package com.jacck.mono.engine.link
 
 import com.jacck.mono.engine.Engine
 import com.jacck.mono.engine.Event
+import com.jacck.mono.engine.Result
 import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
@@ -77,9 +78,11 @@ class Host(val config: GameConfig, start: GameState, val guestSeats: Set<Int>) {
 /**
  * El invitado (F5.2, D-46): aplica las acciones del anfitrión en orden. Las que llegan adelantadas
  * esperan en `ahead`; las repetidas se ignoran; si el resumen no cuadra pide la partida entera.
- * Si no llega nada en un rato, la app llama a [timeout].
+ * Si no llega nada en un rato, la app llama a [timeout]. [onApplied] recibe cada acción aplicada con
+ * su número, el estado y los eventos que deja (para animarla, F5.10), y tras un `Snapshot` la partida
+ * entera sin eventos; se llama en el hilo de [receive].
  */
-class Guest(private val name: String) {
+class Guest(private val name: String, private val onApplied: (Int, Result) -> Unit = { _, _ -> }) {
 
     var config: GameConfig? = null
         private set
@@ -109,6 +112,7 @@ class Guest(private val name: String) {
                 config = message.config; state = message.state; seats = message.seats; last = message.last
                 pending = null
                 ahead.headMap(last + 1).clear()
+                onApplied(last, Result(message.state, emptyList()))
             }
             is Applied -> if (message.n > last) {
                 ahead[message.n] = message
@@ -149,15 +153,16 @@ class Guest(private val name: String) {
         val c = config ?: return listOf(Resync(last, full = true))
         while (true) {
             val next = ahead.remove(last + 1) ?: break
-            val after = try { Engine.apply(c, state!!, next.action).state } catch (_: IllegalStateException) { null }
-            if (after == null || digest(after) != next.digest) {
+            val result = try { Engine.apply(c, state!!, next.action) } catch (_: IllegalStateException) { null }
+            if (result == null || digest(result.state) != next.digest) {
                 mismatches++
                 ahead.clear()
                 return listOf(Resync(last, full = true))
             }
-            state = after
+            state = result.state
             last = next.n
             pending = null
+            onApplied(last, result)
         }
         ahead.headMap(last + 1).clear()
         return emptyList()

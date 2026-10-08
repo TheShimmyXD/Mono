@@ -144,6 +144,31 @@ class LinkTest {
     }
 
     @Test
+    fun `F5-10 el invitado avisa cada accion aplicada con los mismos eventos que el anfitrion`() {
+        val state = Engine.newGame(classic, listOf("Ana", "Beto"), 7).state
+        val host = Host(classic, state, setOf(1))
+        val heard = mutableListOf<Pair<Int, com.jacck.mono.engine.Result>>()
+        val guest = Guest("Redmi") { n, result -> heard += n to result }
+        guest.receive(host.snapshot())
+        assertEquals(listOf(0), heard.map { it.first })
+        assertTrue(heard.single().second.events.isEmpty())
+        val random = Random(3)
+        val expected = mutableListOf<List<com.jacck.mono.engine.Event>>()
+        repeat(40) {
+            val action = candidates(classic, host.state, random, 0).first { Engine.tryApply(classic, host.state, it) != null }
+            val applied = if (actor(host.state, action) in host.guestSeats) {
+                host.receive(guest.propose(action)!!).single() as Message.Applied
+            } else host.play(action)
+            expected += host.events
+            guest.receive(applied)
+        }
+        assertEquals((0..40).toList(), heard.map { it.first })
+        assertEquals(expected, heard.drop(1).map { it.second.events })
+        assertEquals(host.state, heard.last().second.state)
+        assertTrue(expected.count { it.isNotEmpty() } >= 30, "${expected.count { it.isNotEmpty() }}")
+    }
+
+    @Test
     fun `F5-2 el invitado solo propone en el turno de los suyos y el anfitrion lo comprueba`() {
         val state = Engine.newGame(classic, listOf("Ana", "Beto"), 7).state
         val guestSeat = 1 - state.current // el invitado tiene al que no empieza

@@ -129,7 +129,11 @@ class GameViewModel(
 
     private fun play(action: Action, byMachine: Boolean) {
         try {
-            val result = remote?.play(action)?.let { (n, r) -> seen = n; r } ?: Engine.apply(config, state, action)
+            val result = if (remote == null) Engine.apply(config, state, action) else {
+                val (n, r) = remote.play(action) ?: return // el invitado: vuelve aplicada por `listen` (F5.10)
+                seen = n
+                r
+            }
             show(action, result, byMachine)
         } catch (e: IllegalActionException) {
             Log.w(LOG_TAG, "rechazada: $action (${e.message})")

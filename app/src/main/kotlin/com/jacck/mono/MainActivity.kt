@@ -51,7 +51,7 @@ const val LOG_TAG = "Mono"
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre en la ventana a quien juega, o a `tarjeta`, con sus propiedades; FD.6); `casilla` (índice) abre en la ventana la carta de esa casilla (FA.3, FD.6); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
  * `deuda`, `fin`; `alquiler` y `carta`, FD.2; `sueldo` y `banco`, FD.3) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
- * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`). Con `maquina` (índices, `--es maquina 1+2`) la partida abre con esos jugadores en manos de la máquina (F5.8b, D-55), y con `seguro` (true), junto a `hoja` o `fase=deuda`, sale ya el «¿Seguro?» de la quiebra (D-56). Con `oculto` (true) abre con el dinero oculto y con `pausa` (ms, `--ei`; 900) la máquina espera eso antes de cada jugada, para que la grabación alcance la primera (FD.2, D-66). La partida del menú se guarda tras cada jugada
+ * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`), que abre el tablero al llegar la partida (F5.10, D-76; con `maquina`, sus jugadores los juega la máquina, y con `direccion`, `ip:puerto`, se conecta solo). Con `maquina` (índices, `--es maquina 1+2`) la partida abre con esos jugadores en manos de la máquina (F5.8b, D-55), y con `seguro` (true), junto a `hoja` o `fase=deuda`, sale ya el «¿Seguro?» de la quiebra (D-56). Con `oculto` (true) abre con el dinero oculto y con `pausa` (ms, `--ei`; 900) la máquina espera eso antes de cada jugada, para que la grabación alcance la primera (FD.2, D-66). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
 /** Extras que abren la partida sin pasar por el menú (pruebas por adb). */
@@ -91,7 +91,9 @@ class MainActivity : ComponentActivity() {
                         // `--es maquina 0`: el jugador de aquí juega solo, para probar el enlace sin nadie al teléfono (F5.5).
                         LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), machineSeats.toSet() - names.lastIndex, seed) { finish() }
                     } else if (link == "unirme") {
-                        GuestScreen { finish() }
+                        // `--es maquina 0` (cualquier índice): los jugadores de este teléfono los juega la máquina, y
+                        // `--es direccion 10.0.0.5:40000` se conecta sin tocar nada (F5.10).
+                        GuestScreen("unirme", machine = intent.hasExtra("maquina"), address = intent.getStringExtra("direccion")) { finish() }
                     } else if (mockup != null) {
                         Maqueta(mockup)
                     } else if (demo != null) {
@@ -130,9 +132,10 @@ class MainActivity : ComponentActivity() {
                         val game = chosen
                         val ed = boards.firstOrNull { it.key == editing }
                         if (joining) {
-                            GuestScreen {
+                            GuestScreen("unirme-$rooms") {
                                 Log.i(LOG_TAG, "unirme: vuelve al menú")
                                 joining = false
+                                rooms++
                             }
                         } else if (game == null && resume == null && ed != null) {
                             val evm = viewModel(key = "editor-${ed.key}-$opened") { EditorViewModel(ed.config)

@@ -160,6 +160,53 @@ class TerminalTest {
         for (seed in 6L..10L) playWithCuts(seed, listOf(30, 90), silent = false).let { (_, returns, cuts) -> assertTrue(cuts > 0); assertEquals(cuts, returns, "semilla $seed") }
     }
 
+    /**
+     * La sala del PC ([hostRoom], F5.10) con el invitado del PC ([guestLink]) por TCP local; con [cutAt],
+     * el invitado pierde su conexión al llegar a esa acción (la cierra la prueba) y vuelve.
+     */
+    private fun roomGame(seed: Long, cutAt: Int? = null): Pair<Int, RoomResult> {
+        val host = Host(short, Engine.newGame(short, listOf("PC", "Invitado"), seed).state, setOf(1))
+        val guest = Guest("Redmi")
+        val server = ServerSocket(0)
+        var room: RoomResult? = null
+        val side = thread { room = hostRoom(host, server, seed + 1, pauseMs = 0, silenceMs = 2_000, giveUpMs = 10_000) }
+        val mine = mutableListOf<Socket>()
+        if (cutAt != null) thread(isDaemon = true) {
+            while (guest.last < cutAt && guest.state?.phase !is TurnPhase.Over) Thread.sleep(1)
+            synchronized(mine) { mine.last().close() }
+        }
+        val (result, returns) = guestLink(
+            guest, seed + 2,
+            connect = {
+                try {
+                    Socket("127.0.0.1", server.localPort).also { synchronized(mine) { mine += it }; it.soTimeout = 300 }
+                        .let { it.getInputStream().bufferedReader(Charsets.UTF_8) to it.getOutputStream().bufferedWriter(Charsets.UTF_8) }
+                } catch (_: IOException) { null }
+            },
+            beatMs = 150, retryMs = 100, giveUpMs = 10_000,
+        )
+        side.join(10_000)
+        synchronized(mine) { mine.forEach(Socket::close) }
+        assertTrue(result.over, "semilla $seed: sin terminar tras ${host.last} acciones (${result.lost ?: result.closed})")
+        assertEquals(true, room?.over, "semilla $seed: $room")
+        assertEquals(0, result.mismatches, "semilla $seed")
+        assertEquals(host.last, guest.last, "semilla $seed")
+        assertEquals(digest(host.state), digest(guest.state!!), "semilla $seed")
+        assertTrue(result.proposals > 0, "semilla $seed: el invitado no jugó")
+        println("sala del PC, semilla $seed: ${host.last} acciones, ${result.proposals} del invitado, $returns reconexiones, ${room?.connections} conexiones")
+        return returns to room!!
+    }
+
+    @Test
+    fun `F5_10 la sala del PC juega con un invitado hasta el final y acaban iguales`() {
+        for (seed in 1L..5L) assertEquals(0, roomGame(seed).first)
+    }
+
+    @Test
+    fun `F5_10 la sala del PC acepta al invitado que vuelve tras un corte`() {
+        for (seed in 6L..10L) roomGame(seed, cutAt = 40).let { (returns, room) -> assertEquals(1, returns, "semilla $seed"); assertEquals(2, room.connections, "semilla $seed") }
+    }
+
     @Test
     fun `F5_4 choose no juega por los asientos del otro lado`() {
         val state = Engine.newGame(short, listOf("Ana", "PC"), 7).state
