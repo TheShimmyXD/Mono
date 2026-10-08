@@ -232,6 +232,15 @@ class TestSenalesMono(unittest.TestCase):
         read = tool(3, "Read", file_path=f"{self.root}/capturas/f5_4b_partida.png")
         self.assertNotIn("K15", self.signals([write, script, read]))
 
+    def test_empty_mockup_skeleton_is_not_ui(self):
+        # M-098: tras la elección, Maquetas.kt vuelve al esqueleto vacío (interfaz.md §1).
+        path = "app/src/main/demo/Maquetas.kt"
+        write = tool(1, "Write", file_path=f"{self.root}/{path}")
+        self.write(path, '@Composable\nfun Maqueta(letra: String) { Text("Sin maqueta en diseño ($letra)") }\n')
+        self.assertNotIn("K15", self.signals([write]))
+        self.write(path, '@Composable\nfun Maqueta(letra: String) { when (letra) { "A" -> PanelA() } }\n')
+        self.assertIn("K15", self.signals([write]))
+
     def test_messages_in_english(self):
         # M-051: desde #76 de dfceab09 los mensajes al autor salieron en inglés.
         es = {"n": 1, "tipo": "CLAUDE", "texto": "Ya lo tengo: el lienzo es propio y la salida va en SVG."}

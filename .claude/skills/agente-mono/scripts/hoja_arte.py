@@ -6,6 +6,7 @@ Con el venv de cairosvg y Pillow (arte.md §2), desde la raiz del proyecto:
       corre arte/arte.py (se detiene si falla) y une los SVG de esos ids, con su nombre debajo.
   ~/.cache/mono-arte/bin/python .claude/skills/agente-mono/scripts/hoja_arte.py --unir <carpeta> --salida <png>
       une las capturas PNG de la carpeta de izquierda a derecha y borra la carpeta (lo llama `telefono.py cartas`).
+      Con --columnas N, en rejilla y a su tamano (los fotogramas de `telefono.py grabar`, M-099).
 Mono M-037: antes se reescribia en el scratchpad en cada sesion. Fondo blanco: lo transparente
 (personajes sin fondo) salia negro (M-053).
 """
@@ -86,7 +87,13 @@ def hoja_svg(raiz: Path, ids: list[str], salida: Path) -> int:
     return 0
 
 
-def unir(carpeta: Path, salida: Path) -> int:
+def rejilla(n: int, columnas: int, ancho: int, alto: int, sep: int = SEP) -> tuple[int, int]:
+    """Tamano de la hoja con n imagenes de ancho x alto en `columnas` columnas (M-099)."""
+    columnas = min(columnas, n)
+    return columnas * (ancho + sep) - sep, filas(n, columnas) * (alto + sep) - sep
+
+
+def unir(carpeta: Path, salida: Path, columnas: int | None = None) -> int:
     from PIL import Image
 
     archivos = sorted(carpeta.glob("*.png"))
@@ -94,13 +101,19 @@ def unir(carpeta: Path, salida: Path) -> int:
         print(f"Sin capturas en {carpeta}.")
         return 1
     imagenes = [Image.open(f).convert("RGB") for f in archivos]
-    alto = alto_comun([im.size for im in imagenes])
-    imagenes = [im.resize((round(im.width * alto / im.height), alto)) for im in imagenes]
-    hoja = Image.new("RGB", (sum(im.width for im in imagenes) + SEP * (len(imagenes) - 1), alto), "white")
-    x = 0
-    for im in imagenes:
-        hoja.paste(im, (x, 0))
-        x += im.width + SEP
+    if columnas:
+        ancho, alto = imagenes[0].size
+        hoja = Image.new("RGB", rejilla(len(imagenes), columnas, ancho, alto), "white")
+        for k, im in enumerate(imagenes):
+            hoja.paste(im, ((k % columnas) * (ancho + SEP), (k // columnas) * (alto + SEP)))
+    else:
+        alto = alto_comun([im.size for im in imagenes])
+        imagenes = [im.resize((round(im.width * alto / im.height), alto)) for im in imagenes]
+        hoja = Image.new("RGB", (sum(im.width for im in imagenes) + SEP * (len(imagenes) - 1), alto), "white")
+        x = 0
+        for im in imagenes:
+            hoja.paste(im, (x, 0))
+            x += im.width + SEP
     salida.parent.mkdir(parents=True, exist_ok=True)
     hoja.save(salida)
     shutil.rmtree(carpeta)
@@ -113,6 +126,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("ids", nargs="*")
     parser.add_argument("--unir", type=Path, help="carpeta de capturas a unir (y borrar)")
     parser.add_argument("--salida", type=Path, required=True)
+    parser.add_argument("--columnas", type=int, help="--unir: en rejilla de N columnas, sin cambiar el tamano")
     return parser
 
 
@@ -125,7 +139,7 @@ def main() -> int:
         print(f"Falta el venv del arte: corre esto con {VENV_ARTE} (arte.md §2).")
         return 1
     if args.unir:
-        return unir(args.unir, args.salida)
+        return unir(args.unir, args.salida, args.columnas)
     if not args.ids:
         print("Faltan los ids de los dibujos (o --unir <carpeta>).")
         return 1

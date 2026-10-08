@@ -57,6 +57,20 @@ class TestTelefono(unittest.TestCase):
         self.assertEqual(telefono.espera(0, telefono.PANTALLA_ESPERA_S), 12)
         self.assertEqual(telefono.espera(1, telefono.PANTALLA_ESPERA_S), 6)
         self.assertEqual(telefono.espera(2, telefono.CARTA_ESPERA_S), 5)
+
+    def test_grabar_hoja_de_fotogramas(self):
+        # M-099: dos fotogramas por segundo, pero nunca mas de 24 en la hoja.
+        self.assertEqual(telefono.fotogramas_por_segundo(11), 2)
+        self.assertEqual(telefono.fotogramas_por_segundo(30) * 30, telefono.MAX_FOTOGRAMAS)
+        argv = telefono.fotogramas_command(Path("capturas/FC.1_A.mp4"), Path("/t/f"), 30)
+        self.assertEqual(argv[:2], ["gst-launch-1.0", "-q"])
+        self.assertIn("video/x-raw,framerate=4/5", argv)
+        self.assertIn("video/x-raw,width=180,height=400", argv)
+        self.assertEqual(argv[-1], "location=/t/f/f_%03d.png")
+        self.assertEqual(telefono.hoja_de(Path("capturas/FC.1_A.mp4")), Path("capturas/FC.1_A_hoja.png"))
+        # 22 fotogramas de 180 x 400 en 8 columnas: 3 filas.
+        self.assertEqual(hoja_arte.rejilla(22, 8, 180, 400), (8 * 188 - 8, 3 * 408 - 8))
+        self.assertEqual(hoja_arte.rejilla(3, 8, 180, 400), (3 * 188 - 8, 400))
     def test_parse_devices_only_ready(self):
         out = (
             "List of devices attached\n"

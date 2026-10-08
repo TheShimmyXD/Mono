@@ -117,7 +117,8 @@ def last_write(events: list[dict], prefixes: list[str]) -> int:
 
 def last_screen_write(events: list[dict], ui: str, root: Path) -> int:
     """K15 (M-014): último evento que cambió una pantalla: un .kt de la interfaz con
-    @Composable o setContent (según el archivo actual), o un recurso fuera de res/values/."""
+    @Composable o setContent (según el archivo actual), o un recurso fuera de res/values/.
+    El esqueleto vacío de las maquetas («Sin maqueta en diseño», interfaz.md §1) no cambia nada que se vea (M-098)."""
     def is_screen(path: str) -> bool:
         if "/res/values/" in path:
             return False
@@ -127,6 +128,8 @@ def last_screen_write(events: list[dict], ui: str, root: Path) -> int:
                 text = file.read_text(encoding="utf-8")
             except OSError:
                 return True
+            if "Sin maqueta en diseño" in text:
+                return False
             return "@Composable" in text or "setContent" in text
         return True
     found = [e["n"] for e in tools(events)

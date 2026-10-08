@@ -15,6 +15,9 @@ Desde la raiz del proyecto:
       (instala, abre la carta de cada casilla, captura y une con hoja_arte.py; M-037)
   python3 .claude/skills/agente-mono/scripts/telefono.py pantallas - fase=compra propiedades=true,hoja=true --salida capturas/FB.2_pantallas.png
       (instala, abre la app con cada juego de extras -'-' sin extras: el menu-, espera 6 s, captura y une; M-048)
+  python3 .claude/skills/agente-mono/scripts/telefono.py grabar maqueta=A --segundos 11 --salida capturas/FC.1_A.mp4
+      (instala, abre con esos extras, graba con screenrecord, baja el video y deja al lado <nombre>_hoja.png
+       con hasta 24 fotogramas por GStreamer -no hay ffmpeg ni cv2-; M-099)
 Con varios dispositivos se prefiere el fisico (el Redmi); --serie elige uno.
 """
 
@@ -27,6 +30,7 @@ import subprocess
 import sys
 import time
 import tomllib
+from fractions import Fraction
 from pathlib import Path
 
 DEFAULT_LOG_LINES = 60
@@ -36,6 +40,13 @@ CARTA_ESPERA_S = 5
 PANTALLA_ESPERA_S = 6
 # La primera tras instalar arranca en frio: a los 6 s salio en blanco y a los 8 s bien (F5.3, M-080)
 PRIMERA_EXTRA_S = 6
+# Grabar (M-099): espera tras abrir antes de grabar (FC.1: 5 s con una maqueta, 2 s para ver el
+# comienzo de una partida), tope de fotogramas en la hoja y su tamano (la proporcion del Redmi, 1080 x 2400).
+GRABAR_ESPERA_S = 3
+GRABAR_BIT_RATE = "4000000"
+MAX_FOTOGRAMAS = 24
+FOTOGRAMA = (180, 400)
+COLUMNAS_FOTOGRAMAS = 8
 # Extras que la app lee con getLongExtra: van con --el
 LONG_EXTRAS = {"semilla"}
 # Lineas de salida de gradle que se muestran si la instalacion falla.
@@ -211,8 +222,9 @@ def pantalla_command(adb: str, serial: str, target: str, item: str) -> list[str]
 def build_parser() -> argparse.ArgumentParser:
     """Opciones propias; lo que va tras `--` lo separa `split_passthrough` antes."""
     parser = argparse.ArgumentParser(description=__doc__.split("\n")[0], epilog="adb: telefono.py adb -- <argumentos>")
-    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas"])
-    parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura")
+    parser.add_argument("orden", choices=["dispositivos", "instalar", "captura", "log", "emulador", "adb", "cartas", "pantallas", "grabar"])
+    parser.add_argument("objetivos", nargs="*", help="cartas: indices de casillas; pantallas: extras por captura; grabar: un juego de extras")
+    parser.add_argument("--segundos", type=int, default=10, help="grabar: duracion del video (screenrecord admite hasta 180)")
     parser.add_argument("--tio-rico", action="store_true", help="cartas: preset Tio Rico (si no, el Clasico)")
     parser.add_argument("--serie")
     parser.add_argument("--salida", type=Path)
@@ -271,6 +283,62 @@ def pantallas(args, root: Path, adb: str, serial: str, target: str | None) -> in
     return serie(root, adb, serial, shots, PANTALLA_ESPERA_S, args.salida)
 
 
+def fotogramas_por_segundo(segundos: int) -> Fraction:
+    """Dos por segundo, o menos para que la hoja no pase de MAX_FOTOGRAMAS (M-099)."""
+    return min(Fraction(2), Fraction(MAX_FOTOGRAMAS, max(segundos, 1)))
+
+
+def fotogramas_command(video: Path, carpeta: Path, segundos: int) -> list[str]:
+    """gst-launch-1.0 que saca los fotogramas del video, ya del tamano FOTOGRAMA, a carpeta/f_NNN.png."""
+    tasa = fotogramas_por_segundo(segundos)
+    ancho, alto = FOTOGRAMA
+    return ["gst-launch-1.0", "-q", "filesrc", f"location={video}", "!", "qtdemux", "!", "decodebin", "!",
+            "videoconvert", "!", "videorate", "!", f"video/x-raw,framerate={tasa.numerator}/{tasa.denominator}", "!",
+            "videoscale", "!", f"video/x-raw,width={ancho},height={alto}", "!", "pngenc", "!",
+            "multifilesink", f"location={carpeta}/f_%03d.png"]
+
+
+def hoja_de(video: Path) -> Path:
+    """La hoja de fotogramas va al lado del video: FC.1_A.mp4 -> FC.1_A_hoja.png."""
+    return video.with_name(f"{video.stem}_hoja.png")
+
+
+def grabar(args, root: Path, adb: str, serial: str, target: str | None) -> int:
+    """Graba la app abierta con unos extras y deja el video y su hoja de fotogramas (M-099)."""
+    if len(args.objetivos) != 1 or args.salida is None or args.salida.suffix.lower() != ".mp4" or target is None:
+        print("Uso: telefono.py grabar <extras> --segundos N --salida capturas/<paso>.mp4  ('-' sin extras)")
+        return 1
+    started = run(pantalla_command(adb, serial, target, args.objetivos[0]))
+    warning = am_warning(started.stdout + started.stderr)
+    if warning:
+        print(warning)
+    time.sleep(GRABAR_ESPERA_S)
+    if not screen_awake(run([adb, "-s", serial, "shell", "dumpsys", "power"]).stdout):
+        print("Pantalla apagada: pide al autor que desbloquee el Redmi. Sin video.")
+        return 1
+    remoto = "/sdcard/mono_grabar.mp4"
+    run([adb, "-s", serial, "shell", "screenrecord", "--time-limit", str(args.segundos), "--bit-rate", GRABAR_BIT_RATE, remoto])
+    video = args.salida if args.salida.is_absolute() else root / args.salida
+    video.parent.mkdir(parents=True, exist_ok=True)
+    pulled = run([adb, "-s", serial, "pull", remoto, str(video)])
+    run([adb, "-s", serial, "shell", "rm", remoto])
+    if pulled.returncode != 0:
+        print("adb pull: FALLA " + (pulled.stdout + pulled.stderr).strip()[-200:])
+        return 1
+    carpeta = root / "capturas" / "tmp" / f"grabar_{dt.datetime.now():%H%M%S}"
+    carpeta.mkdir(parents=True)
+    frames = run(fotogramas_command(video, carpeta, args.segundos))
+    if frames.returncode != 0:
+        print("gst-launch-1.0: FALLA " + (frames.stdout + frames.stderr).strip()[-300:])
+        return 1
+    hoja = Path(__file__).with_name("hoja_arte.py")
+    venv = Path("~/.cache/mono-arte/bin/python").expanduser()
+    done = run([str(venv), str(hoja), "--unir", str(carpeta), "--salida", str(hoja_de(video)),
+                "--columnas", str(COLUMNAS_FOTOGRAMAS)], cwd=root)
+    print(f"{video} ({video.stat().st_size // 1024} KB, {args.segundos} s, {serial}). " + (done.stdout + done.stderr).strip())
+    return done.returncode
+
+
 def main() -> int:
     own, rest = split_passthrough(sys.argv[1:])
     args = build_parser().parse_intermixed_args(own)
@@ -315,7 +383,7 @@ def main() -> int:
         print((done.stdout + done.stderr).rstrip())
         return done.returncode
 
-    if args.orden in ("instalar", "cartas", "pantallas"):
+    if args.orden in ("instalar", "cartas", "pantallas", "grabar"):
         env = gradle_env(conf) | {"ANDROID_SERIAL": serial}
         done = run(["./gradlew", "--console=plain", "-q", ":app:installDebug"], cwd=root, env=env)
         if done.returncode != 0:
@@ -335,7 +403,7 @@ def main() -> int:
                 run([adb, "-s", serial, "shell", "am", "start", "-n", target])
             print(f"Instalada en {serial}" + (f" y abierta ({target})." if target else "."))
             return 0
-        return (cartas if args.orden == "cartas" else pantallas)(args, root, adb, serial, target)
+        return {"cartas": cartas, "pantallas": pantallas, "grabar": grabar}[args.orden](args, root, adb, serial, target)
 
     if args.orden == "captura":
         if args.salida is None:
