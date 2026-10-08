@@ -35,6 +35,7 @@ Son imágenes: `pdftotext` devuelve 0 palabras y `grep` no sirve. `fuentes/` es 
 ```
 
 - Un ID R-## por regla y para siempre (no se renumera). Si una regla se corrige, se edita la ficha y se anota la sesión.
+- Si una D-## del autor cambia lo que el motor hace con una regla ya transcrita, la ficha no se reescribe (es lo que dice el reglamento): se le añade `- **En el motor:** cambia por D-## (<qué cambia>).` en el mismo commit (M-097).
 - **Cifras leídas dos veces**: una al transcribir y otra comparando la ficha con el recorte antes de cerrar el paso. Si el escaneo es ilegible, la ficha dice «ilegible» y va a «Pendiente del autor»; nunca se completa de memoria.
 - Lo que el reglamento no dice (p. ej. qué pasa con el dinero de los impuestos) no se inventa: es una opción con valor por defecto decidido por el autor (D-##), y la ficha lo dice.
 
