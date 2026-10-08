@@ -527,3 +527,18 @@
 - **Medido (`TerminalTest`, localhost):** 10 partidas de 2 jugadores y 5 de 4 terminadas, 0 resúmenes distintos. Con el Clásico normal no terminan (más de 20 000 acciones: sin tratos nadie completa un grupo, D-43); con $300 al empezar y salario $0, 2 jugadores: 49-840 acciones, mediana 120 (25 turnos), unas 40 del teléfono.
 - **Cómo se revierte:** quitar `:terminal` de `settings.gradle.kts`; el protocolo no cambia.
 - **Estado:** vigente.
+
+### D-51 · F5.4b: la sala vive en el ViewModel de la partida y escribe por un buzón con hilo propio
+
+- **Pregunta:** dónde vive el servidor de la sala para que no se cierre al pasar de la sala a la partida, y cómo manda el teléfono sus jugadas sin usar la red desde el hilo principal (Android lo prohíbe).
+- **Decisión:** `enlace/HostRoom.kt` tiene el `Host`, el `LanServer` y el `Outbox` de la conexión abierta; va dentro del `GameViewModel` (`remote`, interfaz `game/Remote.kt`), que sobrevive al cambio de pantalla y al giro. `enlace/LinkedGame` muestra la sala hasta el `Hello` y después la partida. `Outbox`: cola con un hilo que escribe en orden; `send` no espera. Las jugadas de aquí (`playLocal`) y las del invitado (`hostLoop`) pasan por el mismo candado del `Host`, y cada una lleva su número para que el ViewModel no retroceda si una llega tarde. `Host.events` guarda los eventos de la última jugada (para los avisos). En los turnos del otro teléfono (`decider`: postor, deudor o el del turno) el centro dice «Esperando a X 📶» sin botones ni diálogos; si se cortó, lo dice. Las jugadas del otro teléfono van todas a «Lo que pasó» (una compra no es notable en un solo teléfono, D-22, pero aquí no se vio). La partida enlazada no se guarda ni se reinicia (sin botón «Nueva partida» al final); salir de la sala la cierra.
+- **Medido (`OutboxTest`, localhost):** 400 jugadas, 201 del teléfono y 199 del invitado a la vez, 0 resúmenes distintos (4,4 s). Sin reloj, el invitado se quedaba con una propuesta cruzada sin respuesta: el PC ya pide lo que falta con `Guest.timeout()`.
+- **Cómo se revierte:** `HostScreen` vuelve a crear su `Host` y `LanServer` (commit `6ceb104`).
+- **Estado:** vigente.
+
+### D-52 · F5.8 «Jugar contra la máquina» sube justo detrás de F5.4 y deja de ser extra
+
+- **Del autor (2026-10-07):** moverla como paso inmediatamente siguiente; deja de ser extra; *Terminado* con «máquina más lista» (opciones: partida en el Redmi con la lógica de `mono-pc` · solo en el motor, 100 partidas en la JVM · máquina más lista).
+- **Decisión:** en `PLAN_MONO.md`, F5.8 va entre F5.4 y F5.5, sin renumerar (como F5.9, D-27). Un jugador del menú se marca «🤖 Máquina» y juega solo; puja en subastas y construye con criterio. *Terminado:* una partida corta ($300, salario $0) del autor contra la máquina, terminada en el Redmi con captura, y la máquina lista gana al menos 3 de 10 partidas simuladas contra la simple (la de `mono-pc`, D-50).
+- **Cómo se revierte:** devolver la casilla al final de F5 con «(Extra)».
+- **Estado:** vigente.

@@ -19,7 +19,7 @@ import com.jacck.mono.demo.Maqueta
 import com.jacck.mono.demo.withSampleProperties
 import com.jacck.mono.demo.withPhase
 import com.jacck.mono.enlace.GuestScreen
-import com.jacck.mono.enlace.HostScreen
+import com.jacck.mono.enlace.LinkedGame
 import com.jacck.mono.engine.Preset
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
@@ -78,7 +78,7 @@ class MainActivity : ComponentActivity() {
             ChivaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     if (link == "sala") {
-                        HostScreen(Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), seed) { finish() }
+                        LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), seed) { finish() }
                     } else if (link == "unirme") {
                         GuestScreen { finish() }
                     } else if (mockup != null) {
@@ -91,6 +91,7 @@ class MainActivity : ComponentActivity() {
                         // Jugadores del otro teléfono (F5.3, D-47): con alguno, la partida espera en la sala.
                         var seats by rememberSaveable { mutableStateOf(emptyList<Int>()) }
                         var joining by rememberSaveable { mutableStateOf(false) }
+                        var rooms by rememberSaveable { mutableStateOf(0) } // una sala nueva cada vez (su ViewModel)
                         // Tableros (F4.4, D-42): los originales y los propios de `files/tableros`; `selected` y
                         // `editing` son su clave (nombre del preset o id). `opened` cuenta las veces que se abre
                         // el editor, para que cada vez empiece de lo guardado y no del ViewModel anterior.
@@ -159,10 +160,11 @@ class MainActivity : ComponentActivity() {
                             }
                         } else if (game != null && resume == null && seats.isNotEmpty()) {
                             val config = boards.firstOrNull { it.key == game.first }?.config ?: Preset.CLASSIC.load()
-                            HostScreen(config, game.second, game.third, seats.toSet(), seed) {
+                            LinkedGame("sala-$rooms", config, game.second, game.third, seats.toSet(), seed) {
                                 Log.i(LOG_TAG, "sala: vuelve al menú")
                                 chosen = null
                                 seats = emptyList()
+                                rooms++
                             }
                         } else {
                             val keep: (GameConfig, GameState) -> Unit = if (direct) { _, _ -> } else { c, s ->

@@ -1,6 +1,7 @@
 package com.jacck.mono.engine.link
 
 import com.jacck.mono.engine.Engine
+import com.jacck.mono.engine.Event
 import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
@@ -22,6 +23,10 @@ class Host(val config: GameConfig, start: GameState, val guestSeats: Set<Int>) {
     var state: GameState = start
         private set
     private val log = mutableListOf<Applied>()
+
+    /** Lo que pasó con la última acción aplicada (de quien sea), para los avisos de la pantalla (F5.4). */
+    var events: List<Event> = emptyList()
+        private set
 
     /** Número de la última acción aplicada (0 al empezar). */
     val last: Int get() = log.size
@@ -58,7 +63,9 @@ class Host(val config: GameConfig, start: GameState, val guestSeats: Set<Int>) {
     }
 
     private fun record(action: Action): Applied {
-        state = Engine.apply(config, state, action).state
+        val result = Engine.apply(config, state, action)
+        state = result.state
+        events = result.events
         return Applied(last + 1, action, digest(state)).also { log += it }
     }
 

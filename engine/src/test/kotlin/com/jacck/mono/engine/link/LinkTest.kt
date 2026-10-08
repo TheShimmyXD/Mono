@@ -124,6 +124,25 @@ class LinkTest {
     }
 
     @Test
+    fun `F5-4 el anfitrion guarda los eventos de la ultima accion, suya o del invitado`() {
+        val state = Engine.newGame(classic, listOf("Ana", "Beto"), 7).state
+        val host = Host(classic, state, setOf(1 - state.current))
+        val expected = Engine.apply(classic, state, Action.Roll)
+        host.play(Action.Roll)
+        assertEquals(expected.events, host.events)
+        assertTrue(host.events.isNotEmpty())
+        // Hasta que le toque al invitado, y entonces su jugada también deja sus eventos.
+        val random = Random(5)
+        fun legal(s: GameState) = candidates(classic, s, random, 0).first { Engine.tryApply(classic, s, it) != null }
+        while (actor(host.state, Action.Roll) !in host.guestSeats) host.play(legal(host.state))
+        val before = host.state
+        val action = legal(before)
+        val reply = host.receive(Message.Propose(action, host.last)).single()
+        assertTrue(reply is Message.Applied, "$reply")
+        assertEquals(Engine.apply(classic, before, action).events, host.events)
+    }
+
+    @Test
     fun `F5-2 el invitado solo propone en el turno de los suyos y el anfitrion lo comprueba`() {
         val state = Engine.newGame(classic, listOf("Ana", "Beto"), 7).state
         val guestSeat = 1 - state.current // el invitado tiene al que no empieza

@@ -84,7 +84,7 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
         SquareCard(vm.config, state, it) { shownSquare = null }
         return
     }
-    if (showProperties && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
+    if (showProperties && vm.waitingFor == null && (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn)) {
         PropertiesSheet(vm) { showProperties = false }
         return
     }
@@ -93,6 +93,8 @@ fun GameScreen(vm: GameViewModel, openProperties: Boolean = false, openSquare: I
         NoticesDialog(lines, vm::dismissNotices)
         return
     }
+    // Decide el otro teléfono (F5.4): aquí solo se mira el tablero y el letrero del centro.
+    if (vm.waitingFor != null) return
     when (val phase = state.phase) {
         is TurnPhase.Roll -> if (state.players[state.current].jailTurns != null) JailDialog(vm)
         is TurnPhase.Buy -> BuyDialog(vm, phase.square)
@@ -122,6 +124,14 @@ private fun Center(vm: GameViewModel, onProperties: () -> Unit) {
                     modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
                 )
             }
+        }
+        val waiting = vm.waitingFor
+        if (waiting != null) {
+            Text(
+                stringResource(if (vm.remote?.connected == false) R.string.waiting_cut else R.string.waiting_remote, waiting),
+                fontSize = 20.sp, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+            )
+            return@Column
         }
         if (state.phase == TurnPhase.Roll || state.phase == TurnPhase.EndOfTurn) {
             BotonChiva(stringResource(R.string.my_properties), onProperties, principal = false, icono = Icon.CASA)
@@ -349,7 +359,7 @@ private fun DebtDialog(vm: GameViewModel, debt: TurnPhase.Debt) {
 private fun OverDialog(vm: GameViewModel, winners: List<Int>, onRestart: () -> Unit) {
     DialogoChiva(
         stringResource(R.string.game_over), color = Chiva.Verde,
-        botones = { BotonChiva(stringResource(R.string.new_game), onRestart) },
+        botones = { if (vm.remote == null) BotonChiva(stringResource(R.string.new_game), onRestart) },
     ) {
         Text(
             stringResource(R.string.winners, winners.joinToString(" y ") { vm.state.players[it].name }), fontSize = 20.sp,

@@ -21,7 +21,8 @@ class HostLoopTest {
     private fun run(host: Host, vararg lines: String): Triple<Pair<Int, Int>, List<Message>, List<Message>> {
         val out = ByteArrayOutputStream()
         val seen = mutableListOf<Message>()
-        val counts = hostLoop(host, ByteArrayInputStream(lines.joinToString("") { "$it\n" }.toByteArray()), out) { seen += it }
+        val input = ByteArrayInputStream(lines.joinToString("") { "$it\n" }.toByteArray())
+        val counts = Outbox(out).use { box -> hostLoop(host, input, box::send, { seen += it }) }
         val sent = out.toString(Charsets.UTF_8).lines().filter { it.isNotEmpty() }.map(::decode)
         return Triple(counts, seen, sent)
     }
