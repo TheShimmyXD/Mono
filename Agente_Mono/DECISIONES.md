@@ -787,3 +787,12 @@
 - **Para la próxima versión:** subir `versionCode` y `versionName` en `app/build.gradle.kts` y compilar en este PC; con otra llave de depuración Android no la instala encima (hay que desinstalar y se pierde lo guardado).
 - **Cómo se revierte:** `gh release delete v0.1 --cleanup-tag -R TheShimmyXD/Mono` y quitar la sección del README.
 - **Estado:** vigente.
+
+### D-82 · El APK de la release no instala en HyperOS: USB por ahora, Play Store después (FE.6)
+
+- **Qué pasó (2026-10-08):** en el teléfono de un amigo (Redmi Note 13 Pro, HyperOS) el `mono-0.1.apk` de la release (D-81) quedó bloqueado al instalarlo desde el teléfono, sin la opción «Instalar de todas formas», y Play Protect no se dejaba desactivar.
+- **Cómo se instaló:** por USB desde este PC, con «Depuración USB» e «Instalar vía USB» activadas en las opciones de desarrollador de Xiaomi: `adb install -r app/build/outputs/apk/debug/app-debug.apk` → `Success`; `com.jacck.mono` 0.1 instalado. Las actualizaciones del amigo, igual (misma llave de depuración, D-81).
+- **Del autor (2026-10-09):** publicar en Play Store queda como extra FE.6, con la «prueba interna» (hasta 100 testers por correo, sin la prueba cerrada de 12 testers × 14 días que se exige a las cuentas personales nuevas para producción). Espera a que el autor tenga los 25 USD de la cuenta y diga «ejecuta este paso».
+- **Contexto para FE.6:** Google exige desarrollador verificado para instalar fuera de Play Store desde el 2026-09-30 en Brasil, Indonesia, Singapur y Tailandia, y en el resto del mundo en 2027; anunció una cuenta gratuita de «distribución limitada» (unos 20 dispositivos) cuyo lanzamiento no estaba confirmado el 2026-10-09. Revisarlo al retomar. Cambiar a llave de release obliga a desinstalar una vez la versión de depuración (se pierde lo guardado).
+- **Cómo se revierte:** quitar FE.6 del plan.
+- **Estado:** vigente.

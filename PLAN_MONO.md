@@ -223,6 +223,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **FE.3** README: qué es, capturas, cómo compilar e instalar, cómo jugar, reglas configurables, estructura, créditos y licencia (la elige el autor). *Terminado:* el autor lo aprueba leído.
 - [x] **FE.4** Repositorio en GitHub y primer push, solo cuando el autor lo ordene (privado o público, lo decide él). *Terminado:* el autor lo ve en GitHub.
 - [x] **FE.5** APK para instalar directo, sin compilar (pedida por el autor el 2026-10-08, D-81): etiqueta `v0.1`, GitHub Release con el APK de depuración y sección «Instalar el APK» en el README. *Terminado:* la release existe y el autor instala la app en el Redmi desde su enlace.
+- [ ] **FE.6** *(Extra)* Play Store por «prueba interna» (pedida por el autor el 2026-10-09, D-82; espera a que el autor tenga los 25 USD de la cuenta de Play Console y diga «ejecuta este paso»): keystore de release fuera del repositorio, `signingConfig` de release en `app/build.gradle.kts` (sin contraseñas versionadas), `bundleRelease` (AAB), ficha mínima (política de privacidad, seguridad de datos, clasificación de contenido, íconos) y pista de prueba interna con los correos de los amigos. *Terminado:* un amigo instala Mono desde el enlace de la prueba interna en Play Store, sin USB ni aviso de Play Protect.
 
 ---
 
