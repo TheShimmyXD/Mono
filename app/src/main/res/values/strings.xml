@@ -22,7 +22,7 @@
     <string name="error_missing_amount">%1$s: falta %2$s.</string>
     <string name="error_rent_count">%1$s tiene %3$d alquileres y necesita %2$d.</string>
     <string name="error_rule_range">%1$s debe ir de %2$d a %3$d.</string>
-    <string name="error_doubles_range">Los dobles que mandan a la Cárcel deben ser 0 (sin tope) o de 2 a 5.</string>
+    <string name="error_doubles_range">Los pares que mandan a la Cárcel deben ser 0 (sin tope) o de 2 a 5.</string>
     <string name="error_empty_deck">%1$s roba del mazo %2$s, que no tiene cartas.</string>
     <string name="error_bad_card">Carta %1$d: %2$s.</string>
     <string name="square_label">«%1$s» (casilla %2$d)</string>
@@ -39,7 +39,7 @@
     <string name="rule_players">El número de jugadores</string>
     <string name="rule_starting_money">El dinero inicial</string>
     <string name="rule_salary">El sueldo</string>
-    <string name="rule_doubles_to_jail">Los dobles que mandan a la Cárcel</string>
+    <string name="rule_doubles_to_jail">Los pares que mandan a la Cárcel</string>
     <string name="rule_jail_fine">La multa de la Cárcel</string>
     <string name="rule_jail_max_turns">Los turnos máximos en la Cárcel</string>
     <string name="rule_auction_discount">El descuento de la subasta</string>
@@ -58,7 +58,7 @@
     <string name="incoherent_players_order">El mínimo de jugadores es mayor que el máximo.</string>
     <string name="incoherent_rent_must_be_claimed">«Hay que reclamar el alquiler» aún no está en el juego.</string>
     <string name="incoherent_free_parking_pot">El bote de Parada Libre aún no está en el juego.</string>
-    <string name="incoherent_jail_disabled_but_used">Sin Cárcel no puede haber casillas, cartas ni dobles que manden a ella.</string>
+    <string name="incoherent_jail_disabled_but_used">Sin Cárcel no puede haber casillas, cartas ni pares que manden a ella.</string>
     <string name="incoherent_jail_square_count">Con Cárcel debe haber exactamente una casilla Cárcel.</string>
 
     <string name="card_move_outside_board">manda a una casilla que no existe</string>
@@ -155,14 +155,14 @@
     <string name="ev_auction_unsold">%1$s sigue siendo del Banco.</string>
     <string name="ev_card">%1$s saca una carta: «%2$s»</string>
     <string name="ev_jail">%1$s va a la Cárcel.</string>
-    <string name="ev_jail_doubles">%1$s sacó dobles %2$d veces seguidas y va a la Cárcel.</string>
+    <string name="ev_jail_doubles">%1$s sacó par %2$d veces seguidas y va a la Cárcel.</string>
     <string name="ev_stayed_jail">%1$s sigue en la Cárcel (turno %2$d).</string>
     <string name="ev_left_jail">%1$s sale de la Cárcel.</string>
     <string name="ev_in_debt">%1$s quedó debiendo: tiene que vender o hipotecar.</string>
     <string name="ev_bankrupt">%1$s está en quiebra.</string>
     <string name="ev_deed_dealt">%1$s recibe %2$s.</string>
     <string name="ev_game_over">Se acabó la partida.</string>
-    <string name="ev_roll_again">%1$s sacó dobles: vuelve a tirar.</string>
+    <string name="ev_roll_again">%1$s sacó par: vuelve a tirar.</string>
     <!-- Carta de la casilla (FA.3, D-30) -->
     <string name="card_group_price">%1$s · Precio %2$s</string>
     <string name="card_hotel">Hotel</string>
@@ -252,16 +252,16 @@
     <string name="rules_auction_help">Si quien cae no la compra, el Banco la subasta: desde cualquier precio o desde su precio menos un descuento.</string>
     <string name="rules_auction_any">Cualquier precio</string>
     <string name="rules_auction_discount">Precio −</string>
-    <string name="rules_doubles_again">Los dobles dan otra tirada</string>
-    <string name="rules_doubles_again_help">Quien saca dobles vuelve a tirar.</string>
-    <string name="rules_doubles_jail">Dobles seguidos a la Cárcel</string>
-    <string name="rules_doubles_jail_help">Cuántos dobles seguidos mandan a la Cárcel.</string>
+    <string name="rules_doubles_again">Sacar par da otra tirada</string>
+    <string name="rules_doubles_again_help">Quien saca par vuelve a tirar.</string>
+    <string name="rules_doubles_jail">Pares seguidos a la Cárcel</string>
+    <string name="rules_doubles_jail_help">Cuántos pares seguidos mandan a la Cárcel.</string>
     <string name="rules_tie">Empate al empezar</string>
     <string name="rules_tie_help">En la tirada para ver quién empieza, quiénes vuelven a tirar si hay empate.</string>
     <string name="rules_tie_tied">Los empatados</string>
     <string name="rules_tie_all">Todos</string>
     <string name="rules_jail_fine">Multa para salir de la Cárcel</string>
-    <string name="rules_jail_fine_help">Lo que se paga para salir sin sacar dobles.</string>
+    <string name="rules_jail_fine_help">Lo que se paga para salir sin sacar par.</string>
     <string name="rules_jail_turns">Turnos máximos en la Cárcel</string>
     <string name="rules_jail_turns_help">Después de estos turnos se paga la multa y se sale.</string>
     <string name="rules_max_houses">Casas antes del hotel</string>
@@ -341,7 +341,7 @@
     <string name="bar_tax_fixed">Pagar −%1$s</string>
     <string name="bar_tax_percent">Pagar el %1$d %%</string>
     <string name="bar_jail">%1$s en la Cárcel (%2$d de %3$d)</string>
-    <string name="bar_jail_roll">Tirar dobles</string>
+    <string name="bar_jail_roll">Tirar por par</string>
     <string name="bar_jail_fine">Multa −%1$s</string>
     <string name="bar_jail_card">Usar carta</string>
     <string name="bar_sell">Vender o hipotecar</string>

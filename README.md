@@ -33,7 +33,7 @@ Cada tablero lleva sus reglas; se cambian en **Editar → Reglas**. Donde el Tí
 | Pestaña | Reglas |
 |---|---|
 | Dinero | Dinero inicial · Salario en la Salida · Subasta (desde cualquier precio o desde su precio menos un descuento) |
-| Dados | Los dobles dan otra tirada · Dobles seguidos que mandan a la Cárcel · Empate al empezar · Multa para salir de la Cárcel · Turnos máximos en la Cárcel |
+| Dados | Sacar par da otra tirada · Pares seguidos que mandan a la Cárcel · Empate al empezar · Multa para salir de la Cárcel · Turnos máximos en la Cárcel |
 | Casas | Casas antes del hotel · Construir parejo · Construir solo al caer · Precio de la casa y del hotel · El hotel devuelve sus casas · Vender edificios al Banco · Casas y hoteles del Banco |
 | Alquiler | Grupo completo cobra ×2 · Hotel en todo el grupo cobra ×2 · La hipotecada cobra alquiler |
 | Hipotecas | Valor de la hipoteca · Hipotecar con edificios · Interés o cargo fijo al levantarla · Redondeo de los porcentajes |

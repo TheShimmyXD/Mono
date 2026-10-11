@@ -844,3 +844,11 @@
 - **Código:** `ButtonRole` y `BarKind.role` en `game/TurnBar.kt` (sin interfaz; la tabla de la botonera con su prueba en `TurnBarTest`), el color en `ButtonRole.fondo` y la letra en `letraSobre` (`Chiva.kt`); `BarButton.principal` se quita (el rol sale del tipo de botón).
 - **Cómo se revierte:** `git revert` del commit de FF.3 (vuelve `BarButton.principal`: rojo la principal, ocre la otra).
 - **Estado:** vigente.
+
+### D-89 · «Par» en vez de «dobles»
+
+- **Del autor (2026-10-11):** en su país se dice «saco par», no «dobles»; pide reemplazar la palabra.
+- **Cómo queda:** los 11 textos de la app que la decían (`strings.xml`: el botón de la Cárcel, ahora «Tirar por par», «Lo que pasa», las reglas del editor y dos avisos) y la tabla de reglas del `README.md` dicen «par» o «pares». Es la palabra de Tío Rico (R-43).
+- **No cambia:** `REGLAS.md` (transcribe los reglamentos tal cual, regla 1), los identificadores (`doubles`), los comentarios, los nombres de las pruebas y «doble alquiler» (R-16, R-48: otra cosa).
+- **Cómo se revierte:** `git revert` del commit.
+- **Estado:** vigente.
