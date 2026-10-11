@@ -48,9 +48,13 @@ class GameViewModel(
     val remote: Remote? = null,
     val bots: Set<Int> = emptySet(),
     private val pause: Long = 900,
+    /** Arma, con el primer estado, el registro de esta partida en el historial (FH.2); null en las de prueba. */
+    keeper: ((GameState) -> HistoryKeeper)? = null,
 ) : ViewModel() {
 
     private val first = resumed?.let { Result(it, emptyList()) } ?: start(seed)
+
+    val history: HistoryKeeper? = keeper?.invoke(first.state)
 
     var state: GameState by mutableStateOf(first.state)
         private set
@@ -153,6 +157,7 @@ class GameViewModel(
         log = logged(log, state.current, result.events)
         state = result.state
         onState(config, state)
+        history?.update(config, state)
         // Si la máquina sigue decidiendo, espera «Seguir» para que se lea lo que hizo (D-70).
         held = player.takeIf { byMachine && people && machineTurn != null }
         error = null
@@ -181,6 +186,7 @@ class GameViewModel(
     fun restart(seed: Long) {
         if (remote != null) return
         val fresh = start(seed)
+        history?.restart(fresh.state, System.currentTimeMillis())
         state = fresh.state
         onState(config, state)
         log = logged(emptyList(), fresh.state.current, fresh.events)

@@ -41,6 +41,9 @@ import com.jacck.mono.LOG_TAG
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.jacck.mono.game.HistoryFile
+import com.jacck.mono.game.HistoryKeeper
+import com.jacck.mono.game.newRecord
 import com.jacck.mono.game.GameScreen
 import com.jacck.mono.game.GameViewModel
 
@@ -73,7 +76,11 @@ fun GuestScreen(key: String, machine: Boolean = false, address: String? = null, 
     val start = room.start
     if (start != null) {
         val vm = viewModel(key = "$key-partida") {
-            GameViewModel(start.config, start.state.players.map { it.name }, 0L, resumed = start.state, remote = room, bots = if (machine) start.mine else emptySet())
+            val bots = if (machine) start.mine else emptySet()
+            GameViewModel(start.config, start.state.players.map { it.name }, 0L, resumed = start.state, remote = room, bots = bots) { s ->
+                val file = HistoryFile(context.filesDir)
+                HistoryKeeper(file, newRecord(start.config, s, System.currentTimeMillis(), bots, s.players.indices.toSet() - start.mine, open = false).also(file::add))
+            }
         }
         GameScreen(vm, onMenu = leave) { System.currentTimeMillis() }
         return

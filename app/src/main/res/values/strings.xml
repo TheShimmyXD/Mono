@@ -358,4 +358,25 @@
     <string name="join_closed">Se cortó con %1$s (%2$s).</string>
     <string name="join_again">Elegir otra vez</string>
     <string name="menu_join">Unirme a la partida de un amigo</string>
+    <!-- Historial de partidas (FH.2, D-92) -->
+    <string name="hist_button">Historial de partidas</string>
+    <string name="hist_title">Historial</string>
+    <string name="hist_empty">Aún no hay partidas: aquí quedan las que juegues, terminadas o no.</string>
+    <string name="hist_unfinished">Sin terminar</string>
+    <string name="hist_end_time">Se acabó el tiempo</string>
+    <string name="hist_end_second">Terminó con la segunda quiebra</string>
+    <string name="hist_hours">%1$d h %2$02d min</string>
+    <string name="hist_minutes">%1$d min</string>
+    <plurals name="hist_turns">
+        <item quantity="one">%1$d turno</item>
+        <item quantity="other">%1$d turnos</item>
+    </plurals>
+    <string name="hist_date">%1$s %2$d %3$s</string>
+    <string-array name="hist_days">
+        <item>Dom</item><item>Lun</item><item>Mar</item><item>Mié</item><item>Jue</item><item>Vie</item><item>Sáb</item>
+    </string-array>
+    <string-array name="hist_months">
+        <item>ene</item><item>feb</item><item>mar</item><item>abr</item><item>may</item><item>jun</item>
+        <item>jul</item><item>ago</item><item>sep</item><item>oct</item><item>nov</item><item>dic</item>
+    </string-array>
 </resources>

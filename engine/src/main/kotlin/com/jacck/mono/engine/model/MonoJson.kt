@@ -3,7 +3,7 @@ package com.jacck.mono.engine.model
 import kotlinx.serialization.json.Json
 
 /**
- * JSON de tableros, presets, partidas y acciones (D-10). Estricto: una clave desconocida es
+ * JSON de tableros, presets, partidas, acciones e historial (D-10). Estricto: una clave desconocida es
  * un error, para que un archivo mal escrito no se cargue a medias.
  */
 object MonoJson {
@@ -26,6 +26,10 @@ object MonoJson {
     fun decodeSaved(text: String): SavedGame = json.decodeFromString(text)
 
     fun encodeAction(action: Action): String = json.encodeToString(action)
+
+    fun encodeHistory(records: List<GameRecord>): String = json.encodeToString(records)
+
+    fun decodeHistory(text: String): List<GameRecord> = json.decodeFromString(text)
 
     fun decodeAction(text: String): Action = json.decodeFromString(text)
 }

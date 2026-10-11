@@ -23,6 +23,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import android.util.Log
+import androidx.lifecycle.compose.LifecycleStartEffect
 import com.jacck.mono.LOG_TAG
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.zIndex
@@ -68,6 +69,11 @@ fun GameScreen(
     openCard: Int? = null, onMenu: (() -> Unit)? = null, openMenu: Boolean = false, hideMoney: Boolean = false, newSeed: () -> Long,
 ) {
     val state = vm.state
+    // El tiempo jugado cuenta mientras la partida se ve (FH.2): no con la app en segundo plano ni en el menú.
+    LifecycleStartEffect(vm) {
+        vm.history?.start()
+        onStopOrDispose { vm.history?.stop(vm.config, vm.state) }
+    }
     // Lo tocado en la ventana (null, nada). Los extras `casilla`, `tarjeta` y `hoja` lo abren (sin `tarjeta`, quien juega).
     var detail by remember {
         mutableStateOf(

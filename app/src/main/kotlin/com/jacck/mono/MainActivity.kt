@@ -25,6 +25,10 @@ import com.jacck.mono.engine.model.GameConfig
 import com.jacck.mono.engine.model.GameState
 import com.jacck.mono.engine.validate
 import com.jacck.mono.engine.model.SavedGame
+import com.jacck.mono.game.HistoryFile
+import com.jacck.mono.game.HistoryKeeper
+import com.jacck.mono.game.HistoryScreen
+import com.jacck.mono.game.newRecord
 import com.jacck.mono.game.BoardChoice
 import com.jacck.mono.game.BoardShelf
 import com.jacck.mono.game.EditorScreen
@@ -51,7 +55,7 @@ const val LOG_TAG = "Mono"
  * Con `n` (16..48) se abre en cambio el tablero de muestra de F3.2. Para probar F3.4 sin jugar media
  * partida: `propiedades` (true: quien empieza tiene marrones, celestes y una estación hipotecada)
  * y `hoja` (true: abre en la ventana a quien juega, o a `tarjeta`, con sus propiedades; FD.6); `casilla` (índice) abre en la ventana la carta de esa casilla (FA.3, FD.6); `fase` (`compra`, `subasta`, `carcel`, `impuesto`,
- * `deuda`, `fin`; `alquiler` y `carta`, FD.2; `sueldo` y `banco`, FD.3) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `maqueta` (letra) se abre la maqueta de la pantalla
+ * `deuda`, `fin`; `alquiler` y `carta`, FD.2; `sueldo` y `banco`, FD.3) abre ese diálogo de turno, sin el aviso inicial (FB.2, `demo/SamplePhases.kt`). Con `historial` (true) se abre el historial de partidas (FH.2). Con `maqueta` (letra) se abre la maqueta de la pantalla
  * que se está diseñando (`demo/Maquetas.kt`, M-029). Con `editor` (índice, `--ei`) se abre el editor de casillas del Clásico con esa casilla elegida (F4.1, D-39); con `reglas` (tema: `dinero`, `dados`, `casas`, `alquiler`, `hipotecas`, `fin`), su pestaña «Reglas» en ese tema (F4.2, D-40); con `quitar` (índices separados por lo que no sea dígito, `--es quitar 13+14`), el editor con esas casillas ya quitadas (F4.3, D-41), y `abajo` (true) lo abre desplazado hasta la ficha. Con `tablero` (`CLASSIC`, `TIO_RICO` o el id de uno propio, `t1`) el menú abre con ese tablero elegido (F4.4, D-42). Con `enlace` (`sala`) se abre la sala del anfitrión con el Clásico y el último de `jugadores` en el otro teléfono (F5.3, `enlace/HostScreen.kt`, D-47), y con `unirme`, la pantalla del invitado (`enlace/GuestScreen.kt`), que abre el tablero al llegar la partida (F5.10, D-76; con `maquina`, sus jugadores los juega la máquina, y con `direccion`, `ip:puerto`, se conecta solo). Con `maquina` (índices, `--es maquina 1+2`) la partida abre con esos jugadores en manos de la máquina (F5.8b, D-55), y con `seguro` (true), junto a `hoja` o `fase=deuda`, sale ya el «¿Seguro?» de la quiebra (D-56). Con `oculto` (true) abre con el dinero oculto y con `pausa` (ms, `--ei`; 900) la máquina espera eso antes de cada jugada, para que la grabación alcance la primera (FD.2, D-66). La partida del menú se guarda tras cada jugada
  * y el menú ofrece seguirla (F3.6, D-26); las de los extras de prueba no se guardan.
  */
@@ -82,6 +86,7 @@ class MainActivity : ComponentActivity() {
         val machineSeats = intent.getStringExtra("maquina")?.split(Regex("\\D+"))?.filter { it.isNotEmpty() }?.map { it.toInt() }?.filter { it < players }.orEmpty()
         val direct = GAME_EXTRAS.any(intent::hasExtra)
         val saveFile = SaveFile(filesDir)
+        val historyFile = HistoryFile(filesDir)
         val shelf = BoardShelf(filesDir)
         val names = playerNames(emptyList(), resources.getStringArray(R.array.default_names).toList(), players, machineSeats.toSet()) {
             getString(R.string.menu_bot_name, it)
@@ -128,13 +133,17 @@ class MainActivity : ComponentActivity() {
                             selected = id
                         }
                         val menuState = rememberSaveableStateHolder()
+                        // `--ez historial true` abre el historial (FH.2).
+                        var history by rememberSaveable { mutableStateOf(intent.getBooleanExtra("historial", false)) }
                         var saved by remember { mutableStateOf(
                             (if (direct) null else saveFile.read()).also { Log.i(LOG_TAG, "guardada al abrir: ${it?.state?.turn?.let { t -> "turno $t" } ?: "ninguna"}") }
                         ) }
                         val resume = saved.takeIf { resumed }
                         val game = chosen
                         val ed = boards.firstOrNull { it.key == editing }
-                        if (joining) {
+                        if (history) {
+                            HistoryScreen(remember { historyFile.read() }.also { Log.i(LOG_TAG, "historial: ${it.size} partidas") }) { history = false }
+                        } else if (joining) {
                             GuestScreen("unirme-$rooms") {
                                 Log.i(LOG_TAG, "unirme: vuelve al menú")
                                 joining = false
@@ -160,7 +169,7 @@ class MainActivity : ComponentActivity() {
                                 val broken = remember(own) { own.filter { validate(it.config).isNotEmpty() }.map { it.id }.toSet() }
                                 NewGameScreen(
                                     saved?.state, onResume = { resumed = true }, boards = boards, selected = board.key, onSelect = { selected = it },
-                                    broken = broken, onEdit = { editing = board.key }, onJoin = { joining = true }, onDuplicate = { store(board.copy(own = false), board.config) },
+                                    broken = broken, onEdit = { editing = board.key }, onJoin = { joining = true }, onHistory = { history = true }, onDuplicate = { store(board.copy(own = false), board.config) },
                                     onRename = { typed ->
                                         val name = boardName(typed, board.config.name)
                                         if (name != board.config.name) { shelf.save(board.config.copy(name = name), board.key); own = shelf.list() }
@@ -198,7 +207,10 @@ class MainActivity : ComponentActivity() {
                             val vm = viewModel(key = "partida-$games") {
                                 if (resume != null) {
                                     Log.i(LOG_TAG, "sigue la partida guardada: turno ${resume.state.turn}, ${resume.state.players.map { it.name to it.money }}")
-                                    GameViewModel(resume.config, resume.state.players.map { it.name }, nextSeed(), resumed = resume.state, onState = keep, bots = machines)
+                                    GameViewModel(resume.config, resume.state.players.map { it.name }, nextSeed(), resumed = resume.state, onState = keep, bots = machines) { s ->
+                                        // Una guardada antes del historial empieza su registro aquí.
+                                        HistoryKeeper(historyFile, historyFile.open() ?: newRecord(resume.config, s, System.currentTimeMillis(), machines, emptySet(), open = true).also(historyFile::add))
+                                    }
                                 } else {
                                     val (p, n, t) = requireNotNull(game)
                                     val config = boards.firstOrNull { it.key == p }?.config ?: Preset.CLASSIC.load()
@@ -207,7 +219,10 @@ class MainActivity : ComponentActivity() {
                                         test && sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, nextSeed(), prepare = prepare, onState = keep, tokens = t, bots = machines, pause = if (test) pause else 900).also { if (test && (phase != null || card != null || back)) it.clearLog() }
+                                    val record: ((GameState) -> HistoryKeeper)? = if (test) null else { s ->
+                                        HistoryKeeper(historyFile, newRecord(config, s, System.currentTimeMillis(), machines, emptySet(), open = true).also(historyFile::add))
+                                    }
+                                    GameViewModel(config, n, nextSeed(), prepare = prepare, onState = keep, tokens = t, bots = machines, pause = if (test) pause else 900, keeper = record).also { if (test && (phase != null || card != null || back)) it.clearLog() }
                                 }
                             }
                             GameScreen(

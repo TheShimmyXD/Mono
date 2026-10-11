@@ -33,6 +33,9 @@ import com.jacck.mono.board.IconImage
 import com.jacck.mono.engine.Engine
 import com.jacck.mono.engine.link.Host
 import com.jacck.mono.engine.model.GameConfig
+import com.jacck.mono.game.HistoryFile
+import com.jacck.mono.game.HistoryKeeper
+import com.jacck.mono.game.newRecord
 import com.jacck.mono.game.GameScreen
 import com.jacck.mono.game.GameViewModel
 import kotlinx.coroutines.delay
@@ -52,7 +55,10 @@ fun LinkedGame(key: String, config: GameConfig, names: List<String>, tokens: Lis
     val vm = viewModel(key = key) {
         val seed = seed()
         val host = Host(config, Engine.newGame(config, names, seed, tokens).state, seats)
-        GameViewModel(config, names, seed, resumed = host.state, tokens = tokens, remote = HostRoom(context, host), bots = bots)
+        GameViewModel(config, names, seed, resumed = host.state, tokens = tokens, remote = HostRoom(context, host), bots = bots) { s ->
+            val file = HistoryFile(context.filesDir)
+            HistoryKeeper(file, newRecord(config, s, System.currentTimeMillis(), bots, seats, open = false).also(file::add))
+        }
     }
     val room = vm.remote as HostRoom
     if (room.started) {
