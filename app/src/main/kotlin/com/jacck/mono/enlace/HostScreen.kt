@@ -43,12 +43,14 @@ fun clock(seconds: Long): String = "%d:%02d".format(seconds / 60, seconds % 60)
 /**
  * Partida con otro teléfono (F5.4, D-51), del lado del anfitrión: crea la partida con los jugadores del
  * menú y su [HostRoom] dentro de un `GameViewModel` con la clave [key] (una nueva por cada sala); muestra
- * la sala hasta que llega el saludo del invitado y entonces la partida. [onCancel] = salir de la sala.
+ * la sala hasta que llega el saludo del invitado y entonces la partida. [seed] da la semilla al crearla
+ * (FF.1, D-84). [onCancel] = salir de la sala.
  */
 @Composable
-fun LinkedGame(key: String, config: GameConfig, names: List<String>, tokens: List<String>, seats: Set<Int>, bots: Set<Int>, seed: Long, onCancel: () -> Unit) {
+fun LinkedGame(key: String, config: GameConfig, names: List<String>, tokens: List<String>, seats: Set<Int>, bots: Set<Int>, seed: () -> Long, onCancel: () -> Unit) {
     val context = LocalContext.current
     val vm = viewModel(key = key) {
+        val seed = seed()
         val host = Host(config, Engine.newGame(config, names, seed, tokens).state, seats)
         GameViewModel(config, names, seed, resumed = host.state, tokens = tokens, remote = HostRoom(context, host), bots = bots)
     }

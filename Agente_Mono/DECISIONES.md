@@ -796,3 +796,19 @@
 - **Contexto para FE.6:** Google exige desarrollador verificado para instalar fuera de Play Store desde el 2026-09-30 en Brasil, Indonesia, Singapur y Tailandia, y en el resto del mundo en 2027; anunció una cuenta gratuita de «distribución limitada» (unos 20 dispositivos) cuyo lanzamiento no estaba confirmado el 2026-10-09. Revisarlo al retomar. Cambiar a llave de release obliga a desinstalar una vez la versión de depuración (se pierde lo guardado).
 - **Cómo se revierte:** quitar FE.6 del plan.
 - **Estado:** vigente.
+
+### D-83 · Fases FF (arreglos de los jugadores) y FG (nuevo arte, anunciada)
+
+- **Del autor (2026-10-11):** (1) vender una casa con un toque es fácil de hacer sin querer y se pierde la mitad; hipotecar puede seguir con un toque (solo se pierde el 10 % al deshipotecar, es un préstamo). (2) Le reportan que las partidas no parecen aleatorias: la máquina hace lo mismo y los dados dan lo mismo. (3) Rehacer el arte de las propiedades y las tarjetas, solo anunciado por ser grande.
+- **Cómo queda:** FF.1 semillas, FF.2 confirmar la venta de edificios; FG anunciada con una sola tarea de alcance (FG.1). Van al final de la hoja de ruta, con letra (D-27), sin renumerar ni cambiar la espera del hito F5.6.
+- **Causa de (2), leída en el código:** `MainActivity.onCreate` calcula `seed = intent.getLongExtra("semilla", System.currentTimeMillis())` una vez; las partidas del menú (`partida-$games`), las salas (`LinkedGame`) y «Seguir la partida» reciben ese mismo valor mientras Android no cierre la app. El motor es determinista (D-03), así que con la misma semilla salen el mismo orden, los mismos dados y, con el `Random(seed)` del `GameViewModel`, las mismas jugadas de la máquina. Solo «Reiniciar» pedía una semilla nueva.
+- **Cómo se revierte:** quitar FF y FG del plan.
+- **Estado:** vigente.
+
+### D-84 · FF.1: una semilla nueva por partida
+
+- **Qué:** `game/Seeds.kt` da la semilla al crear cada partida: la del menú (`partida-$games`), «Seguir la partida» (la semilla ahí solo mueve el azar de la máquina; los dados siguen el `GameRandom` guardado), las salas (`LinkedGame` recibe `seed: () -> Long` y la pide una vez dentro de la fábrica del ViewModel) y «Reiniciar». Cada una deja `semilla de la partida: N` en el log.
+- **Origen:** `kotlin.random.Random.Default.nextLong()` (el generador del sistema, sembrado por el propio Android, sin depender del reloj). El extra `semilla` vale solo para la primera partida, como los demás extras (D-63).
+- **Por qué no el reloj:** `System.currentTimeMillis()` al abrir la app era justo el error (D-83); por partida también serviría, pero dos teléfonos o dos toques en el mismo milisegundo darían la misma.
+- **Cómo se revierte:** volver a la semilla de `onCreate` (no tiene sentido: es el error).
+- **Estado:** vigente.

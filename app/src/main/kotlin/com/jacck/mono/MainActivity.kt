@@ -32,6 +32,7 @@ import com.jacck.mono.game.EditorViewModel
 import com.jacck.mono.game.RuleTab
 import com.jacck.mono.game.GameScreen
 import com.jacck.mono.game.GameViewModel
+import com.jacck.mono.game.Seeds
 import com.jacck.mono.game.MAX_PLAYERS
 import com.jacck.mono.game.NewGameScreen
 import com.jacck.mono.game.SaveFile
@@ -64,7 +65,9 @@ class MainActivity : ComponentActivity() {
         val players = intent.getIntExtra("jugadores", 4).coerceIn(2, MAX_PLAYERS)
         val demo = if (intent.hasExtra("n")) intent.getIntExtra("n", 40) else null
         val preset = if (intent.getBooleanExtra("tio_rico", false)) Preset.TIO_RICO else Preset.CLASSIC
-        val seed = intent.getLongExtra("semilla", System.currentTimeMillis())
+        // Una semilla por partida (FF.1, D-84); la del extra, solo para la primera.
+        val seeds = Seeds(if (intent.hasExtra("semilla")) intent.getLongExtra("semilla", 0) else null)
+        val nextSeed = { seeds.next().also { Log.i(LOG_TAG, "semilla de la partida: $it") } }
         val sample = intent.getBooleanExtra("propiedades", false)
         val sheet = intent.getBooleanExtra("hoja", false)
         val sure = intent.getBooleanExtra("seguro", false)
@@ -83,13 +86,13 @@ class MainActivity : ComponentActivity() {
         val names = playerNames(emptyList(), resources.getStringArray(R.array.default_names).toList(), players, machineSeats.toSet()) {
             getString(R.string.menu_bot_name, it)
         }
-        Log.i(LOG_TAG, "MainActivity creada: ${demo?.let { "muestra de $it" } ?: "$preset"}, $players jugadores, semilla $seed")
+        Log.i(LOG_TAG, "MainActivity creada: ${demo?.let { "muestra de $it" } ?: "$preset"}, $players jugadores")
         setContent {
             ChivaTheme {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     if (link == "sala") {
                         // `--es maquina 0`: el jugador de aquí juega solo, para probar el enlace sin nadie al teléfono (F5.5).
-                        LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), machineSeats.toSet() - names.lastIndex, seed) { finish() }
+                        LinkedGame("sala", Preset.CLASSIC.load(), names, emptyList(), setOf(names.lastIndex), machineSeats.toSet() - names.lastIndex, nextSeed) { finish() }
                     } else if (link == "unirme") {
                         // `--es maquina 0` (cualquier índice): los jugadores de este teléfono los juega la máquina, y
                         // `--es direccion 10.0.0.5:40000` se conecta sin tocar nada (F5.10).
@@ -177,7 +180,7 @@ class MainActivity : ComponentActivity() {
                             }
                         } else if (game != null && resume == null && seats.isNotEmpty()) {
                             val config = boards.firstOrNull { it.key == game.first }?.config ?: Preset.CLASSIC.load()
-                            LinkedGame("sala-$rooms", config, game.second, game.third, seats.toSet(), bots.toSet(), seed) {
+                            LinkedGame("sala-$rooms", config, game.second, game.third, seats.toSet(), bots.toSet(), nextSeed) {
                                 Log.i(LOG_TAG, "sala: vuelve al menú")
                                 chosen = null
                                 seats = emptyList()
@@ -195,7 +198,7 @@ class MainActivity : ComponentActivity() {
                             val vm = viewModel(key = "partida-$games") {
                                 if (resume != null) {
                                     Log.i(LOG_TAG, "sigue la partida guardada: turno ${resume.state.turn}, ${resume.state.players.map { it.name to it.money }}")
-                                    GameViewModel(resume.config, resume.state.players.map { it.name }, seed, resumed = resume.state, onState = keep, bots = machines)
+                                    GameViewModel(resume.config, resume.state.players.map { it.name }, nextSeed(), resumed = resume.state, onState = keep, bots = machines)
                                 } else {
                                     val (p, n, t) = requireNotNull(game)
                                     val config = boards.firstOrNull { it.key == p }?.config ?: Preset.CLASSIC.load()
@@ -204,7 +207,7 @@ class MainActivity : ComponentActivity() {
                                         test && sample -> ::withSampleProperties
                                         else -> { s -> s }
                                     }
-                                    GameViewModel(config, n, seed, prepare = prepare, onState = keep, tokens = t, bots = machines, pause = if (test) pause else 900).also { if (test && (phase != null || card != null || back)) it.clearLog() }
+                                    GameViewModel(config, n, nextSeed(), prepare = prepare, onState = keep, tokens = t, bots = machines, pause = if (test) pause else 900).also { if (test && (phase != null || card != null || back)) it.clearLog() }
                                 }
                             }
                             GameScreen(
@@ -218,7 +221,7 @@ class MainActivity : ComponentActivity() {
                                     bots = emptyList()
                                     games++
                                 },
-                            ) { System.currentTimeMillis() }
+                            ) { nextSeed() }
                         }
                     }
                 }

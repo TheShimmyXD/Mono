@@ -225,6 +225,19 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 - [x] **FE.5** APK para instalar directo, sin compilar (pedida por el autor el 2026-10-08, D-81): etiqueta `v0.1`, GitHub Release con el APK de depuración y sección «Instalar el APK» en el README. *Terminado:* la release existe y el autor instala la app en el Redmi desde su enlace.
 - [ ] **FE.6** *(Extra)* Play Store por «prueba interna» (pedida por el autor el 2026-10-09, D-82; espera a que el autor tenga los 25 USD de la cuenta de Play Console y diga «ejecuta este paso»): keystore de release fuera del repositorio, `signingConfig` de release en `app/build.gradle.kts` (sin contraseñas versionadas), `bundleRelease` (AAB), ficha mínima (política de privacidad, seguridad de datos, clasificación de contenido, íconos) y pista de prueba interna con los correos de los amigos. *Terminado:* un amigo instala Mono desde el enlace de la prueba interna en Play Store, sin USB ni aviso de Play Protect.
 
+### FF · Arreglos que piden los jugadores
+
+*Pedida por el autor el 2026-10-11 (D-83): dos arreglos de lo que reportan los amigos. No espera al hito F5.6 ni lo hace esperar.*
+
+- [ ] **FF.1** Semillas: cada partida nueva (del menú, de una sala o «Seguir la partida») recibe su propia semilla al empezar; hoy sale una sola al abrir la app (`MainActivity.kt`) y todas las partidas siguientes repiten dados, orden y jugadas de la máquina. El extra `semilla` vale solo para la primera partida (como los demás extras, D-63). *Terminado:* D-## con el origen de la semilla; prueba de la app (con el extra, la primera partida usa esa y las siguientes no; 1000 semillas seguidas, todas distintas); en el Redmi, dos partidas seguidas desde el menú, sin cerrar la app, con semillas distintas en el log.
+- [ ] **FF.2** Confirmar la venta de casas y hoteles (`SellBuilding`): se pierde la mitad de lo pagado (R-30), así que un toque accidental no debe venderla; hipotecar sigue con un solo toque. Antes, 2-3 opciones con maqueta y captura (la más barata incluida). *Terminado:* el autor elige; D-##; en el Redmi, vender una casa pide la confirmación y hipotecar no; pruebas de la app en verde.
+
+### FG · Nuevo arte de las propiedades y las tarjetas *(anunciada)*
+
+*Pedida por el autor el 2026-10-11 (D-83): rehacer cómo se dibujan las casillas de propiedad y las tarjetas (de propiedad y de cartas). Es un trabajo grande: queda anunciada, sin empezar, hasta que el autor la abra.*
+
+- [ ] **FG.1** Alcance con el autor: qué cambia (casillas del tablero, tarjeta de propiedad, cartas de Suerte y Arca, `arte.py`), referencias que trae el autor y división en tareas FG.2… con su *Terminado*. *Terminado:* el autor aprueba la lista de tareas de FG (D-##).
+
 ---
 
 ## 6. Reglas del proyecto (van a `references/mandato.md`)
