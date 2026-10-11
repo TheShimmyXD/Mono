@@ -812,3 +812,11 @@
 - **Por qué no el reloj:** `System.currentTimeMillis()` al abrir la app era justo el error (D-83); por partida también serviría, pero dos teléfonos o dos toques en el mismo milisegundo darían la misma.
 - **Cómo se revierte:** volver a la semilla de `onCreate` (no tiene sentido: es el error).
 - **Estado:** vigente.
+
+### D-85 · FF.2: vender edificios manteniendo presionado
+
+- **Del autor (2026-10-11):** de las 3 maquetas (`capturas/ff2_maquetas.png`: A segundo toque, B ventana «¿Vender?», C mantener presionado) elige **C**, y sin el texto «Mantén»: el botón dice solo «Vender +$X».
+- **Cómo:** `BotonMantener` en `Chiva.kt`, con la forma y el ocre de `BotonChiva`; mientras se sostiene se llena de rojo (`Chiva.Techo`) en **1000 ms**, lineal, y al llenarse vende (`Action.SellBuilding`, casas y hoteles); soltar antes lo vacía en 150 ms sin vender. Deja `mantener «…»: hecho a los N ms` o `soltado a los N ms, sin hacer` en el log. Construir, hipotecar y levantar siguen con un toque (hipotecar solo cuesta el 10 % al levantarla, R-32).
+- **Por qué no A ni B:** las eligió el autor; B además abría una ventana encima del tablero, contra D-67.
+- **Cómo se revierte:** en `PlayerCard.kt`, volver a `BotonChiva` para `SellBuilding`.
+- **Estado:** vigente.

@@ -1,8 +1,13 @@
 package com.jacck.mono
 
+import android.util.Log
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,21 +22,29 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.Typography
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -42,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
+import kotlinx.coroutines.launch
 
 /** Colores de la interfaz «Chiva de fiesta» (D-33), de la paleta del arte (D-28). */
 object Chiva {
@@ -143,6 +157,52 @@ fun BotonChiva(
             // Un nombre largo achica la letra hasta 11 sp en vez de cortarse («Calle del Embudo», FB.2b).
             Text(
                 texto, color = if (principal) Color.White else Chiva.Tinta, maxLines = 1, softWrap = false,
+                autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 16.sp),
+            )
+        }
+    }
+}
+
+/**
+ * Botón que actúa solo si se mantiene presionado [ms] (FF.2, D-85): mientras se sostiene se llena de
+ * rojo de izquierda a derecha y, lleno, llama a [onDone]; soltar antes lo vacía sin hacer nada. Para lo
+ * que cuesta dinero si se toca sin querer (vender edificios, R-30). Se ve como el `BotonChiva` ocre.
+ * Deja en el log cuánto se sostuvo: adb no hace pulsaciones largas en el Redmi (M-121).
+ */
+@Composable
+fun BotonMantener(texto: String, onDone: () -> Unit, modifier: Modifier = Modifier.fillMaxWidth(), ms: Int = 1000) {
+    val forma = RoundedCornerShape(10.dp)
+    val fill = remember { Animatable(0f) }
+    val scope = rememberCoroutineScope()
+    val done by rememberUpdatedState(onDone)
+    val label by rememberUpdatedState(texto)
+    Box(modifier) {
+        Box(Modifier.matchParentSize().offset(3.dp, 3.dp).background(Chiva.Tinta, forma))
+        Box(
+            Modifier.fillMaxWidth().clip(forma).background(Chiva.Ocre)
+                .drawBehind { drawRect(Chiva.Techo, size = size.copy(width = size.width * fill.value)) }
+                .border(2.dp, Chiva.Tinta, forma).semantics { role = Role.Button }
+                .pointerInput(ms) {
+                    detectTapGestures(onPress = {
+                        val t0 = System.nanoTime()
+                        val filling = scope.launch {
+                            fill.animateTo(1f, tween(ms, easing = LinearEasing))
+                            Log.i(LOG_TAG, "mantener «$label»: hecho a los ${(System.nanoTime() - t0) / 1_000_000} ms")
+                            done()
+                        }
+                        tryAwaitRelease()
+                        if (filling.isActive) {
+                            filling.cancel()
+                            Log.i(LOG_TAG, "mantener «$label»: soltado a los ${(System.nanoTime() - t0) / 1_000_000} ms, sin hacer")
+                        }
+                        scope.launch { fill.animateTo(0f, tween(150)) }
+                    })
+                }
+                .padding(vertical = 10.dp, horizontal = 6.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                texto, color = Chiva.Tinta, maxLines = 1, softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 16.sp),
             )
         }

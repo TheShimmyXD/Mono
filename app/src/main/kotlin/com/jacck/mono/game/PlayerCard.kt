@@ -20,6 +20,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jacck.mono.BotonChiva
+import com.jacck.mono.BotonMantener
 import com.jacck.mono.Calcomania
 import com.jacck.mono.R
 import com.jacck.mono.board.BuildingIcons
@@ -89,7 +90,9 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding, manage
                         is Action.Unmortgage -> stringResource(R.string.move_unmortgage, amount) to true
                         else -> null to false
                     }
-                    if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), principal = main)
+                    // Vender pierde la mitad (R-30): se mantiene presionado (FF.2, D-85); lo demás, un toque.
+                    if (text != null && move.action is Action.SellBuilding) BotonMantener(text, { vm.act(move.action) }, Modifier.weight(1f))
+                    else if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), principal = main)
                 }
             }
         }
