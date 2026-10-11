@@ -852,3 +852,10 @@
 - **No cambia:** `REGLAS.md` (transcribe los reglamentos tal cual, regla 1), los identificadores (`doubles`), los comentarios, los nombres de las pruebas y «doble alquiler» (R-16, R-48: otra cosa).
 - **Cómo se revierte:** `git revert` del commit.
 - **Estado:** vigente.
+
+### D-90 · Fase FH: historial de partidas y propiedades libres en blanco
+
+- **Del autor (2026-10-11):** para el próximo paso, un botón de historial con las partidas jugadas, su resultado y cuánto duraron; y que al tocar el logo de un jugador, además de sus propiedades en su color (D-62), se vean en blanco, con el mismo efecto, las que aún están disponibles para comprar.
+- **Cómo queda:** fase FH entre FF y FG (sin renumerar, D-27): FH.1 propiedades libres, FH.2 historial; las dos con maquetas antes. Va antes del hito F5.6, que sigue esperando al amigo.
+- **Cómo se revierte:** quitar FH del plan.
+- **Estado:** vigente.
