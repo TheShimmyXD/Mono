@@ -1,13 +1,15 @@
 # Mono
 
+<img src="arte/svg/logo_mono_solo.svg" alt="Ícono de Mono" width="96" align="right">
+
 Juego de propiedades para Android al estilo del **Tío Rico** y del **Monopoly**, hecho para jugar con amigos en un mismo teléfono o en dos teléfonos por la red Wi-Fi. Se compra, se construye, se hipoteca y se cobra alquiler hasta que solo queda uno; y casi todo se puede cambiar: los nombres y precios de las casillas, el tamaño del tablero y las reglas.
 
-| | | |
-|:-:|:-:|:-:|
-| ![Menú](docs/capturas/menu.png) | ![Partida](docs/capturas/partida.png) | ![Carta](docs/capturas/carta.png) |
-| Nueva partida | La hoja de una propiedad | Una casilla de carta |
-| ![Lo que pasó](docs/capturas/lo_que_paso.png) | ![Editor de casillas](docs/capturas/editor.png) | ![Editor de reglas](docs/capturas/reglas.png) |
-| Lo que pasó en el turno | Editar las casillas | Editar las reglas |
+| | | | |
+|:-:|:-:|:-:|:-:|
+| ![Menú](docs/capturas/menu.png) | ![Partida](docs/capturas/partida.png) | ![Carta](docs/capturas/carta.png) | ![Historial](docs/capturas/historial.png) |
+| Nueva partida | Las propiedades de un jugador | Una casilla de carta | Historial de partidas |
+| ![Lo que pasó](docs/capturas/lo_que_paso.png) | ![Editor de casillas](docs/capturas/editor.png) | ![Editor de reglas](docs/capturas/reglas.png) | |
+| Lo que pasó en el turno | Editar las casillas | Editar las reglas | |
 
 ## Qué tiene
 
@@ -15,6 +17,8 @@ Juego de propiedades para Android al estilo del **Tío Rico** y del **Monopoly**
 - **De 2 a 4 jugadores** en el mismo teléfono, cada uno con su personaje. Cualquier puesto lo puede jugar la máquina («Botty»).
 - **Partida en red:** un puesto puede ser «Otro teléfono»; el amigo, en la misma red Wi-Fi, entra con «Unirme a la partida de un amigo». Si la conexión se corta, el invitado vuelve a entrar y la partida sigue donde iba.
 - **La partida se guarda sola** y se retoma con «Seguir la partida».
+- **Las propiedades de cada uno:** al tocar el ícono de un jugador se ven sus casillas en su color y las que todavía tiene el Banco en blanco.
+- **Historial de partidas:** cada partida con su fecha, tablero, turnos y tiempo jugado; el ganador, a color.
 - **Editor:** cambiar el nombre, el precio, el grupo y los alquileres de cada casilla; añadir o quitar casillas; y 28 reglas configurables (abajo).
 - **Arte propio** dibujado por código (`arte/`), sin imágenes de terceros.
 
@@ -45,7 +49,7 @@ Las reglas salen de los reglamentos impresos de los dos juegos: cada una está t
 
 Para jugar sin compilar nada, en un teléfono con **Android 8.0 o más nuevo**:
 
-1. Desde el teléfono, abrir la [última versión](https://github.com/TheShimmyXD/Mono/releases/latest) y descargar `mono-0.1.apk` (en *Assets*).
+1. Desde el teléfono, abrir la [última versión](https://github.com/TheShimmyXD/Mono/releases/latest) y descargar `mono-0.3.apk` (en *Assets*).
 2. Abrir el archivo descargado. La primera vez Android pide permiso para *instalar apps desconocidas* desde el navegador (o el gestor de archivos): activarlo y volver.
 3. Pulsar *Instalar*. Si Play Protect avisa que no reconoce la app, elegir *Instalar de todas formas* (puede pasar con las apps que no vienen de Play Store).
 
@@ -84,8 +88,8 @@ engine/      Motor de reglas en Kotlin puro (sin Android): tablero, dados, compr
 app/         La app de Android con Jetpack Compose: menú, partida, editor y juego en red.
 terminal/    El jugador de consola del PC (mono-pc), con el mismo motor.
 pc/          Script de Python para medir la conexión con el teléfono.
-arte/        arte.py y arte/dibujos/: dibujan cada casilla, ícono y personaje y generan
-             los SVG y los recursos de Android. La letra Lilita One y su licencia, en arte/letra/.
+arte/        arte.py y arte/dibujos/: dibujan cada casilla, ícono, personaje y el ícono de la app
+             y generan los SVG y los recursos de Android. La letra Lilita One y su licencia, en arte/letra/.
 docs/        Capturas de este README.
 REGLAS.md    Transcripción de los reglamentos, regla por regla.
 PLAN_MONO.md Plan del proyecto y hoja de ruta por fases.
