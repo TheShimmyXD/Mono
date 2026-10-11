@@ -113,14 +113,16 @@ const val BREATH_SCALE = 0.12f
  * respiran: se agrandan y vuelven, con una máscara translúcida de ese color encima (D-62).
  * [flight] es la casilla que vuela al ícono de quien la compró (D-65); [iconOf] dice dónde quedó
  * dibujado el ícono de cada jugador (`PlayersRow`, en [center]). [bills] son los billetes de un pago
- * entre jugadores (D-66).
+ * entre jugadores (D-66). Las de [free] (las que aún tiene el Banco, FH.1) respiran igual, en blanco;
+ * [freeLook] es la forma de que el blanco se distinga, mientras el autor elige (A, B o C).
  */
 @Composable
 fun Board(
     config: GameConfig, state: GameState, modifier: Modifier = Modifier, onSquare: (Int) -> Unit = {},
     highlight: Int? = state.players[state.current].position, showTokens: Boolean = true, hops: Map<Int, Hop> = emptyMap(),
     marks: Set<Int> = emptySet(), markColor: Color = Chiva.Tinta, flight: Fly? = null, bills: Bills? = null,
-    iconOf: (Int) -> LayoutCoordinates? = { null }, center: @Composable () -> Unit,
+    iconOf: (Int) -> LayoutCoordinates? = { null }, free: Set<Int> = emptySet(), freeLook: Char = 'A',
+    center: @Composable () -> Unit,
 ) {
     val where = remember { Where() }
     val density = LocalDensity.current
@@ -145,13 +147,17 @@ fun Board(
                 width = cw,
                 modifier = Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).clickable { onSquare(i) },
             )
+            // B: lo que no es del jugador elegido ni libre queda atenuado.
+            if (freeLook == 'B' && (marks.isNotEmpty() || free.isNotEmpty()) && i !in marks && i !in free) {
+                Box(Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).background(Chiva.Tinta.copy(alpha = 0.45f)))
+            }
         }
-        if (marks.isNotEmpty()) {
+        if (marks.isNotEmpty() || free.isNotEmpty()) {
             // Encima de las demás, para que al crecer no las tape la vecina (D-62).
             val breath by rememberInfiniteTransition(label = "respira").animateFloat(
                 0f, 1f, infiniteRepeatable(tween(BREATH_MS, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "respira",
             )
-            marks.forEach { i ->
+            (free.filter { it !in marks }.map { it to Color.White } + marks.map { it to markColor }).forEach { (i, color) ->
                 val at = grid.cellOf(i)
                 val k = 1f + BREATH_SCALE * breath
                 Box(Modifier.offset(cw * at.col, ch * at.row).size(cw, ch).graphicsLayer { scaleX = k; scaleY = k }.clickable { onSquare(i) }) {
@@ -160,7 +166,13 @@ fun Board(
                         if (showTokens) state.players.indices.filter { state.players[it].position == i && !state.players[it].bankrupt && it !in hops } else emptyList(),
                         i == highlight, cw, Modifier.fillMaxSize(),
                     )
-                    Box(Modifier.fillMaxSize().background(markColor.copy(alpha = 0.2f + 0.2f * breath)).border(4.dp, markColor))
+                    if (color == Color.White) {
+                        // Blanco sobre blanco: marco blanco dentro de un contorno de tinta; C, además, lava la casilla.
+                        val wash = if (freeLook == 'C') 0.55f + 0.3f * breath else 0.2f + 0.2f * breath
+                        Box(Modifier.fillMaxSize().background(Color.White.copy(alpha = wash)).border(1.5.dp, Chiva.Tinta).padding(1.5.dp).border(4.dp, Color.White))
+                    } else {
+                        Box(Modifier.fillMaxSize().background(markColor.copy(alpha = 0.2f + 0.2f * breath)).border(4.dp, markColor))
+                    }
                 }
             }
         }
