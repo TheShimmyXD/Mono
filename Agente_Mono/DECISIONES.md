@@ -873,3 +873,10 @@
 - **Decisión:** botón «Historial de partidas» bajo «Unirme» en el menú → `game/HistoryScreen.kt`, la más nueva arriba, con fecha, tablero, tiempo jugado, turnos y, si no terminó por quedar uno solo, cómo terminó. Se guarda en `historial.json` (`game/History.kt`: `HistoryFile`, `HistoryKeeper`, `PlayClock`), escrito tras cada jugada con su `Log.i` («historial: …»). El registro (`GameRecord`) va como datos puros junto a `SavedGame` en el motor, que ya tiene la librería de JSON: así la app no suma el complemento de serialización. El tiempo cuenta solo mientras la partida está en pantalla (`LifecycleStartEffect`) y se suma al seguirla desde el menú (`open` marca la de `partida.json`); empezar otra deja la abierta «Sin terminar». Las partidas enlazadas se anotan en cada teléfono, sin `open`. Un archivo dañado se aparta como `historial_danado.json`. Las de prueba (extras) no se anotan. Brillo del cromo: 2200 ms (`CHROME_MS`), cifra del agente.
 - **Cómo se revierte:** quitar el botón y `keeper` de los `GameViewModel`.
 - **Estado:** vigente.
+
+### D-93 · Fase FI: ícono del mono y GitHub al día
+
+- **Del autor (2026-10-11, al aprobar FH.2):** «modifica el plan para que el próximo paso sea modificar el ícono de la app (usa el mono en vez de la chiva) y revisar el GitHub para actualizar todo».
+- **Cómo queda:** fase FI entre FH y FG (sin renumerar, D-27): FI.1 ícono con el mono (maquetas primero; cambia el ícono de FB.5), FI.2 GitHub al día (lista de cambios, push y release solo si el autor los ordena, `publicar.md`). Va antes del hito F5.6, que sigue esperando al amigo.
+- **Cómo se revierte:** quitar FI del plan.
+- **Estado:** vigente.
