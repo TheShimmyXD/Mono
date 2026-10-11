@@ -49,7 +49,7 @@ import com.jacck.mono.board.PlayerColors
  * Maquetas de la pantalla que se está diseñando (M-029), con datos falsos; se abren con el extra
  * `maqueta`. FH.2 (D-90): el historial de partidas, opción A del autor: una tarjeta por partida,
  * medallones iguales con insignia arriba a la derecha (robot o enlace), el ganador con cromo dorado
- * que se mueve detrás de su personaje y los demás en blanco y negro.
+ * que se mueve detrás de su personaje y los demás (aro incluido) en blanco y negro.
  */
 @Composable
 fun Maqueta(letra: String) {
@@ -81,7 +81,10 @@ private val Partidas = listOf(
 /** Cromo dorado: tonos de oro con un brillo claro en medio, en espejo para que el barrido no tenga corte. */
 private val Oro = listOf(Color(0xFFA67C00), Color(0xFFE8B923), Color(0xFFFFF4C2), Color(0xFFE8B923), Color(0xFFA67C00))
 
-/** Medallón del historial: como [Medallon], con fondo de cromo que barre si ganó, o el personaje en gris si no. */
+/** Aro de quien no ganó (también todos en una partida sin terminar). */
+private val Gris = Color(0xFF9E9E9E)
+
+/** Medallón del historial: solo el ganador a color, con fondo de cromo que barre; los demás, aro gris y personaje en blanco y negro. */
 @Composable
 private fun MedallonHistorial(q: Quien, estado: Boolean?, size: Dp) {
     val brillo by rememberInfiniteTransition(label = "cromo").animateFloat(
@@ -97,11 +100,11 @@ private fun MedallonHistorial(q: Quien, estado: Boolean?, size: Dp) {
                         drawRect(Brush.linearGradient(Oro, Offset(x, 0f), Offset(x + w, this.size.height), TileMode.Mirror))
                     } else drawRect(Color.White)
                 }
-                .border(size / 10, PlayerColors[q.k], CircleShape).border(size / 35, Chiva.Tinta, CircleShape),
+                .border(size / 10, if (estado == true) PlayerColors[q.k] else Gris, CircleShape).border(size / 35, Chiva.Tinta, CircleShape),
         ) {
             Image(
                 painterResource(Personajes[q.k].second), null, Modifier.size(size).padding(size / 8),
-                colorFilter = if (estado == false) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null,
+                colorFilter = if (estado != true) ColorFilter.colorMatrix(ColorMatrix().apply { setToSaturation(0f) }) else null,
             )
         }
         val insignia = if (q.maquina) Icon.MAQUINA else if (q.remoto) Icon.ENLACE else null
@@ -125,7 +128,7 @@ private fun Tarjeta(p: Partida) = Calcomania {
         Row {
             p.jugadores.forEachIndexed { i, q ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.width(72.dp)) {
-                    // Sin ganador (sin terminar), todos a color.
+                    // Sin ganador (sin terminar), todos en blanco y negro.
                     MedallonHistorial(q, p.ganador?.let { it == i }, 40.dp)
                     Text(q.nombre, fontSize = 12.sp, maxLines = 1)
                 }
