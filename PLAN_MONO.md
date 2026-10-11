@@ -244,7 +244,7 @@ Capas: `engine/` (Kotlin/JVM puro: configuración, estado, acciones, reglas) →
 
 *Pedida por el autor el 2026-10-11, al aprobar FH.2 (D-93), como siguiente paso antes del hito F5.6.*
 
-- [ ] **FI.1** Ícono de la app con el mono: el personaje del mono en lugar de la chiva en el ícono adaptativo (fondo y frente desde `arte.py`, `arte.md` §4); antes, 2-3 formas (p. ej. el mono solo, el mono sobre las franjas de chiva, el mono en su medallón), con maqueta y captura (la más barata incluida). *Terminado:* el autor elige; D-##; captura del lanzador del Redmi con el ícono nuevo; `cierre_paso.py` con el arte al día.
+- [x] **FI.1** Ícono de la app con el mono: el personaje del mono en lugar de la chiva en el ícono adaptativo (fondo y frente desde `arte.py`, `arte.md` §4); antes, 2-3 formas (p. ej. el mono solo, el mono sobre las franjas de chiva, el mono en su medallón), con maqueta y captura (la más barata incluida). *Terminado:* el autor elige; D-##; captura del lanzador del Redmi con el ícono nuevo; `cierre_paso.py` con el arte al día.
 - [ ] **FI.2** GitHub al día: revisar lo publicado en https://github.com/TheShimmyXD/Mono (README, capturas, descripción, última release) contra lo que hay hoy (FF, FH, el ícono de FI.1) y dar la lista de lo que cambia; con `publicar.md`: README al día, barrido de datos personales, push y, si el autor la pide, una release nueva con su APK. *Terminado:* el autor aprueba la lista y ordena el push (y la release); lo publicado coincide con lo local (commit y, si hay release, sha256 de la descarga).
 
 ### FG · Nuevo arte de las propiedades y las tarjetas *(anunciada)*
