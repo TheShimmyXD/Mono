@@ -880,3 +880,13 @@
 - **Cómo queda:** fase FI entre FH y FG (sin renumerar, D-27): FI.1 ícono con el mono (maquetas primero; cambia el ícono de FB.5), FI.2 GitHub al día (lista de cambios, push y release solo si el autor los ordena, `publicar.md`). Va antes del hito F5.6, que sigue esperando al amigo.
 - **Cómo se revierte:** quitar FI del plan.
 - **Estado:** vigente.
+
+### D-94 · Ícono de la app: el mono solo sobre amarillo (FI.1)
+
+- **Pregunta:** qué ícono con el mono reemplaza a la chiva de FB.5 (D-38, D-93).
+- **Del autor (2026-10-11):** opción **A**, el mono solo sobre amarillo liso (`capturas/fi1_maquetas.png`; descartadas B, el mono sobre los rombos de la chiva, y C, el mono en un medallón rojo y amarillo sobre verde; las tres y la chiva en `1afc61c`).
+- **Del agente:**
+  - *Dibujo:* `logo_mono_solo` en `arte/dibujos/logos.py`: fondo `bolt` liso de 108 y frente `pj_mono` × 1,45 centrado con el ayudante `mono(k)` (61 de ancho, dentro del círculo de 66 que respeta el lanzador). Mismo lienzo, contorno 2,4 y líneas 1,8 que D-38.
+  - *Salidas:* `LOGO_APP = "mono_solo"`; `arte.py` reescribe `ic_launcher.xml` con `logo_mono_solo_fondo` y `logo_mono_solo_frente`. `LOGOS` queda solo con el de la app; los `logo_*` de FB.5 y de las opciones descartadas ya no se generan y quedan para que el autor los borre.
+- **Cómo se revierte:** `LOGO_APP` y `LOGOS` como en `1afc61c` (la chiva) y correr `arte.py`.
+- **Estado:** vigente.

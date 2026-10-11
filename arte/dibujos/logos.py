@@ -1,7 +1,7 @@
 """Logos (FB.5): ícono adaptativo de 108 x 108 en dos capas, fondo y frente."""
 import re
 
-from .formas import circle, f, poly, rect
+from .formas import f, rect
 from .personajes import PERSONAJES
 
 
@@ -41,45 +41,18 @@ def escalar(formas, k, dx, dy):
     return out
 
 
-def rombos():
-    """Fondo verde con los rombos amarillos, rojos y blancos de la carrocería de la chiva."""
-    fondo = [("leaf", rect(0, 0, LW, LW))]
-    for fila, y in enumerate(range(0, LW + 18, 18)):
-        for x in range(-9 if fila % 2 else 0, LW + 18, 18):
-            fondo.append((("ochre", "roof", "cloud")[(x // 18 + fila) % 3], poly([(x, y - 7), (x + 7, y), (x, y + 7), (x - 7, y)])))
-    return fondo
-
-
 def mono(k):
     """El personaje del mono (`pj_mono`) escalado por k y centrado en el lienzo (su caja: x 3-45, y 4,5-39)."""
     return escalar(PERSONAJES["mono"](), k, 54 - 24 * k, 54 - 21.75 * k)
 
 
 # En los logos el amarillo es `bolt`: con `sun`, `trazos` le pone rayos a la forma.
-def logo_chiva():
-    """La chiva de frente sobre los rombos de su carrocería."""
-    k = 1.4
-    frente = escalar(PERSONAJES["chiva"](), k, 54 - 24 * k, 55 - 24.25 * k)
-    return rombos(), frente
-
-
 def logo_mono_solo():
-    """FI.1 A: el mono solo sobre amarillo liso."""
+    """El mono solo sobre amarillo liso."""
     return [("bolt", rect(0, 0, LW, LW))], mono(1.45)
 
 
-def logo_mono_rombos():
-    """FI.1 B: el mono sobre los rombos de la chiva."""
-    return rombos(), mono(1.45)
-
-
-def logo_mono_medallon():
-    """FI.1 C: el mono en un medallón rojo y amarillo sobre verde liso."""
-    frente = [("roof", circle(54, 54, 32)), ("bolt", circle(54, 54, 27.5))] + mono(1.25)
-    return [("leaf", rect(0, 0, LW, LW))], frente
-
-
-# El de la app (FB.5, D-38, opción B); las otras dos opciones de FB.5 (mono en el sol, dado) están en `00e8e3e`.
-LOGOS = {"chiva": logo_chiva, "mono_solo": logo_mono_solo, "mono_rombos": logo_mono_rombos,
-         "mono_medallon": logo_mono_medallon}
-LOGO_APP = "chiva"
+# El de la app (FI.1, D-94, opción A). Las otras dos con el mono (sobre los rombos, en su medallón) y la
+# chiva de FB.5 (D-38) están en `1afc61c`; las de FB.5 (mono en el sol, dado), en `00e8e3e`.
+LOGOS = {"mono_solo": logo_mono_solo}
+LOGO_APP = "mono_solo"
