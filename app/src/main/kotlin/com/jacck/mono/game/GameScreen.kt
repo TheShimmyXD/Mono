@@ -47,6 +47,7 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
 import com.jacck.mono.board.PlayerColors
+import com.jacck.mono.board.freeSquares
 import com.jacck.mono.board.PlayersRow
 import com.jacck.mono.engine.model.Action
 import com.jacck.mono.engine.model.TurnPhase
@@ -136,7 +137,7 @@ fun GameScreen(
             markColor = cardOf?.let { PlayerColors[it] } ?: Color.Unspecified,
             flight = (motion as? Flight)?.let { Fly(it.square, it.player, steps.value.coerceIn(0f, 1f), TINT_MS / (TINT_MS + FLY_MS).toFloat()) },
             bills = pay?.let { p -> Bills(p.transfers.map { it.from to it.to }, f) },
-            iconOf = { icons[it] },
+            iconOf = { icons[it] }, free = cardOf?.let { freeSquares(vm.config, state) }.orEmpty(),
         ) {
             Column(Modifier.fillMaxSize()) {
                 PlayersRow(

@@ -859,3 +859,10 @@
 - **Cómo queda:** fase FH entre FF y FG (sin renumerar, D-27): FH.1 propiedades libres, FH.2 historial; las dos con maquetas antes. Va antes del hito F5.6, que sigue esperando al amigo.
 - **Cómo se revierte:** quitar FH del plan.
 - **Estado:** vigente.
+
+### D-91 · Propiedades libres en blanco: lo demás se atenúa (FH.1)
+
+- **Del autor (2026-10-11):** de tres maquetas (`capturas/fh1_maquetas.png`: A marco blanco con contorno de tinta, B lo demás atenuado, C libres lavadas de blanco), elige la B.
+- **Decisión:** con la tarjeta de un jugador abierta, las casillas que aún tiene el Banco (`board/FreeSquares.kt`, `freeSquares`: comprables sin dueño) respiran como las del jugador (D-62) con máscara blanca del 20 % al 40 %, marco blanco de 4 dp y contorno de tinta de 1,5 dp; las que no son del jugador ni libres (también las que no se compran) quedan bajo un velo de tinta al 45 %. Cifras del agente; las ajusta el autor al verlo. En la A las libres casi no se distinguían; la C tapaba nombre y precio.
+- **Cómo se revierte:** `free` vacío en `GameScreen.kt` (vuelve D-62 sola).
+- **Estado:** vigente.
