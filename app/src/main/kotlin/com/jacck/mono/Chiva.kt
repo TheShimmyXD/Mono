@@ -164,9 +164,10 @@ fun BotonChiva(
 }
 
 /**
- * Botón que actúa solo si se mantiene presionado [ms] (FF.2, D-85): mientras se sostiene se llena de
- * rojo de izquierda a derecha y, lleno, llama a [onDone]; soltar antes lo vacía sin hacer nada. Para lo
- * que cuesta dinero si se toca sin querer (vender edificios, R-30). Se ve como el `BotonChiva` ocre.
+ * Botón que actúa solo si se mantiene presionado [ms] (FF.2, D-85): mientras se sostiene se llena
+ * de izquierda a derecha y, lleno, llama a [onDone]; soltar antes lo vacía sin hacer nada. Para lo
+ * que cuesta dinero si se toca sin querer (vender edificios, R-30). Se ve como el `BotonChiva` rojo y
+ * se llena de un rojo más oscuro (D-86).
  * Deja en el log cuánto se sostuvo: adb no hace pulsaciones largas en el Redmi (M-121).
  */
 @Composable
@@ -179,8 +180,8 @@ fun BotonMantener(texto: String, onDone: () -> Unit, modifier: Modifier = Modifi
     Box(modifier) {
         Box(Modifier.matchParentSize().offset(3.dp, 3.dp).background(Chiva.Tinta, forma))
         Box(
-            Modifier.fillMaxWidth().clip(forma).background(Chiva.Ocre)
-                .drawBehind { drawRect(Chiva.Techo, size = size.copy(width = size.width * fill.value)) }
+            Modifier.fillMaxWidth().clip(forma).background(Chiva.Techo)
+                .drawBehind { drawRect(Chiva.Tinta.copy(alpha = 0.45f), size = size.copy(width = size.width * fill.value)) }
                 .border(2.dp, Chiva.Tinta, forma).semantics { role = Role.Button }
                 .pointerInput(ms) {
                     detectTapGestures(onPress = {
@@ -202,7 +203,7 @@ fun BotonMantener(texto: String, onDone: () -> Unit, modifier: Modifier = Modifi
             contentAlignment = Alignment.Center,
         ) {
             Text(
-                texto, color = Chiva.Tinta, maxLines = 1, softWrap = false,
+                texto, color = Color.White, maxLines = 1, softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 16.sp),
             )
         }

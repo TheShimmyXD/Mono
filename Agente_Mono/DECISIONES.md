@@ -820,3 +820,11 @@
 - **Por qué no A ni B:** las eligió el autor; B además abría una ventana encima del tablero, contra D-67.
 - **Cómo se revierte:** en `PlayerCard.kt`, volver a `BotonChiva` para `SellBuilding`.
 - **Estado:** vigente.
+
+### D-86 · Colores de la hoja: amarillo lo que suma, rojo lo que pierde
+
+- **Del autor (2026-10-11, tras probar FF.2):** invertir los colores de las jugadas de la hoja: amarillo (`Chiva.Ocre`) para las «buenas», Construir y Levantar; rojo (`Chiva.Techo`, letra blanca) para las «malas», Vender e Hipotecar.
+- **`BotonMantener`:** rojo, y al mantenerlo se llena de `Chiva.Tinta` al 45 % (un rojo oscurecido), sin color nuevo en la paleta.
+- **Alcance:** solo la hoja (`PlayerCard.kt`); la botonera del turno (D-69) no cambia.
+- **Cómo se revierte:** en `PlayerCard.kt`, invertir los `true`/`false` del `when` y volver `BotonMantener` al ocre con relleno rojo.
+- **Estado:** vigente.
