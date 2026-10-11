@@ -43,13 +43,28 @@ enum class BarKind {
 }
 
 /**
- * Un botón del letrero: [action] es la del motor (null si lo resuelve la pantalla), [principal] rojo
- * u ocre, y [enabled] si el motor la acepta ahora (`Engine.tryApply`, D-24).
+ * Qué hace un botón de la partida, y de ahí su color (FF.3, D-88): avanzar el turno (azul), gastar
+ * (verde), recibir dinero a cambio de algo (ocre), no hacerlo (ocre) y quebrar (rojo, solo esto).
  */
-data class BarButton(
-    val kind: BarKind, val action: Action? = null, val amount: Int? = null, val principal: Boolean = true,
-    val enabled: Boolean = true,
-)
+enum class ButtonRole { TURN, SPEND, RECEIVE, DECLINE, LOSE }
+
+/** El rol de cada botón del letrero (tabla de D-88). */
+val BarKind.role: ButtonRole
+    get() = when (this) {
+        BarKind.ROLL, BarKind.END_TURN, BarKind.JAIL_ROLL, BarKind.NEXT -> ButtonRole.TURN
+        BarKind.BUY, BarKind.BID, BarKind.TAX_FIXED, BarKind.TAX_PERCENT, BarKind.JAIL_FINE -> ButtonRole.SPEND
+        BarKind.SELL_OR_MORTGAGE -> ButtonRole.RECEIVE
+        BarKind.DECLINE, BarKind.PASS, BarKind.JAIL_CARD -> ButtonRole.DECLINE
+        BarKind.BANKRUPTCY -> ButtonRole.LOSE
+    }
+
+/**
+ * Un botón del letrero: [action] es la del motor (null si lo resuelve la pantalla), [enabled] si el
+ * motor la acepta ahora (`Engine.tryApply`, D-24); el color sale de [role].
+ */
+data class BarButton(val kind: BarKind, val action: Action? = null, val amount: Int? = null, val enabled: Boolean = true) {
+    val role: ButtonRole get() = kind.role
+}
 
 data class TurnBar(val title: BarTitle, val buttons: List<BarButton>)
 
@@ -65,8 +80,8 @@ fun turnBar(config: GameConfig, state: GameState, bots: Set<Int> = emptySet(), r
     val who = decider(state)
     if (who in remote) return TurnBar(BarTitle.Waiting(who), emptyList())
     if (who in bots) return TurnBar(BarTitle.Machine(who), emptyList())
-    fun button(kind: BarKind, action: Action, amount: Int? = null, principal: Boolean = true) =
-        BarButton(kind, action, amount, principal, Engine.tryApply(config, state, action) != null)
+    fun button(kind: BarKind, action: Action, amount: Int? = null) =
+        BarButton(kind, action, amount, Engine.tryApply(config, state, action) != null)
     return when (phase) {
         TurnPhase.Roll -> {
             val player = state.players[who]
@@ -74,8 +89,8 @@ fun turnBar(config: GameConfig, state: GameState, bots: Set<Int> = emptySet(), r
             if (turns == null) {
                 TurnBar(BarTitle.Turn(who), listOf(button(BarKind.ROLL, Action.Roll)))
             } else {
-                val fine = button(BarKind.JAIL_FINE, Action.PayJailFine, config.rules.jailFine, principal = false)
-                val card = button(BarKind.JAIL_CARD, Action.UseJailCard, principal = false)
+                val fine = button(BarKind.JAIL_FINE, Action.PayJailFine, config.rules.jailFine)
+                val card = button(BarKind.JAIL_CARD, Action.UseJailCard)
                 // Lo que seguro no vale (sin carta, sin dinero, último turno) no se ofrece (R-22).
                 TurnBar(
                     BarTitle.Jail(who, turns + 1, config.rules.jailMaxTurns),
@@ -88,7 +103,7 @@ fun turnBar(config: GameConfig, state: GameState, bots: Set<Int> = emptySet(), r
             BarTitle.Buy(phase.square),
             listOf(
                 button(BarKind.BUY, Action.Buy, (config.squares[phase.square] as OwnableSquare).price),
-                button(BarKind.DECLINE, Action.Decline, principal = false),
+                button(BarKind.DECLINE, Action.Decline),
             ),
         )
         is TurnPhase.Auction -> {
@@ -96,7 +111,7 @@ fun turnBar(config: GameConfig, state: GameState, bots: Set<Int> = emptySet(), r
             val offers = if (phase.highestBidder == null) listOf(base, base + 10, base + 50) else listOf(10, 50, 100).map { phase.highestBid + it }
             TurnBar(
                 BarTitle.Auction(phase.square, who),
-                offers.map { button(BarKind.BID, Action.Bid(who, it), it) } + button(BarKind.PASS, Action.PassBid(who), principal = false),
+                offers.map { button(BarKind.BID, Action.Bid(who, it), it) } + button(BarKind.PASS, Action.PassBid(who)),
             )
         }
         is TurnPhase.TaxChoice -> {
@@ -105,7 +120,7 @@ fun turnBar(config: GameConfig, state: GameState, bots: Set<Int> = emptySet(), r
                 BarTitle.Tax(phase.square),
                 listOf(
                     button(BarKind.TAX_FIXED, Action.PayTax(percent = false), tax.fixed),
-                    button(BarKind.TAX_PERCENT, Action.PayTax(percent = true), tax.percent, principal = false),
+                    button(BarKind.TAX_PERCENT, Action.PayTax(percent = true), tax.percent),
                 ),
             )
         }
@@ -115,7 +130,7 @@ fun turnBar(config: GameConfig, state: GameState, bots: Set<Int> = emptySet(), r
                 BarTitle.Debt(who),
                 listOf(
                     BarButton(BarKind.SELL_OR_MORTGAGE, enabled = moves),
-                    BarButton(BarKind.BANKRUPTCY, principal = !moves),
+                    BarButton(BarKind.BANKRUPTCY),
                 ),
             )
         }

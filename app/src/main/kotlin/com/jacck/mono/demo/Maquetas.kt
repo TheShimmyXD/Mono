@@ -10,7 +10,7 @@ import com.jacck.mono.PantallaChiva
 
 /**
  * Maquetas de la pantalla que se está diseñando (M-029), con datos falsos; se abren con el extra
- * `maqueta`. Ahora no hay ninguna en diseño (la última, FF.2, quedó en `capturas/ff2_maquetas.png`, D-85).
+ * `maqueta`. Ahora no hay ninguna en diseño (la última, FF.3, quedó en `capturas/ff3_maquetas.png`, D-88).
  */
 @Composable
 fun Maqueta(letra: String) {

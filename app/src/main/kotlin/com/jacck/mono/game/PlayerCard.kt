@@ -23,6 +23,7 @@ import com.jacck.mono.BotonChiva
 import com.jacck.mono.BotonMantener
 import com.jacck.mono.Calcomania
 import com.jacck.mono.R
+import com.jacck.mono.fondo
 import com.jacck.mono.board.BuildingIcons
 import com.jacck.mono.board.PlayerToken
 import com.jacck.mono.engine.model.Action
@@ -52,7 +53,7 @@ fun PlayerDetail(vm: GameViewModel, player: Int, manage: Boolean, onBankrupt: ()
         if (manage) vm.error?.let { Text(stringResource(R.string.rejected, it), color = MaterialTheme.colorScheme.error, fontSize = 13.sp) }
         if (mine.isEmpty()) Text(stringResource(R.string.properties_none), fontSize = 15.sp)
         mine.forEach { (square, holding) -> PropertyRow(vm, square, holding, manage) }
-        if (manage) BotonChiva(stringResource(R.string.bankruptcy_me), onBankrupt, principal = false)
+        if (manage) BotonChiva(stringResource(R.string.bankruptcy_me), onBankrupt, fondo = ButtonRole.LOSE.fondo)
     }
 }
 
@@ -83,16 +84,17 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding, manage
             Row(Modifier.padding(start = 6.dp, end = 9.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 moves.forEach { move ->
                     val amount = money(move.amount)
-                    val (text, main) = when (move.action) {
-                        is Action.Build -> stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount) to true
-                        is Action.SellBuilding -> stringResource(R.string.move_sell, amount) to false
-                        is Action.Mortgage -> stringResource(R.string.move_mortgage, amount) to false
-                        is Action.Unmortgage -> stringResource(R.string.move_unmortgage, amount) to true
-                        else -> null to false
+                    // Construir y levantar gastan (verde); vender e hipotecar reciben (ocre, D-88).
+                    val (text, role) = when (move.action) {
+                        is Action.Build -> stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount) to ButtonRole.SPEND
+                        is Action.SellBuilding -> stringResource(R.string.move_sell, amount) to ButtonRole.RECEIVE
+                        is Action.Mortgage -> stringResource(R.string.move_mortgage, amount) to ButtonRole.RECEIVE
+                        is Action.Unmortgage -> stringResource(R.string.move_unmortgage, amount) to ButtonRole.SPEND
+                        else -> null to ButtonRole.DECLINE
                     }
                     // Vender pierde la mitad (R-30): se mantiene presionado (FF.2, D-85); lo demás, un toque.
                     if (text != null && move.action is Action.SellBuilding) BotonMantener(text, { vm.act(move.action) }, Modifier.weight(1f))
-                    else if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), principal = main)
+                    else if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), fondo = role.fondo)
                 }
             }
         }

@@ -38,6 +38,7 @@ import com.jacck.mono.Chiva
 import com.jacck.mono.DialogoChiva
 import com.jacck.mono.PantallaChiva
 import com.jacck.mono.R
+import com.jacck.mono.fondo
 import com.jacck.mono.board.Board
 import com.jacck.mono.board.Hop
 import com.jacck.mono.board.Fly
@@ -224,7 +225,7 @@ private fun TurnSign(vm: GameViewModel, bar: TurnBar, enabled: Boolean, onButton
                     bar.buttons.forEach { b ->
                         val label = buttonLabel(b)
                         BotonChiva(
-                            label, { onButton(b) }, Modifier.weight(if (label.length > 7) 2f else 1f), principal = b.principal,
+                            label, { onButton(b) }, Modifier.weight(if (label.length > 7) 2f else 1f), fondo = b.role.fondo,
                             enabled = enabled && b.enabled,
                         )
                     }
@@ -262,8 +263,8 @@ private fun ConfirmMenu(linked: Boolean, onCancel: () -> Unit, onYes: () -> Unit
     DialogoChiva(
         stringResource(R.string.to_menu_sure), color = Chiva.Azul,
         botones = {
-            BotonChiva(stringResource(R.string.to_menu_yes), onYes)
-            BotonChiva(stringResource(R.string.to_menu_no), onCancel, principal = false)
+            BotonChiva(stringResource(R.string.to_menu_yes), onYes, fondo = ButtonRole.TURN.fondo)
+            BotonChiva(stringResource(R.string.to_menu_no), onCancel, fondo = ButtonRole.DECLINE.fondo)
         },
     ) {
         Text(stringResource(if (linked) R.string.to_menu_link else R.string.to_menu_saved), fontSize = 16.sp)
@@ -277,8 +278,8 @@ private fun ConfirmBankruptcy(vm: GameViewModel, player: Int, creditor: Int?, on
     DialogoChiva(
         stringResource(R.string.bankruptcy_sure, players[player].name), color = Chiva.Techo,
         botones = {
-            BotonChiva(stringResource(R.string.bankruptcy_yes), { onDone(); vm.act(Action.DeclareBankruptcy) })
-            BotonChiva(stringResource(R.string.bankruptcy_no), onCancel, principal = false)
+            BotonChiva(stringResource(R.string.bankruptcy_yes), { onDone(); vm.act(Action.DeclareBankruptcy) }, fondo = ButtonRole.LOSE.fondo)
+            BotonChiva(stringResource(R.string.bankruptcy_no), onCancel, fondo = ButtonRole.DECLINE.fondo)
         },
     ) {
         Text(

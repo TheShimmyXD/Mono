@@ -18,6 +18,16 @@ import org.junit.jupiter.api.Test
 
 /** El letrero del turno (FD.4, D-69, D-70) en el Clásico: Ana (0) y Beto (1), le toca a Ana. */
 class TurnBarTest {
+    @Test
+    fun `FF-3 cada boton tiene el rol de lo que hace, y solo Quebrar es rojo`() {
+        val byRole = BarKind.entries.groupBy({ it.role }, { it })
+        assertEquals(listOf(BarKind.ROLL, BarKind.END_TURN, BarKind.JAIL_ROLL, BarKind.NEXT), byRole[ButtonRole.TURN])
+        assertEquals(listOf(BarKind.BUY, BarKind.BID, BarKind.TAX_FIXED, BarKind.TAX_PERCENT, BarKind.JAIL_FINE), byRole[ButtonRole.SPEND])
+        assertEquals(listOf(BarKind.SELL_OR_MORTGAGE), byRole[ButtonRole.RECEIVE])
+        assertEquals(listOf(BarKind.DECLINE, BarKind.PASS, BarKind.JAIL_CARD), byRole[ButtonRole.DECLINE])
+        assertEquals(listOf(BarKind.BANKRUPTCY), byRole[ButtonRole.LOSE])
+    }
+
 
     private val config = Preset.CLASSIC.load()
     private val start = Engine.newGame(config, listOf("Ana", "Beto"), seed = 1).state.copy(current = 0)
@@ -39,7 +49,7 @@ class TurnBarTest {
         val bar = turnBar(config, start.copy(phase = TurnPhase.Buy(1)))!!
         assertEquals(BarTitle.Buy(1), bar.title)
         assertEquals(
-            listOf(BarButton(BarKind.BUY, Action.Buy, price), BarButton(BarKind.DECLINE, Action.Decline, principal = false)),
+            listOf(BarButton(BarKind.BUY, Action.Buy, price), BarButton(BarKind.DECLINE, Action.Decline)),
             bar.buttons,
         )
         // Sin dinero, el motor no deja comprar: el botón sale apagado.
@@ -91,10 +101,10 @@ class TurnBarTest {
         assertEquals(BarTitle.Debt(1), withLand.title)
         assertEquals(listOf(BarKind.SELL_OR_MORTGAGE, BarKind.BANKRUPTCY), kinds(withLand))
         assertTrue(withLand.buttons[0].enabled)
-        // Sin nada que vender, solo queda quebrar: ese es el principal.
+        // Sin nada que vender, solo queda quebrar (en rojo, D-88).
         val bare = turnBar(config, owing)!!
         assertFalse(bare.buttons[0].enabled)
-        assertTrue(bare.buttons[1].principal)
+        assertEquals(ButtonRole.LOSE, bare.buttons[1].role)
         assertTrue(canManage(owing, 1, localTurn = true))
         assertFalse(canManage(owing, 0, localTurn = true))
     }

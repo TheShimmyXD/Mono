@@ -835,3 +835,12 @@
 - **Cómo queda:** FF.3 en el plan, con opciones vistas en el Redmi antes de cambiar nada; FF sigue abierta hasta FF.3.
 - **Cómo se revierte:** quitar FF.3 del plan.
 - **Estado:** vigente.
+
+### D-88 · FF.3: los botones de la partida, por lo que hacen
+
+- **Del autor (2026-10-11):** elige la opción B («por lo que hace») entre tres maquetas y la de hoy (`capturas/ff3_maquetas.png`), con letra negra en el verde (blanca sobre el verde: contraste 2,83; negra: 6,0; rojo 4,17 y azul 4,09 con blanca).
+- **Criterio:** azul avanza el turno, verde gasta, ocre recibe dinero a cambio de algo o no hace la jugada, rojo solo quebrar. El menú, el editor y el enlace siguen con rojo y ocre (D-33): allí el autor no ve el problema.
+- **Tabla:** azul (`TURN`): Tirar los dados, Tirar dobles, Terminar turno, Seguir, Otra partida, Sí, al menú (y Volver al menú en la enlazada, donde es el único). Verde (`SPEND`): Comprar, pujas, Pagar (fijo y %), Multa, Construir, Hotel, Levantar. Ocre (`RECEIVE`): Vender o hipotecar, Vender (se mantiene, D-85), Hipotecar. Ocre (`DECLINE`): No comprar, Pasar, Usar carta, No, sigo jugando, Volver al menú (local). Rojo (`LOSE`): Quebrar, Declararme en quiebra, Sí, me declaro en quiebra.
+- **Código:** `ButtonRole` y `BarKind.role` en `game/TurnBar.kt` (sin interfaz; la tabla de la botonera con su prueba en `TurnBarTest`), el color en `ButtonRole.fondo` y la letra en `letraSobre` (`Chiva.kt`); `BarButton.principal` se quita (el rol sale del tipo de botón).
+- **Cómo se revierte:** `git revert` del commit de FF.3 (vuelve `BarButton.principal`: rojo la principal, ocre la otra).
+- **Estado:** vigente.

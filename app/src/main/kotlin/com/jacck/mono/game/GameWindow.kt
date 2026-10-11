@@ -58,6 +58,7 @@ import com.jacck.mono.BotonChiva
 import com.jacck.mono.Calcomania
 import com.jacck.mono.Chiva
 import com.jacck.mono.R
+import com.jacck.mono.fondo
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
 import com.jacck.mono.board.SquareFace
@@ -164,8 +165,9 @@ internal fun OverWindow(vm: GameViewModel, winners: List<Int>, onMenu: (() -> Un
                 stringResource(R.string.winners, winners.joinToString(" y ") { vm.state.players[it].name }), fontSize = 22.sp,
                 textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
             )
-            if (vm.remote == null) BotonChiva(stringResource(R.string.new_game), onRestart)
-            if (onMenu != null) BotonChiva(stringResource(R.string.to_menu), onMenu, principal = vm.remote != null)
+            if (vm.remote == null) BotonChiva(stringResource(R.string.new_game), onRestart, fondo = ButtonRole.TURN.fondo)
+            val menuRole = if (vm.remote != null) ButtonRole.TURN else ButtonRole.DECLINE
+            if (onMenu != null) BotonChiva(stringResource(R.string.to_menu), onMenu, fondo = menuRole.fondo)
             vm.log.lastOrNull()?.let { TurnCard(vm, it, faded = true) }
         }
     }

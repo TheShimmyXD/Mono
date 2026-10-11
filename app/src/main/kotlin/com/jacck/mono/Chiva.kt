@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import com.jacck.mono.board.Icon
 import com.jacck.mono.board.IconImage
+import com.jacck.mono.game.ButtonRole
 import kotlinx.coroutines.launch
 
 /** Colores de la interfaz «Chiva de fiesta» (D-33), de la paleta del arte (D-28). */
@@ -137,18 +138,20 @@ fun Calcomania(
 
 /**
  * Botón de chiva (D-33): rojo con letra blanca el principal, ocre con letra de tinta el secundario;
- * contorno, sombra sólida y el texto en una línea (con cifra: verbo + signo, M-026).
+ * contorno, sombra sólida y el texto en una línea (con cifra: verbo + signo, M-026). [fondo], si se da,
+ * manda sobre los dos (FF.3), con la letra de [letraSobre].
  */
 @Composable
 fun BotonChiva(
     texto: String, onClick: () -> Unit, modifier: Modifier = Modifier.fillMaxWidth(), principal: Boolean = true,
-    enabled: Boolean = true, icono: Icon? = null,
+    enabled: Boolean = true, icono: Icon? = null, fondo: Color? = null,
 ) {
     val forma = RoundedCornerShape(10.dp)
+    val color = fondo ?: if (principal) Chiva.Techo else Chiva.Ocre
     Box(modifier.alpha(if (enabled) 1f else 0.45f)) {
         if (enabled) Box(Modifier.matchParentSize().offset(3.dp, 3.dp).background(Chiva.Tinta, forma))
         Row(
-            Modifier.fillMaxWidth().clip(forma).background(if (principal) Chiva.Techo else Chiva.Ocre)
+            Modifier.fillMaxWidth().clip(forma).background(color)
                 .border(2.dp, Chiva.Tinta, forma).clickable(enabled = enabled, role = Role.Button, onClick = onClick)
                 .padding(vertical = 10.dp, horizontal = 6.dp),
             horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically,
@@ -156,12 +159,28 @@ fun BotonChiva(
             icono?.let { IconImage(it, 20.dp); Spacer(Modifier.width(6.dp)) }
             // Un nombre largo achica la letra hasta 11 sp en vez de cortarse («Calle del Embudo», FB.2b).
             Text(
-                texto, color = if (principal) Color.White else Chiva.Tinta, maxLines = 1, softWrap = false,
+                texto, color = letraSobre(color), maxLines = 1, softWrap = false,
                 autoSize = TextAutoSize.StepBased(minFontSize = 11.sp, maxFontSize = 16.sp),
             )
         }
     }
 }
+
+/**
+ * Letra blanca sobre rojo, azul, magenta y tinta; tinta sobre los claros y sobre el verde (blanca en
+ * verde: contraste 2,83; tinta: 6,0; FF.3, D-88).
+ */
+fun letraSobre(fondo: Color): Color =
+    if (fondo in listOf(Chiva.Techo, Chiva.Azul, Chiva.Magenta, Chiva.Tinta)) Color.White else Chiva.Tinta
+
+/** El color de un botón de la partida por lo que hace (FF.3, D-88); el menú sigue con rojo y ocre. */
+val ButtonRole.fondo: Color
+    get() = when (this) {
+        ButtonRole.TURN -> Chiva.Azul
+        ButtonRole.SPEND -> Chiva.Verde
+        ButtonRole.RECEIVE, ButtonRole.DECLINE -> Chiva.Ocre
+        ButtonRole.LOSE -> Chiva.Techo
+    }
 
 /**
  * Botón que actúa solo si se mantiene presionado [ms] (FF.2, D-85): mientras se sostiene se llena de
