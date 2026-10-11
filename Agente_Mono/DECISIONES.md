@@ -827,4 +827,11 @@
 - **`BotonMantener`:** rojo, y al mantenerlo se llena de `Chiva.Tinta` al 45 % (un rojo oscurecido), sin color nuevo en la paleta.
 - **Alcance:** solo la hoja (`PlayerCard.kt`); la botonera del turno (D-69) no cambia.
 - **Cómo se revierte:** en `PlayerCard.kt`, invertir los `true`/`false` del `when` y volver `BotonMantener` al ocre con relleno rojo.
+- **Estado:** revocada el mismo día (2026-10-11): el autor la vio en el Redmi y prefiere los colores de antes hasta el estudio de color de FF.3 (D-87); el código volvió a `3d112c1`.
+
+### D-87 · FF.2 aprobada; FF.3 estudio de color de los botones
+
+- **Del autor (2026-10-11):** aprueba FF.2 (vender manteniendo presionado, D-85) con los colores originales. El rojo y el amarillo funcionan en el menú, pero en la partida el rojo se asocia con algo negativo: en «Comprar» | «No comprar», comprar parece la mala, y ninguna lo es. Pide como paso siguiente un estudio de color que separe los botones según lo que hacen.
+- **Cómo queda:** FF.3 en el plan, con opciones vistas en el Redmi antes de cambiar nada; FF sigue abierta hasta FF.3.
+- **Cómo se revierte:** quitar FF.3 del plan.
 - **Estado:** vigente.

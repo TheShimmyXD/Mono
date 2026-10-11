@@ -83,17 +83,16 @@ private fun PropertyRow(vm: GameViewModel, square: Int, holding: Holding, manage
             Row(Modifier.padding(start = 6.dp, end = 9.dp, bottom = 8.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 moves.forEach { move ->
                     val amount = money(move.amount)
-                    // Rojo lo que pierde (vender, hipotecar), amarillo lo que suma (construir, levantar; D-86).
-                    val (text, bad) = when (move.action) {
-                        is Action.Build -> stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount) to false
-                        is Action.SellBuilding -> stringResource(R.string.move_sell, amount) to true
-                        is Action.Mortgage -> stringResource(R.string.move_mortgage, amount) to true
-                        is Action.Unmortgage -> stringResource(R.string.move_unmortgage, amount) to false
+                    val (text, main) = when (move.action) {
+                        is Action.Build -> stringResource(if (move.hotel) R.string.move_hotel else R.string.move_house, amount) to true
+                        is Action.SellBuilding -> stringResource(R.string.move_sell, amount) to false
+                        is Action.Mortgage -> stringResource(R.string.move_mortgage, amount) to false
+                        is Action.Unmortgage -> stringResource(R.string.move_unmortgage, amount) to true
                         else -> null to false
                     }
                     // Vender pierde la mitad (R-30): se mantiene presionado (FF.2, D-85); lo demás, un toque.
                     if (text != null && move.action is Action.SellBuilding) BotonMantener(text, { vm.act(move.action) }, Modifier.weight(1f))
-                    else if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), principal = bad)
+                    else if (text != null) BotonChiva(text, { vm.act(move.action) }, Modifier.weight(1f), principal = main)
                 }
             }
         }
